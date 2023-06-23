@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -18,11 +18,12 @@ build_wasm() {
     if [ ! -d "$BUILD_WASM_FOLDER" ]; then
         mkdir -p "$BUILD_WASM_FOLDER"
         cd "$BUILD_WASM_FOLDER"
-        emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE $PROJECT_PATH
+        emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILDING_WASM=ON $PROJECT_PATH
     fi
 
     cd "$BUILD_WASM_FOLDER"
     make
+    cd "$PROJECT_PATH"
 }
 
 build_native() {
@@ -34,6 +35,7 @@ build_native() {
 
     cd "$BUILD_NATIVE_FOLDER"
     make
+    cd "$PROJECT_PATH"
 }
 
 clean() {
@@ -63,10 +65,10 @@ run()
 
     if [ "$2" = "native" ]; then
         build_native
-        $BUILD_NATIVE_FOLDER/$EXECUTABLE_NAME
+        $BUILD_NATIVE_FOLDER/$EXECUTABLE_NAME ${@:3}
     elif [ "$2" = "wasm" ]; then
         build_wasm
-        node $BUILD_WASM_FOLDER/$EXECUTABLE_NAME.js # TODOO: something better than node?
+        node $BUILD_WASM_FOLDER/$EXECUTABLE_NAME.js ${@:3}  # TODOO: something better than node? 
     else
         usage
     fi
@@ -82,11 +84,16 @@ usage() {
     exit 0
 }
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+RESET='\033[0m' # No Color
+
+
 print_green() {
-    echo "\033[0;32m$1\033[0m"
+    echo -e "${GREEN}$1${RESET}"
 }
 print_red() {
-    echo "\033[0;31m$1\033[0m"
+    echo -e "${RED}$1${RESET}"
 }
 
 if [ "$1" = "wasm" ]; then
