@@ -15,8 +15,8 @@ namespace scc
     {
         std::stringstream escape_string(const std::string &str);
 
-        std::stringstream tokens_as_json(const TSNode& node, const std::string &code);
-        std::stringstream tokens_as_puml(const TSNode& node, const std::string &code);
+        std::stringstream ast_as_json(const TSNode& node, const std::string &code);
+        std::stringstream ast_as_puml(const TSNode& node, const std::string &code);
 
     } 
 } 

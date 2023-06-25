@@ -106,7 +106,7 @@ int main(int argc, char const *argv[])
     }
 
 
-    std::cout << scc::debug::tokens_as_puml(parser.get_root_node(), code.value()).str() << std::endl;
+    std::cout << scc::debug::ast_as_puml(parser.get_root_node(), code.value()).str() << std::endl;
 
 
     return 0;

@@ -5,8 +5,6 @@ namespace scc
 {
     namespace debug
     {
-
-        
         std::stringstream escape_string(const std::string &str)
         {
             std::stringstream ss;
@@ -44,7 +42,7 @@ namespace scc
         }
 
 
-        std::stringstream tokens_as_json(const TSNode& node, const std::string &code)
+        std::stringstream ast_as_json(const TSNode& node, const std::string &code)
         {
             std::stringstream ss;
             ss << "{\"node_name\": \"";
@@ -65,7 +63,7 @@ namespace scc
                 {
                     if (i > 0)
                         ss << ",";
-                    ss << tokens_as_json(ts_node_child(node, i), code).str();
+                    ss << ast_as_json(ts_node_child(node, i), code).str();
                 }
                 ss << "]";
             }
@@ -74,11 +72,11 @@ namespace scc
             return ss;
         }
 
-        std::stringstream tokens_as_puml(const TSNode& node, const std::string &code)
+        std::stringstream ast_as_puml(const TSNode& node, const std::string &code)
         {
             std::stringstream ss;
             ss << "@startjson" << std::endl;
-            ss << tokens_as_json(node, code).rdbuf() << std::endl;
+            ss << ast_as_json(node, code).rdbuf() << std::endl;
             ss << "@endjson" << std::endl;
 
             return ss;
