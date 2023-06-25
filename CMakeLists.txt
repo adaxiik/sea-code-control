@@ -42,8 +42,10 @@ target_include_directories(tree-sitter-c PUBLIC ${TREE_SITTER_C_INCLUDE_DIRS})
 set_target_properties(tree-sitter-c PROPERTIES LINKER_LANGUAGE C)
 
 
-
-add_executable(scc src/main.cpp)
+file(GLOB_RECURSE SCC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+set(SCC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/include)
+add_executable(scc ${SCC_FILES})
 target_include_directories(scc PUBLIC ${TREE_SITTER_INCLUDE_DIRS_PUBLIC} ${TREE_SITTER_C_INCLUDE_DIRS})
+target_include_directories(scc PRIVATE ${SCC_INCLUDE_DIRS})
 target_link_libraries(scc tree-sitter tree-sitter-c)
 

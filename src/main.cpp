@@ -1,107 +1,113 @@
 #include <iostream>
+#include <fstream>
 #include <functional>
+#include <optional>
+#include <sstream>
 #include <string>
-#include <tree_sitter/api.h>
-#include <tree_sitter/parser.h>
-#include <tree_sitter-c/parser-c.h>
 
 #define UNUSED(x) (void)(x)
 
-void print_tokens_as_puml(const TSNode node, const std::string &code)
-{
-    auto print_escaped = [](const std::string &str)
-    {
-        for (auto c : str)
-        {
-            switch (c)
-            {
-            case '\n':
-                std::cout << "\\n";
-                break;
-            case '\t':
-                std::cout << "\\t";
-                break;
-            case '\r':
-                std::cout << "\\r";
-                break;
-            case '\b':
-                std::cout << "\\b";
-                break;
-            case '\f':
-                std::cout << "\\f";
-                break;
-            case '\\':
-                std::cout << "\\\\";
-                break;
-            case '\"':
-                std::cout << "\\\"";
-                break;
-            default:
-                std::cout << c;
-                break;
-            }
-        }
-    };
+// void print_tokens_as_puml(const TSNode& node, const std::string &code)
+// {
+//     auto print_escaped = [](const std::string &str)
+//     {
+//         for (auto c : str)
+//         {
+//             switch (c)
+//             {
+//             case '\n':
+//                 std::cout << "\\n";
+//                 break;
+//             case '\t':
+//                 std::cout << "\\t";
+//                 break;
+//             case '\r':
+//                 std::cout << "\\r";
+//                 break;
+//             case '\b':
+//                 std::cout << "\\b";
+//                 break;
+//             case '\f':
+//                 std::cout << "\\f";
+//                 break;
+//             case '\\':
+//                 std::cout << "\\\\";
+//                 break;
+//             case '\"':
+//                 std::cout << "\\\"";
+//                 break;
+//             default:
+//                 std::cout << c;
+//                 break;
+//             }
+//         }
+//     };
 
-    std::function<void(const TSNode)> print_tokens_as_json = [&](const TSNode node)
-    {
-        std::cout << "{\"node_name\": \"";
+//     std::function<void(const TSNode)> print_tokens_as_json = [&](const TSNode node)
+//     {
+//         std::cout << "{\"node_name\": \"";
 
-        if(ts_node_has_error(node))
-            std::cout << "<color:red><b>";
-  
-        print_escaped(ts_node_type(node));
-        std::cout << "\",\"value\": \"";
-        print_escaped(code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node)));
-        std::cout << "\"";
-        
-        uint32_t child_count = ts_node_child_count(node);
-        if (child_count > 0)
-        {
-            std::cout << ",\"children\": [";
-            for (uint32_t i = 0; i < child_count; i++)
-            {
-                print_tokens_as_json(ts_node_child(node, i));
-                if (i != child_count - 1)
-                    std::cout << ",";
-            }
-            std::cout << "]";
-        }
+//         if (ts_node_has_error(node))
+//             std::cout << "<color:red><b>";
 
-        std::cout << "}";
-    };
+//         print_escaped(ts_node_type(node));
+//         std::cout << "\",\"value\": \"";
+//         print_escaped(code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node)));
+//         std::cout << "\"";
 
-    std::cout << "@startjson" << std::endl;
-    print_tokens_as_json(node);
-    std::cout << std::endl
-              << "@endjson" << std::endl;
-}
+//         uint32_t child_count = ts_node_child_count(node);
+//         if (child_count > 0)
+//         {
+//             std::cout << ",\"children\": [";
+//             for (uint32_t i = 0; i < child_count; i++)
+//             {
+//                 print_tokens_as_json(ts_node_child(node, i));
+//                 if (i != child_count - 1)
+//                     std::cout << ",";
+//             }
+//             std::cout << "]";
+//         }
 
+//         std::cout << "}";
+//     };
 
+//     std::cout << "@startjson" << std::endl;
+//     print_tokens_as_json(node);
+//     std::cout << std::endl
+//               << "@endjson" << std::endl;
+// }
+
+#include "debug.hpp"
+#include "io.hpp"
+#include "parser.hpp"
 
 int main(int argc, char const *argv[])
 {
-    UNUSED(argc);
-    UNUSED(argv);
 
-    const std::string code = "#include <stdio.h>\nint main(int argc, char** argv)\n{\n\tprintf(\"%d\",sizeof(int);\n\treturn 0;\n}";
-    // std::cout << code << std::endl;
+    if (argc < 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
+    }
 
-    TSParser *parser = ts_parser_new();
-    ts_parser_set_language(parser, tree_sitter_c());
+    auto code = scc::io::slurp_file(argv[1]);
+    if (!code)
+    {
+        std::cerr << "Failed to open file: " << argv[1] << std::endl;
+        return 1;
+    }
 
-    TSTree *tree = ts_parser_parse_string(
-        parser,
-        NULL,
-        code.c_str(),
-        code.size());
 
-    TSNode root_node = ts_tree_root_node(tree);
+    scc::Parser parser(code.value());
+    if (parser.has_error())
+    {
+        std::cerr << "Failed to parse file: " << argv[1] << std::endl;
+        return 1;
+    }
 
-    print_tokens_as_puml(root_node, code);
 
-    ts_tree_delete(tree);
-    ts_parser_delete(parser);
+    std::cout << scc::debug::tokens_as_puml(parser.get_root_node(), code.value()).str() << std::endl;
+
 
     return 0;
 }
