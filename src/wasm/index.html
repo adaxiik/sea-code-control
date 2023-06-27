@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SCC - test</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+</head>
+
+<body>
+    <h1>Check developer console :)</h1>
+
+    <script src="scc.js"></script>
+    <script>
+        function main() {
+            try {
+                var code = `
+                int main() {
+                    return 0
+                }`;
+
+                var parser = new Module.Parser(code);
+
+                const ast_json = JSON.parse(Module.debug_ast_as_json(parser));
+                console.log(ast_json);
+
+            } catch (e) {
+                console.log(e);
+
+            } finally {
+                parser.delete();
+            }
+        }
+
+        Module()
+            .then(function (module) {
+                Module = module;
+                main();
+            });
+
+        // let x = Module({
+        //     onRuntimeInitialized:async function() {
+        //         Module = await x;
+        //         main();
+        //     }
+        // });
+
+    </script>
+</body>
+
+</html>

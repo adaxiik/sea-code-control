@@ -1,5 +1,5 @@
 #include "debug.hpp"
-
+#include <functional>
 
 namespace scc
 {
@@ -42,41 +42,47 @@ namespace scc
         }
 
 
-        std::stringstream ast_as_json(const TSNode& node, const std::string &code)
+        std::stringstream ast_as_json(const Parser& parser)
         {
             std::stringstream ss;
-            ss << "{\"node_name\": \"";
 
-            if (ts_node_has_error(node))
-                ss << "<color:red><b>";
+            std::function<void(TSNode node)> ast_as_json_impl = [&](TSNode node)  {
+                ss << "{\"node_name\": \"";
 
-            ss << escape_string(ts_node_type(node)).str();
-            ss << "\",\"value\": \"";
-            ss << escape_string(code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node))).str();
-            ss << "\"";
+                if (ts_node_has_error(node))
+                    ss << "<color:red><b>";
 
-            uint32_t child_count = ts_node_child_count(node);
-            if (child_count > 0)
-            {
-                ss << ",\"children\": [";
-                for (uint32_t i = 0; i < child_count; i++)
+                ss << escape_string(ts_node_type(node)).str();
+                ss << "\",\"value\": \"";
+                ss << escape_string(parser.get_code().substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node))).str();
+                ss << "\"";
+
+                uint32_t child_count = ts_node_child_count(node);
+                if (child_count > 0)
                 {
-                    if (i > 0)
-                        ss << ",";
-                    ss << ast_as_json(ts_node_child(node, i), code).str();
+                    ss << ",\"children\": [";
+                    for (uint32_t i = 0; i < child_count; i++)
+                    {
+                        if (i > 0)
+                            ss << ",";
+                        ast_as_json_impl(ts_node_child(node, i));
+                    }
+                    ss << "]";
                 }
-                ss << "]";
-            }
 
-            ss << "}";
+                ss << "}";
+            };
+
+            ast_as_json_impl(parser.get_root_node());
+
             return ss;
         }
 
-        std::stringstream ast_as_puml(const TSNode& node, const std::string &code)
+        std::stringstream ast_as_puml(const Parser &parser)
         {
             std::stringstream ss;
             ss << "@startjson" << std::endl;
-            ss << ast_as_json(node, code).rdbuf() << std::endl;
+            ss << ast_as_json(parser).rdbuf() << std::endl;
             ss << "@endjson" << std::endl;
 
             return ss;

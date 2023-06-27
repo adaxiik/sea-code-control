@@ -20,7 +20,7 @@ namespace scc
         m_root_node = ts_tree_root_node(m_tree.get());
     }
 
-    TSNode& Parser::get_root_node()
+    TSNode Parser::get_root_node() const
     {
         return m_root_node;
     }
@@ -28,6 +28,11 @@ namespace scc
     bool Parser::has_error() const
     {
         return ts_node_has_error(m_root_node);
+    }
+
+    const std::string& Parser::get_code() const
+    {
+        return m_code;
     }
 
 }

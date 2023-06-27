@@ -13,6 +13,7 @@ BUILD_WASM_FOLDER="$BUILD_FOLDER/wasm"
 BUILD_NATIVE_FOLDER="$BUILD_FOLDER/native"
 
 EXECUTABLE_NAME="scc"
+WASM_DRIVER_NAME="wasm_driver"
 
 build_wasm() {
     if [ ! -d "$BUILD_WASM_FOLDER" ]; then
@@ -22,7 +23,7 @@ build_wasm() {
     fi
 
     cd "$BUILD_WASM_FOLDER"
-    make
+    make 
     cd "$PROJECT_PATH"
 }
 
@@ -68,7 +69,7 @@ run()
         $BUILD_NATIVE_FOLDER/$EXECUTABLE_NAME ${@:3}
     elif [ "$2" = "wasm" ]; then
         build_wasm
-        node $BUILD_WASM_FOLDER/$EXECUTABLE_NAME.js ${@:3}  # TODOO: something better than node? 
+        node $BUILD_WASM_FOLDER/$WASM_DRIVER_NAME.js ${@:3} 
     else
         usage
     fi
@@ -97,8 +98,14 @@ print_red() {
 }
 
 if [ "$1" = "wasm" ]; then
+    if [ $# -eq 2 ]; then
+        BUILD_TYPE=$2
+    fi
     build_wasm
 elif [ "$1" = "native" ]; then
+    if [ $# -eq 2 ]; then
+        BUILD_TYPE=$2
+    fi
     build_native
 elif [ "$1" = "all" ]; then
     build_wasm

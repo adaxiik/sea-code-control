@@ -15,14 +15,15 @@ namespace scc
         std::unique_ptr<TSParser, decltype(&ts_parser_delete)> m_parser;
         std::unique_ptr<TSTree, decltype(&ts_tree_delete)> m_tree;
         TSNode m_root_node;
-        std::string m_code;
+        const std::string m_code;
         
     public:
-        Parser(const std::string &code);
+        explicit Parser(const std::string &code);
         ~Parser() = default;
 
-        TSNode& get_root_node();
+        TSNode get_root_node() const;
         bool has_error() const;
+        const std::string& get_code() const;
 
     };
 } 
