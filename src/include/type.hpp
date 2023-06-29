@@ -14,8 +14,9 @@ namespace scc
 
         struct PTR
         {
-            std::unique_ptr<Type> pointing_to;
+            Type* pointing_to;
             size_t size;
+            bool is_static_array;
         };
 
         template <class... Ts>
@@ -25,6 +26,8 @@ namespace scc
         };
         template <class... Ts>
         overloaded(Ts...) -> overloaded<Ts...>;
+
+        
         struct Type
         {
             scc_type_Kind kind;
@@ -35,10 +38,32 @@ namespace scc
                 std::visit(overloaded{
                     [&os](const I32& ) { os << "i32"; },
                     [&os](const F32& ) { os << "f32"; },
-                    [&os](const PTR& ptr) { os << "ptr<" << *ptr.pointing_to << ">"; }
+                    [&os](const PTR& ptr) { os << *ptr.pointing_to << "*"; }
                 }, type.kind);
                 return os;
             }
+
+            size_t size_bytes() const
+            {
+                return std::visit(overloaded{
+                    [](const I32& ) { return 4UL; },
+                    [](const F32& ) { return 4UL; },
+                    [](const PTR& ptr) 
+                    { 
+                        if (ptr.is_static_array)
+                            return static_cast<size_t>(ptr.size * ptr.pointing_to->size_bytes());
+                        else
+                            return 8UL;
+                    }
+                }, kind);
+            }
+
+            Type(scc_type_Kind kind, bool is_const = false)
+                : kind(kind)
+                , is_const(is_const)
+            {}
+            Type() = default;
+
         };
 
     }
