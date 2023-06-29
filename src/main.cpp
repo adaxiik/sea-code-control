@@ -16,6 +16,7 @@
 #include "debug.hpp"
 #include "io.hpp"
 #include "parser.hpp"
+#include "vm.hpp"
 
 int main(int argc, char const *argv[])
 {
@@ -42,8 +43,18 @@ int main(int argc, char const *argv[])
     }
 
 
-    std::cout << scc::debug::ast_as_puml(parser).str() << std::endl;
+    // std::cout << scc::debug::ast_as_puml(parser).str() << std::endl;
 
+    std::vector<scc::Instruction> instructions;
+    instructions.push_back(scc::NewVar{"a", scc::type::Type{scc::type::I32{}, false}});
+
+    scc::vm::VM vm{std::move(instructions)};
+    auto error = vm.run();
+    if (error != scc::vm::Error::None)
+    {
+        std::cerr << "VM error: " << static_cast<int>(error) << std::endl;
+        return 1;
+    }
 
     return 0;
 }
