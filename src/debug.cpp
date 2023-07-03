@@ -1,13 +1,13 @@
 #include "debug.hpp"
 #include <functional>
+#include <variant>
 
 namespace scc
 {
     namespace debug
     {
-        std::stringstream escape_string(const std::string &str)
+        void escape_string(std::ostream & ss, const std::string &str)
         {
-            std::stringstream ss;
             for (auto c : str)
             {
                 switch (c)
@@ -38,23 +38,21 @@ namespace scc
                     break;
                 }
             }
-            return ss;
         }
 
 
-        std::stringstream ast_as_json(const Parser& parser)
+        void ast_as_json(std::ostream & ss, const Parser& parser)
         {
-            std::stringstream ss;
-
             std::function<void(TSNode node)> ast_as_json_impl = [&](TSNode node)  {
                 ss << "{\"node_name\": \"";
 
                 if (ts_node_has_error(node))
                     ss << "<color:red><b>";
 
-                ss << escape_string(ts_node_type(node)).str();
+                escape_string(ss, ts_node_type(node));
+
                 ss << "\",\"value\": \"";
-                ss << escape_string(parser.get_code().substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node))).str();
+                escape_string(ss, parser.get_code().substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node)));
                 ss << "\"";
 
                 uint32_t child_count = ts_node_child_count(node);
@@ -74,18 +72,51 @@ namespace scc
             };
 
             ast_as_json_impl(parser.get_root_node());
-
-            return ss;
         }
 
-        std::stringstream ast_as_puml(const Parser &parser)
+        void  ast_as_puml(std::ostream &ss, const Parser &parser)
         {
-            std::stringstream ss;
-            ss << "@startjson" << std::endl;
-            ss << ast_as_json(parser).rdbuf() << std::endl;
-            ss << "@endjson" << std::endl;
 
-            return ss;
+            ss << "@startjson" << std::endl;
+            ast_as_json(ss, parser);
+            ss << std::endl;
+            ss << "@endjson" << std::endl;
         }
+
+        void vars_as_json(std::ostream &ss, const vm::VM& vm)
+        {
+            ss << "{\"variables\": [";
+
+            bool first = true;
+            for (const auto& scope : vm.ref_scope_stack().ref_scopes())
+            {
+                for (auto& var : scope.ref_variables())
+                {
+                    if (!first)
+                        ss << ",";
+                    first = false;
+
+                    ss << "{\"name\": \"";
+                    escape_string(ss, var.first);
+                    ss << "\",";
+                    ss << "\"type\": \"" << var.second.type << "\",";
+                    ss << "\"address\": 0x" << std::hex << var.second.pointer << std::dec << ",";
+                    ss << "\" value\": \"";
+
+                    // temporary :)
+                    if(std::holds_alternative<scc::type::I32>(var.second.type.kind))
+                        ss << *reinterpret_cast<const int32_t*>(vm.get_stack() + var.second.pointer);
+                    else if (std::holds_alternative<scc::type::F32>(var.second.type.kind))
+                        ss << *reinterpret_cast<const float*>(vm.get_stack() + var.second.pointer);
+                    else
+                        ss << "unknown";
+
+                    ss << "}";
+                }
+            }
+
+            ss << "]}";
+        }
+
     } 
 } 

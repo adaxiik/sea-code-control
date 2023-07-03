@@ -13,12 +13,16 @@ namespace scc
         // wasm-bindgen doesn't support std::stringstream
         std::string debug_ast_as_json(const Parser& parser) 
         {
-            return debug::ast_as_json(parser).str();
+            std::stringstream ss;
+            debug::ast_as_json(ss, parser);
+            return ss.str();
         }
 
         std::string debug_ast_as_puml(const Parser& parser)
         {
-            return debug::ast_as_puml(parser).str();
+            std::stringstream ss;
+            debug::ast_as_puml(ss, parser);
+            return ss.str();
         }
     }
 }

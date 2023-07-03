@@ -4,3 +4,5 @@
 - Im not sure if I stay with algebraic data types, but I rewrote the whole thing like 4 times already, si im pretty sure it will change again in the future 
 - its kinda ducktaped together, but it ... doin something :)
 - right now its just experimenting with project architecture xd
+
+- [ ] make my own debug macro, instead of using std::cout everywhere 

@@ -35,6 +35,9 @@ namespace scc
 
             friend std::ostream& operator<<(std::ostream& os, const Type& type)
             {
+                if (type.is_const)
+                    os << "const ";
+
                 std::visit(overloaded{
                     [&os](const I32& ) { os << "i32"; },
                     [&os](const F32& ) { os << "f32"; },

@@ -9,14 +9,19 @@
 #include <tree_sitter-c/parser-c.h>
 
 #include "parser.hpp"
+#include "vm.hpp"
+#include "vm/variable.hpp"
 namespace scc
 {
     namespace debug
     {
-        std::stringstream escape_string(const std::string &str);
+        void escape_string(std::ostream &ss, const std::string &str);
 
-        std::stringstream ast_as_json(const Parser& parser);
-        std::stringstream ast_as_puml(const Parser& parser);
+        void ast_as_json(std::ostream &ss, const Parser& parser);
+        void ast_as_puml(std::ostream &ss, const Parser& parser);
+
+        void variable_as_string(std::ostream &ss, const scc::vm::Variable& var);
+        void vars_as_json(std::ostream &ss, const vm::VM& vm);
 
     } 
 } 
