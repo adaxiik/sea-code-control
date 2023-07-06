@@ -33,11 +33,11 @@ namespace scc
         {
             uint64_t a{0}, b{0};
 
-            auto error = vm.stack_pop(a);
+            auto error = vm.vm_stack_pop(a);
             if (error != vm::Error::None)
                 return error;
 
-            error = vm.stack_pop(b);
+            error = vm.vm_stack_pop(b);
             if (error != vm::Error::None)
                 return error;
 
@@ -45,7 +45,7 @@ namespace scc
             std::visit(overloaded{[&](const type::I32 &)
                                   {
                                       auto result = static_cast<int32_t>(a) + static_cast<int32_t>(b);
-                                      error = vm.stack_push(static_cast<uint64_t>(result));
+                                      error = vm.vm_stack_push(static_cast<uint64_t>(result));
                                       if (error != vm::Error::None)
                                           return error;
 
@@ -54,7 +54,7 @@ namespace scc
                                   [&](const type::F32 &)
                                   {
                                       auto result = static_cast<float>(a) + static_cast<float>(b);
-                                      error = vm.stack_push(static_cast<uint64_t>(result));
+                                      error = vm.vm_stack_push(static_cast<uint64_t>(result));
                                       if (error != vm::Error::None)
                                           return error;
 

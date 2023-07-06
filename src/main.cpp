@@ -70,7 +70,8 @@ int main(int argc, char const *argv[])
     instructions.push_back(new scc::instructions::Store(4));
 
     instructions.push_back(new scc::instructions::GetPtrToVar("a"));
-    instructions.push_back(new scc::instructions::Load(4)); // result of a + b should be on top of stack
+    instructions.push_back(new scc::instructions::Load(4)); 
+    instructions.push_back(new scc::instructions::DPrint());
 
 
     scc::vm::VM vm{std::move(instructions)};
@@ -81,10 +82,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    uint64_t result{0};
-    vm.stack_pop(result);
-
-    std::cout << "Result: " << result << std::endl;
+    std::cout << "VM stack size: " << vm.get_vm_stack_size() << std::endl;
 
     std::stringstream ss;
     scc::debug::vars_as_json(ss, vm);

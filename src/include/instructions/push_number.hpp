@@ -19,7 +19,7 @@ namespace scc
 #ifdef SCC_PUSH_NUMBER_IMPLEMENTATION
         vm::Error PushNumber::execute(vm::VM &vm)
         {
-            auto error = vm.stack_push(m_value);
+            auto error = vm.vm_stack_push(m_value);
             if (error != vm::Error::None)
                 return error;
 

@@ -29,3 +29,7 @@
 #define SCC_GET_PTR_TO_VAR_IMPLEMENTATION
 #include "instructions/get_ptr_to_var.hpp"
 #undef SCC_GET_PTR_TO_VAR_IMPLEMENTATION
+
+#define SCC_D_PRINT_IMPLEMENTATION
+#include "instructions/d_print.hpp"
+#undef SCC_D_PRINT_IMPLEMENTATION

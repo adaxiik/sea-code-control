@@ -21,7 +21,7 @@ namespace scc
         {
             // TODOO: check if not const somehow .. might use free bits int the pointer? because we are not going to alloc 2^64... something like nan boxing..
             uint64_t ptr{0};
-            auto error = vm.stack_pop(ptr);
+            auto error = vm.vm_stack_pop(ptr);
             if (error != vm::Error::None)
                 return error;
 
@@ -29,11 +29,11 @@ namespace scc
                 return vm::Error::IllegalMemoryAccess;
 
             uint64_t value{0};
-            error = vm.stack_pop(value);
+            error = vm.vm_stack_pop(value);
             if (error != vm::Error::None)
                 return error;
 
-            std::memcpy(vm.get_stack() + ptr, &value, m_size_bytes);
+            std::memcpy(vm.get_memory() + ptr, &value, m_size_bytes);
 
             return vm::Error::None;
         }

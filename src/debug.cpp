@@ -105,9 +105,9 @@ namespace scc
 
                     // temporary :)
                     if(std::holds_alternative<scc::type::I32>(var.second.type.kind))
-                        ss << *reinterpret_cast<const int32_t*>(vm.get_stack() + var.second.pointer);
+                        ss << *reinterpret_cast<const int32_t*>(vm.get_memory() + var.second.pointer);
                     else if (std::holds_alternative<scc::type::F32>(var.second.type.kind))
-                        ss << *reinterpret_cast<const float*>(vm.get_stack() + var.second.pointer);
+                        ss << *reinterpret_cast<const float*>(vm.get_memory() + var.second.pointer);
                     else
                         ss << "unknown";
 

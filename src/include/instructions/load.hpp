@@ -23,17 +23,17 @@ namespace scc
         {
             assert(m_size_bytes <= 8 && "Load size is too big"); // for now.. do we even need more?
             uint64_t ptr{0};
-            auto error = vm.stack_pop(ptr);
+            auto error = vm.vm_stack_pop(ptr);
             if (error != vm::Error::None)
                 return error;
 
-            if (ptr > vm::VM_STACK_SIZE || static_cast<int64_t>(ptr) < 0) // todo: ignoring heap memory for now, we'll do memory tracing later
+            if (ptr > vm::VM_STACK_SIZE || static_cast<int64_t>(ptr) < 0) // TODOO: ignoring heap memory for now, we'll do memory tracing later
                 return vm::Error::IllegalMemoryAccess;
 
             uint64_t value{0};
-            std::memcpy(&value, vm.get_stack() + ptr, m_size_bytes);
+            std::memcpy(&value, vm.get_memory() + ptr, m_size_bytes);
 
-            error = vm.stack_push(value);
+            error = vm.vm_stack_push(value);
             if (error != vm::Error::None)
                 return error;
 
