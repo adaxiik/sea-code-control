@@ -31,7 +31,7 @@ namespace scc
 #ifdef SCC_ADD_IMPLEMENTATION
         vm::Error Add::execute(vm::VM &vm)
         {
-            uint64_t a{0}, b{0};
+            vm::Value a{0}, b{0};
 
             auto error = vm.vm_stack_pop(a);
             if (error != vm::Error::None)
@@ -41,11 +41,11 @@ namespace scc
             if (error != vm::Error::None)
                 return error;
 
-            // TODOOO: we probably want more add instuctions, like add_i32, add_f32, etc?
+            // TODOOO: we probably want more add instructions, like add_i32, add_f32, etc?
             std::visit(overloaded{[&](const type::I32 &)
                                   {
-                                      auto result = static_cast<int32_t>(a) + static_cast<int32_t>(b);
-                                      error = vm.vm_stack_push(static_cast<uint64_t>(result));
+                                      int result = a.as<int>() + b.as<int>();
+                                      error = vm.vm_stack_push(result);
                                       if (error != vm::Error::None)
                                           return error;
 
@@ -53,8 +53,8 @@ namespace scc
                                   },
                                   [&](const type::F32 &)
                                   {
-                                      auto result = static_cast<float>(a) + static_cast<float>(b);
-                                      error = vm.vm_stack_push(static_cast<uint64_t>(result));
+                                      float result = a.as<float>() + b.as<float>();
+                                      error = vm.vm_stack_push(result);
                                       if (error != vm::Error::None)
                                           return error;
 

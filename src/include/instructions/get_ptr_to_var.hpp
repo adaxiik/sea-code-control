@@ -22,7 +22,7 @@ namespace scc
             if (!var.has_value())
                 return vm::Error::VariableDoesNotExist;
 
-            auto error = vm.vm_stack_push(static_cast<uint64_t>(var->pointer));
+            auto error = vm.vm_stack_push(var->pointer);
             if (error != vm::Error::None)
                 return error;
             return vm::Error::None;

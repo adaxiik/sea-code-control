@@ -12,6 +12,7 @@
 #include "vm/padding.hpp"
 #include "vm/scope.hpp"
 #include "vm/error.hpp"
+#include "vm/value.hpp"
 
 constexpr auto KILOBYTE = 1024;
 constexpr auto MEGABYTE = KILOBYTE * 1024;
@@ -26,7 +27,7 @@ namespace scc
         class VM
         {
             std::unique_ptr<char[]> m_memory;   // memory of C program
-            std::stack<uint64_t> m_vm_stack;    // stack of VM 
+            std::stack<Value> m_vm_stack;    // stack of VM 
 
             std::vector<Instruction*> m_instructions;
             ScopeStack m_scope_stack;
@@ -53,8 +54,8 @@ namespace scc
             }
 
             Error pad_stack(size_t want_to_write_bytes);
-            Error vm_stack_push(uint64_t value);
-            Error vm_stack_pop(uint64_t &value);
+            Error vm_stack_push(Value value);
+            Error vm_stack_pop(Value &value);
             auto get_vm_stack_size() const { return m_vm_stack.size(); }
         };
 
