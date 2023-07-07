@@ -19,6 +19,7 @@
 #include "instructions/instruction.hpp"
 #include "instructions.hpp"
 #include "vm.hpp"
+#include "compiler.hpp"
 
 int main(int argc, char const *argv[])
 {
@@ -44,8 +45,13 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    // std::stringstream ss;
+    // scc::debug::ast_as_puml(ss, parser);
+    // std::cout << ss.str() << std::endl;
 
-    // std::cout << scc::debug::ast_as_puml(parser).str() << std::endl;
+    // scc::Compiler compiler(parser);
+    // auto instructions = compiler.compile();
+    
 
     std::vector<scc::Instruction*> instructions; 
     // // int a = 34;
@@ -53,8 +59,8 @@ int main(int argc, char const *argv[])
     // // int a = a + b;
     // // pop to cout
     
-    instructions.push_back(new scc::instructions::NewVariable("a", scc::type::Type(scc::type::I32{})));
-    instructions.push_back(new scc::instructions::NewVariable("b", scc::type::Type(scc::type::I32{})));
+    instructions.push_back(new scc::instructions::NewVariable("a", scc::type::Type(scc::type::int_type{})));
+    instructions.push_back(new scc::instructions::NewVariable("b", scc::type::Type(scc::type::int_type{})));
     instructions.push_back(new scc::instructions::PushNumber(34));
     instructions.push_back(new scc::instructions::GetPtrToVar("a"));
     instructions.push_back(new scc::instructions::Store(4));
@@ -65,7 +71,7 @@ int main(int argc, char const *argv[])
     instructions.push_back(new scc::instructions::Load(4));
     instructions.push_back(new scc::instructions::GetPtrToVar("b"));
     instructions.push_back(new scc::instructions::Load(4));
-    instructions.push_back(new scc::instructions::Add(scc::type::Type(scc::type::I32{})));
+    instructions.push_back(new scc::instructions::Add(scc::type::Type(scc::type::int_type{})));
     instructions.push_back(new scc::instructions::GetPtrToVar("a"));
     instructions.push_back(new scc::instructions::Store(4));
 
@@ -92,8 +98,6 @@ int main(int argc, char const *argv[])
     auto to_delete = vm.clear_instructions();
     for (auto i : to_delete)
         delete i;
-
-
 
     return 0;
 }

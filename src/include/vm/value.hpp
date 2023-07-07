@@ -6,7 +6,6 @@ namespace scc
 {
     namespace vm
     {
-        // value type for VM: i32, i64, f32, f64, u32, u64, char, bool, pointer
         enum class ValueType
         {
             I32,
@@ -17,7 +16,6 @@ namespace scc
             U64,
             CHAR,
             BOOL,
-            POINTER,
         };
 
 
@@ -48,8 +46,9 @@ namespace scc
                 else if constexpr (std::is_same_v<T, bool>)
                     return ValueType::BOOL;
                 else
-                    static_assert(false, "Unknown type");
-                return ValueType::I32;
+                    static_assert(!sizeof(T), "Unknown type");
+
+
             }
 
         public:

@@ -42,7 +42,7 @@ namespace scc
                 return error;
 
             // TODOOO: we probably want more add instructions, like add_i32, add_f32, etc?
-            std::visit(overloaded{[&](const type::I32 &)
+            std::visit(overloaded{[&](const type::int_type &)
                                   {
                                       int result = a.as<int>() + b.as<int>();
                                       error = vm.vm_stack_push(result);
@@ -51,7 +51,7 @@ namespace scc
 
                                       return vm::Error::None;
                                   },
-                                  [&](const type::F32 &)
+                                  [&](const type::float_type &)
                                   {
                                       float result = a.as<float>() + b.as<float>();
                                       error = vm.vm_stack_push(result);
@@ -60,11 +60,11 @@ namespace scc
 
                                       return vm::Error::None;
                                   },
-                                  [&](const type::PTR &)
+                                  [&](const type::ptr_type &)
                                   {
-                                      assert(false && "Unimplemented type");
+                                      assert(false && "Add instruction not implemented for pointers");
                                       return vm::Error::None;
-                                  }
+                                  },
 
                        },
                        m_result_type.kind);
