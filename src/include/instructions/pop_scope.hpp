@@ -11,6 +11,8 @@ namespace scc
         struct PopScope : public Instruction
         {
             virtual vm::Error execute(vm::VM& vm) override;
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
         };
         
         #ifdef SCC_POP_SCOPE_IMPLEMENTATION

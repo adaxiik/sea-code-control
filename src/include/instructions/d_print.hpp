@@ -11,6 +11,9 @@ namespace scc
         struct DPrint : public Instruction // debug print instruction
         {
             virtual vm::Error execute(vm::VM &vm) override;
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
+
         };
 
 #ifdef SCC_D_PRINT_IMPLEMENTATION

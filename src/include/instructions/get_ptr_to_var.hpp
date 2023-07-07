@@ -13,6 +13,8 @@ namespace scc
             std::string m_name;
             GetPtrToVar(std::string name) : m_name(name) {}
             virtual vm::Error execute(vm::VM &vm) override;
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
         };
 
 #ifdef SCC_GET_PTR_TO_VAR_IMPLEMENTATION

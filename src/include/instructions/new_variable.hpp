@@ -17,6 +17,8 @@ namespace scc
             NewVariable(std::string name, type::Type type) : m_name(name), m_type(type) {}
 
             virtual vm::Error execute(vm::VM &vm) override;
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
         };
 
 #ifdef SCC_NEW_VARIABLE_IMPLEMENTATION

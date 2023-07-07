@@ -11,6 +11,7 @@
 #include "parser.hpp"
 #include "vm.hpp"
 #include "vm/variable.hpp"
+#include "instructions.hpp"
 namespace scc
 {
     namespace debug

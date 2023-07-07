@@ -14,6 +14,9 @@ namespace scc
             virtual vm::Error execute(vm::VM &vm) override;
 
             PushNumber(uint64_t value) : m_value(value) {}
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
+
         };
 
 #ifdef SCC_PUSH_NUMBER_IMPLEMENTATION

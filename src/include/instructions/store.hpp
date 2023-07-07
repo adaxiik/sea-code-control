@@ -14,6 +14,8 @@ namespace scc
             virtual vm::Error execute(vm::VM &vm) override;
 
             Store(uint8_t size_bytes) : m_size_bytes(size_bytes) {}
+
+            virtual void accept(Visitor &v) const override{ v.visit(*this); }
         };
 
 #ifdef SCC_STORE_IMPLEMENTATION

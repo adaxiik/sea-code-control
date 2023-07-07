@@ -2,6 +2,7 @@
 #include <variant>
 #include <memory>
 #include <iostream>
+#include <optional>
 namespace scc
 {
     namespace type
@@ -154,7 +155,15 @@ namespace scc
                 return os;
             }
 
-
+            static std::optional<Type> from_string(const std::string& str)
+            {
+                if (str == "int")
+                    return Type(int_type{});
+                else if (str == "float")
+                    return Type(float_type{});
+                else
+                    return std::nullopt;
+            }
         };
 
     }

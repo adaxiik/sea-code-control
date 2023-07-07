@@ -102,6 +102,5 @@ namespace scc
 
             ss << "]}";
         }
-
     } 
 } 
