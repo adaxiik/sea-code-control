@@ -213,7 +213,7 @@ namespace scc
             COMPILER_UNEXPECTED(node, "Unknown binary expression type");
 
         auto binary_expr_type = binary_expr_type_opt.value();
-        
+
         auto original_type = m_context.current_type;
         m_context.current_type = binary_expr_type;
         compile_impl(ts_node_child(node, 0));
@@ -264,6 +264,15 @@ namespace scc
             return type_opt.value();
         }
 
+        if(ts_node_symbol(node) == Parser::PARENTHESIZED_EXPRESSION_SYMBOL)
+        {
+            size_t child_count = ts_node_named_child_count(node);
+            if (child_count != 1)
+                COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); //TODOOOOOOO:
+
+            return binary_expression_type(ts_node_named_child(node, 0));
+        }
+
         if (ts_node_symbol(node) != Parser::BINARY_EXPRESSION_SYMBOL)
             COMPILER_UNEXPECTED(node, "Expected binary expression");
 
@@ -292,6 +301,15 @@ namespace scc
         COMPILER_UNEXPECTED(node, "Unknown type");
         // unreachable
         return std::nullopt;
+    }
+
+    void Compiler::compile_parenthesized_expression(TSNode node)
+    {
+        size_t child_count = ts_node_named_child_count(node);
+        if (child_count != 1)
+            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); //TODOOOOOOO:
+
+        compile_impl(ts_node_named_child(node, 0));
     }
 
     void Compiler::compile_impl(TSNode node)
@@ -341,6 +359,9 @@ namespace scc
             compile_binary_expression(node);
             break;
         case Parser::COMMENT_SYMBOL:
+            break;
+        case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
+            compile_parenthesized_expression(node);
             break;
         default:
             std::cerr << m_parser.get_symbol_name(symbol) << " is not implemented yet" << std::endl;

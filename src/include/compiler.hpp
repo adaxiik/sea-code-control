@@ -27,6 +27,7 @@ namespace scc
         void compile_expression_statement(TSNode node);
         void compile_assignment_expression(TSNode node);
         void compile_binary_expression(TSNode node);
+        void compile_parenthesized_expression(TSNode node);
 
         std::optional<type::Type> binary_expression_type(TSNode node);
 
