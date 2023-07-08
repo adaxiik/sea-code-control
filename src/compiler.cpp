@@ -204,11 +204,9 @@ namespace scc
         if (child_count != 3)
             COMPILER_UNEXPECTED(node, "Expected 3 children");
 
-        
-
         auto operator_node = ts_node_child(node, 1);
         auto operator_text = m_parser.get_node_value(operator_node);
-        auto binary_expr_type_opt = binary_expression_type(node);
+        auto binary_expr_type_opt = expression_type(node);
         if (!binary_expr_type_opt)
             COMPILER_UNEXPECTED(node, "Unknown binary expression type");
 
@@ -225,91 +223,37 @@ namespace scc
         else
             COMPILER_UNEXPECTED(operator_node, "Operator \"" + operator_text + "\" is not implemented yet");
 
-        if(binary_expr_type != m_context.current_type)
+        if (binary_expr_type != m_context.current_type)
             m_instructions.push_back(new instructions::Cast(binary_expr_type, m_context.current_type));
-
     }
 
-    std::optional<type::Type> Compiler::binary_expression_type(TSNode node)
-    {
-        if (ts_node_symbol(node) == Parser::NUMBER_LITERAL_SYMBOL)
-        {
-            auto number_expr_is_double = [&](TSNode node)
-            {
-                auto number_literal_text = m_parser.get_node_value(node);
-                return number_literal_text.find('.') != std::string::npos;
-            };
-
-            auto number_expr_is_float = [&](TSNode node)
-            {
-                auto number_literal_text = m_parser.get_node_value(node);
-                return number_literal_text.find('f') != std::string::npos;
-            };
-
-            if (number_expr_is_double(node))
-                return type::Type(type::double_type{});
-            else if (number_expr_is_float(node)) 
-                return type::Type(type::float_type{});
-            else
-                return type::Type(type::int_type{});
-        }
-
-        if(ts_node_symbol(node) == Parser::IDENTIFIER_SYMBOL)
-        {
-            auto identifier_text = m_parser.get_node_value(node);
-            auto type_opt = m_context.scope_stack.get_variable_type(identifier_text);
-            if (!type_opt)
-                COMPILER_UNEXPECTED(node, "Unknown variable " + identifier_text);
-
-            return type_opt.value();
-        }
-
-        if(ts_node_symbol(node) == Parser::PARENTHESIZED_EXPRESSION_SYMBOL)
-        {
-            size_t child_count = ts_node_named_child_count(node);
-            if (child_count != 1)
-                COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); //TODOOOOOOO:
-
-            return binary_expression_type(ts_node_named_child(node, 0));
-        }
-
-        if (ts_node_symbol(node) != Parser::BINARY_EXPRESSION_SYMBOL)
-            COMPILER_UNEXPECTED(node, "Expected binary expression");
-
-        size_t child_count = ts_node_child_count(node); // NOTE: not named child count
-        if (child_count != 3)
-            COMPILER_UNEXPECTED(node, "Expected 3 children");
-
-        auto left = ts_node_child(node, 0);
-        auto right = ts_node_child(node, 2);
-
-        auto left_type_opt = binary_expression_type(left);
-        auto right_type_opt = binary_expression_type(right);
-        if (!left_type_opt.has_value() || !right_type_opt.has_value())
-            COMPILER_UNEXPECTED(node, "Unknown type");
-
-        auto left_type = left_type_opt.value();
-        auto right_type = right_type_opt.value();
-
-        if (left_type.is_double() || right_type.is_double())
-            return type::Type(type::double_type{});
-        else if (left_type.is_float() || right_type.is_float())
-            return type::Type(type::float_type{});
-        else if (left_type.is_int() || right_type.is_int())
-            return type::Type(type::int_type{});
-        
-        COMPILER_UNEXPECTED(node, "Unknown type");
-        // unreachable
-        return std::nullopt;
-    }
+    
 
     void Compiler::compile_parenthesized_expression(TSNode node)
     {
         size_t child_count = ts_node_named_child_count(node);
         if (child_count != 1)
-            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); //TODOOOOOOO:
+            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); // TODOOOOOOO:
 
         compile_impl(ts_node_named_child(node, 0));
+    }
+
+    void Compiler::compile_comma_expression(TSNode node)
+    {
+        size_t child_count = ts_node_named_child_count(node);
+        
+        if (child_count == 0)
+            COMPILER_UNEXPECTED(node, "Expected at least one child");
+        
+        for (size_t i = 0; i < child_count - 1; i++)
+        {
+            auto child = ts_node_named_child(node, i);
+            compile_impl(child);
+            m_instructions.push_back(new instructions::Drop());
+        }
+
+        auto last_child = ts_node_named_child(node, child_count - 1);
+        compile_impl(last_child);
     }
 
     void Compiler::compile_impl(TSNode node)
@@ -363,8 +307,119 @@ namespace scc
         case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
             compile_parenthesized_expression(node);
             break;
+        case Parser::COMMA_EXPRESSION_SYMBOL:
+            compile_comma_expression(node);
+            break;
         default:
             std::cerr << m_parser.get_symbol_name(symbol) << " is not implemented yet" << std::endl;
         }
+    }
+
+
+
+    // EXPRESSION TYPE
+
+    std::optional<type::Type> Compiler::number_literal_type(TSNode node)
+    {
+        auto number_expr_is_double = [&](TSNode node)
+        {
+            auto number_literal_text = m_parser.get_node_value(node);
+            return number_literal_text.find('.') != std::string::npos;
+        };
+
+        auto number_expr_is_float = [&](TSNode node)
+        {
+            auto number_literal_text = m_parser.get_node_value(node);
+            return number_literal_text.find('f') != std::string::npos;
+        };
+
+        if (number_expr_is_double(node))
+            return type::Type(type::double_type{});
+        else if (number_expr_is_float(node))
+            return type::Type(type::float_type{});
+        else
+            return type::Type(type::int_type{});
+    }
+
+    std::optional<type::Type> Compiler::identifier_type(TSNode node)
+    {
+        auto identifier_text = m_parser.get_node_value(node);
+        auto type_opt = m_context.scope_stack.get_variable_type(identifier_text);
+        if (!type_opt)
+            COMPILER_UNEXPECTED(node, "Unknown variable " + identifier_text);
+
+        return type_opt.value();
+    }
+
+    std::optional<type::Type> Compiler::binary_expression_type(TSNode node)
+    {
+        size_t child_count = ts_node_child_count(node); // NOTE: not named child count
+        if (child_count != 3)
+            COMPILER_UNEXPECTED(node, "Expected 3 children");
+
+        auto left = ts_node_child(node, 0);
+        auto right = ts_node_child(node, 2);
+
+        auto left_type_opt = expression_type(left);
+        auto right_type_opt = expression_type(right);
+        if (!left_type_opt.has_value() || !right_type_opt.has_value())
+            COMPILER_UNEXPECTED(node, "Unknown type");
+
+        auto left_type = left_type_opt.value();
+        auto right_type = right_type_opt.value();
+
+        if (left_type.is_double() || right_type.is_double())
+            return type::Type(type::double_type{});
+        else if (left_type.is_float() || right_type.is_float())
+            return type::Type(type::float_type{});
+        else if (left_type.is_int() || right_type.is_int())
+            return type::Type(type::int_type{});
+
+        COMPILER_UNEXPECTED(node, "Unknown type");
+        // unreachable
+        return std::nullopt;
+    }
+
+    std::optional<type::Type> Compiler::parenthesized_expression_type(TSNode node)
+    {
+        size_t child_count = ts_node_named_child_count(node);
+        if (child_count != 1)
+            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); // TODOOOOOOO:
+
+        return expression_type(ts_node_named_child(node, 0));
+    }
+
+    std::optional<type::Type> Compiler::comma_expression_type(TSNode node)
+    {
+        size_t child_count = ts_node_named_child_count(node);
+        
+        if (child_count == 0)
+            COMPILER_UNEXPECTED(node, "Expected at least one child");
+        
+        auto last_child = ts_node_named_child(node, child_count - 1);
+        return expression_type(last_child);
+    }
+
+    std::optional<type::Type> Compiler::expression_type(TSNode node)
+    {
+
+        switch (ts_node_symbol(node))
+        {
+        case Parser::NUMBER_LITERAL_SYMBOL:
+            return number_literal_type(node);
+        case Parser::IDENTIFIER_SYMBOL:
+            return identifier_type(node);
+        case Parser::BINARY_EXPRESSION_SYMBOL:
+            return binary_expression_type(node);
+        case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
+            return parenthesized_expression_type(node);
+        case Parser::COMMA_EXPRESSION_SYMBOL:
+            return comma_expression_type(node);
+        default:
+            COMPILER_UNEXPECTED(node, "Unknown expression type");
+            break;
+        }
+
+        return std::nullopt;
     }
 }

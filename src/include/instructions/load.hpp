@@ -17,7 +17,7 @@ namespace scc
 
             Load(uint8_t size_bytes) : m_size_bytes(size_bytes) {}
 
-            virtual void accept(Visitor &v) const override{ v.visit(*this); }
+            virtual void accept(InstructionVisitor &v) const override{ v.visit(*this); }
         };
 
 #ifdef SCC_LOAD_IMPLEMENTATION

@@ -1,4 +1,4 @@
-#include "visitor.hpp"
+#include "instruction_visitor.hpp"
 #include "instructions.hpp"
 
 namespace scc
@@ -51,5 +51,10 @@ namespace scc
     void OsTextVisitor::visit(const instructions::Cast& cast)
     {
         os << "cast " << cast.m_from_type << " to " << cast.m_to_type;
+    }
+
+    void OsTextVisitor::visit(const instructions::Drop& )
+    {
+        os << "drop";
     }
 }

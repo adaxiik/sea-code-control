@@ -19,6 +19,13 @@ namespace scc
         Instructions m_instructions;
         CompileContext m_context;
 
+        std::optional<type::Type> expression_type(TSNode node);
+        std::optional<type::Type> number_literal_type(TSNode node);
+        std::optional<type::Type> binary_expression_type(TSNode node);
+        std::optional<type::Type> identifier_type(TSNode node);
+        std::optional<type::Type> parenthesized_expression_type(TSNode node);
+        std::optional<type::Type> comma_expression_type(TSNode node);
+
         void compile_impl(TSNode node);
         void compile_translation_unit(TSNode node);
         void compile_declaration(TSNode node);
@@ -28,8 +35,9 @@ namespace scc
         void compile_assignment_expression(TSNode node);
         void compile_binary_expression(TSNode node);
         void compile_parenthesized_expression(TSNode node);
+        void compile_comma_expression(TSNode node);
 
-        std::optional<type::Type> binary_expression_type(TSNode node);
+        
 
     };
 

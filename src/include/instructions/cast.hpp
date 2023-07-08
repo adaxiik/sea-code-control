@@ -19,7 +19,7 @@ namespace scc
 
             Cast(type::Type from_type, type::Type to_type) : m_from_type(from_type), m_to_type(to_type) {}
 
-            virtual void accept(Visitor &v) const override { v.visit(*this); }
+            virtual void accept(InstructionVisitor &v) const override { v.visit(*this); }
         };
 
 #ifdef SCC_CAST_IMPLEMENTATION

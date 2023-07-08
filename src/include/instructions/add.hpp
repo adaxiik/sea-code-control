@@ -16,7 +16,7 @@ namespace scc
 
             Add(type::Type result_type) : m_result_type(result_type) {}
 
-            virtual void accept(Visitor &v) const override { v.visit(*this); }
+            virtual void accept(InstructionVisitor &v) const override { v.visit(*this); }
         };
 
 #ifdef SCC_ADD_IMPLEMENTATION

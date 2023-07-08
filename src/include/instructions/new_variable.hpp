@@ -18,7 +18,7 @@ namespace scc
 
             virtual vm::Error execute(vm::VM &vm) override;
 
-            virtual void accept(Visitor &v) const override{ v.visit(*this); }
+            virtual void accept(InstructionVisitor &v) const override{ v.visit(*this); }
         };
 
 #ifdef SCC_NEW_VARIABLE_IMPLEMENTATION

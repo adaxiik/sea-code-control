@@ -20,7 +20,7 @@
 #include "instructions.hpp"
 #include "vm.hpp"
 #include "compiler.hpp"
-#include "visitor.hpp"
+#include "instruction_visitor.hpp"
 
 int main(int argc, char const *argv[])
 {

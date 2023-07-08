@@ -1,6 +1,6 @@
 #pragma once
 #include "vm.hpp"
-#include "visitor.hpp"
+#include "instruction_visitor.hpp"
 
 // https://en.cppreference.com/w/cpp/utility/variant/visit
 template <class... Ts>
@@ -19,7 +19,7 @@ namespace scc
         virtual vm::Error execute(vm::VM& vm) = 0;
         virtual ~Instruction() = default;
 
-        virtual void accept(Visitor& ) const = 0;
+        virtual void accept(InstructionVisitor& ) const = 0;
     };
 
 }

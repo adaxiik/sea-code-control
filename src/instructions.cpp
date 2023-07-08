@@ -37,3 +37,7 @@
 #define SCC_CAST_IMPLEMENTATION
 #include "instructions/cast.hpp"
 #undef SCC_CAST_IMPLEMENTATION
+
+#define SCC_DROP_IMPLEMENTATION
+#include "instructions/drop.hpp"
+#undef SCC_DROP_IMPLEMENTATION

@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <cstring>
+#include <cassert>
 #include "type.hpp"
 #include "vm.hpp"
 #include "./instruction.hpp"
@@ -8,24 +10,22 @@ namespace scc
 {
     namespace instructions
     {
-        struct PushNumber : public Instruction
+        struct Drop : public Instruction
         {
-            uint64_t m_value;
+          
             virtual vm::Error execute(vm::VM &vm) override;
-
-            PushNumber(uint64_t value) : m_value(value) {}
-
+            Drop() = default;
             virtual void accept(InstructionVisitor &v) const override{ v.visit(*this); }
-
         };
 
-#ifdef SCC_PUSH_NUMBER_IMPLEMENTATION
-        vm::Error PushNumber::execute(vm::VM &vm)
+#ifdef SCC_DROP_IMPLEMENTATION
+        vm::Error Drop::execute(vm::VM &vm)
         {
-            auto error = vm.vm_stack_push(m_value);
+            vm::Value value;
+            auto error = vm.vm_stack_pop(value);
             if (error != vm::Error::None)
                 return error;
-
+            
             return vm::Error::None;
         }
 #endif
