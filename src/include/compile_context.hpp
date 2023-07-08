@@ -44,7 +44,7 @@ namespace scc
 
         void reset()
         {
-            scope_stack = std::move(CompileScopeStack{});
+            scope_stack = CompileScopeStack{};
         }
     };
 }

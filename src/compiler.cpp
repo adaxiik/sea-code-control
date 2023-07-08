@@ -88,16 +88,31 @@ namespace scc
         auto identifier = ts_node_named_child(node, id++);
         auto symbol = ts_node_symbol(identifier);
 
+        auto first_child_node = ts_node_named_child(identifier, 0);
         if (symbol == Parser::INIT_DECLARATOR_SYMBOL)
         {
-            auto identifier_text_node = ts_node_named_child(identifier, 0);
-            if (ts_node_symbol(identifier_text_node) != Parser::IDENTIFIER_SYMBOL)
-                COMPILER_UNEXPECTED(identifier_text_node, "Unexpected node");
-
-            auto identifier_text = m_parser.get_node_value(identifier_text_node);
-            m_instructions.push_back(new instructions::NewVariable(identifier_text, m_context.current_type));
-            m_context.scope_stack.create_variable(identifier_text, m_context.current_type);
-
+            if (ts_node_symbol(first_child_node) == Parser::IDENTIFIER_SYMBOL)
+            {
+                auto identifier_text = m_parser.get_node_value(first_child_node);
+                m_instructions.push_back(new instructions::NewVariable(identifier_text, m_context.current_type));
+                m_context.scope_stack.create_variable(identifier_text, m_context.current_type);
+            }
+            else if(ts_node_symbol(first_child_node) == Parser::POINTER_DECLARATOR_SYMBOL)
+            {
+                auto identifier = ts_node_named_child(first_child_node, 0);
+                if(ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
+                    COMPILER_UNEXPECTED(identifier, "Expected identifier");
+                auto identifier_text = m_parser.get_node_value(identifier);
+                
+                auto previous_type = m_context.current_type;
+                m_context.current_type = type::Type(type::ptr_type(std::make_shared<type::Type>(previous_type)));
+                m_instructions.push_back(new instructions::NewVariable(identifier_text, m_context.current_type));
+                m_context.scope_stack.create_variable(identifier_text, m_context.current_type);
+            }
+            else
+            {
+                 COMPILER_UNEXPECTED(first_child_node, "Unexpected node");
+            }
             compile_init_declarator(identifier);
             return;
         }
@@ -122,7 +137,13 @@ namespace scc
 
         auto identifier = ts_node_named_child(node, 0);
         if (ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
-            COMPILER_UNEXPECTED(identifier, "Expected identifier");
+        {
+            // might be a pointer declarator, so identifier is one level deeper
+            if (ts_node_symbol(identifier) != Parser::POINTER_DECLARATOR_SYMBOL)
+                COMPILER_UNEXPECTED(identifier, "Expected pointer declarator");
+
+            identifier = ts_node_named_child(identifier, 0);
+        }
 
         auto initializer = ts_node_named_child(node, 1);
         compile_impl(initializer);
@@ -256,6 +277,43 @@ namespace scc
         compile_impl(last_child);
     }
 
+    void Compiler::compile_pointer_expression(TSNode node)
+    {
+        size_t child_count = ts_node_named_child_count(node);
+        if (child_count != 1)
+            COMPILER_UNEXPECTED(node, "Expected 1 child");
+
+        auto identifier = ts_node_named_child(node, 0);
+        if (ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
+            COMPILER_UNEXPECTED(identifier, "Expected identifier");
+        
+        auto pointer_text = m_parser.get_node_value(node);
+        // if starts with * then it's a dereference
+        if(pointer_text.size()< 2)
+            COMPILER_UNEXPECTED(node, "Expected & or * + identifier");
+        
+        auto identifier_text = m_parser.get_node_value(identifier);
+        if(pointer_text[0] == '&')
+        {
+            m_instructions.push_back(new instructions::GetPtrToVar(identifier_text));
+        }
+        else if(pointer_text[0] == '*')
+        {
+            auto type_opt = m_context.scope_stack.get_variable_type(identifier_text);
+            if (!type_opt)
+                COMPILER_UNEXPECTED(identifier, "Unknown variable " + identifier_text);
+
+            auto ptr_type = std::get<type::ptr_type>(type_opt.value().kind);
+            m_instructions.push_back(new instructions::GetPtrToVar(identifier_text));
+            m_instructions.push_back(new instructions::Load(ptr_type.size_bytes()));
+            m_instructions.push_back(new instructions::Load(ptr_type.pointing_to->size_bytes()));
+        }
+        else
+        {
+            COMPILER_UNEXPECTED(identifier, "Expected & or * + identifier");
+        }
+    }
+
     void Compiler::compile_impl(TSNode node)
     {
         if (ts_node_is_null(node))
@@ -310,8 +368,11 @@ namespace scc
         case Parser::COMMA_EXPRESSION_SYMBOL:
             compile_comma_expression(node);
             break;
+        case Parser::POINTER_EXPRESSION_SYMBOL:
+            compile_pointer_expression(node);
+            break;
         default:
-            std::cerr << m_parser.get_symbol_name(symbol) << " is not implemented yet" << std::endl;
+            COMPILER_UNEXPECTED(node, "Symbol \"" + m_parser.get_symbol_name(symbol) + "\" is not implemented yet");
         }
     }
 

@@ -22,6 +22,7 @@ namespace scc
         vm::Error Store::execute(vm::VM &vm)
         {
             // TODOO: check if not const somehow .. might use free bits int the pointer? because we are not going to alloc 2^64... something like nan boxing..
+            // or check it in compile time
             vm::Value ptr;
             auto error = vm.vm_stack_pop(ptr);
             if (error != vm::Error::None)

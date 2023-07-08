@@ -36,6 +36,7 @@ namespace scc
         void compile_binary_expression(TSNode node);
         void compile_parenthesized_expression(TSNode node);
         void compile_comma_expression(TSNode node);
+        void compile_pointer_expression(TSNode node);
 
         
 

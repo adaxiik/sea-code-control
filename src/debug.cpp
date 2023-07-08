@@ -96,6 +96,8 @@ namespace scc
                         ss << *reinterpret_cast<const float*>(vm.get_memory() + var.second.pointer);
                     else if (std::holds_alternative<scc::type::double_type>(var.second.type.kind))
                         ss << *reinterpret_cast<const double*>(vm.get_memory() + var.second.pointer);
+                    else if (std::holds_alternative<scc::type::ptr_type>(var.second.type.kind))
+                        ss << "0x" << std::hex << *reinterpret_cast<const uint64_t*>(vm.get_memory() + var.second.pointer) << std::dec;
                     else
                         ss << "unknown";
 
