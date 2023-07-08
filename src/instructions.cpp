@@ -33,3 +33,7 @@
 #define SCC_D_PRINT_IMPLEMENTATION
 #include "instructions/d_print.hpp"
 #undef SCC_D_PRINT_IMPLEMENTATION
+
+#define SCC_CAST_IMPLEMENTATION
+#include "instructions/cast.hpp"
+#undef SCC_CAST_IMPLEMENTATION

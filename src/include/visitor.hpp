@@ -13,10 +13,12 @@ namespace scc
         struct Add;
         struct GetPtrToVar;
         struct DPrint;
+        struct Cast;
     }
     
     struct Visitor
     {
+        virtual ~Visitor() = default;
         virtual void visit(const scc::instructions::NewVariable& new_var) = 0;
         virtual void visit(const scc::instructions::PopScope& pop_scope) = 0;
         virtual void visit(const scc::instructions::PushScope& push_scope) = 0;
@@ -26,6 +28,7 @@ namespace scc
         virtual void visit(const scc::instructions::Add& add) = 0;
         virtual void visit(const scc::instructions::GetPtrToVar& get_ptr_to_var) = 0;
         virtual void visit(const scc::instructions::DPrint& d_print) = 0;
+        virtual void visit(const scc::instructions::Cast& cast) = 0;
     };
 
     struct OsTextVisitor : public Visitor
@@ -42,6 +45,7 @@ namespace scc
         virtual void visit(const scc::instructions::Add& add) override;
         virtual void visit(const scc::instructions::GetPtrToVar& get_ptr_to_var) override;
         virtual void visit(const scc::instructions::DPrint& d_print) override;
+        virtual void visit(const scc::instructions::Cast& cast) override;
     };
      
 } 

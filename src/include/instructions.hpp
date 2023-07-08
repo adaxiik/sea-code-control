@@ -9,3 +9,4 @@
 #include "instructions/add.hpp"
 #include "instructions/get_ptr_to_var.hpp"
 #include "instructions/d_print.hpp"
+#include "instructions/cast.hpp"

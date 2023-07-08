@@ -47,4 +47,9 @@ namespace scc
     {
         os << "call dprint";
     }
+
+    void OsTextVisitor::visit(const instructions::Cast& cast)
+    {
+        os << "cast " << cast.m_from_type << " to " << cast.m_to_type;
+    }
 }

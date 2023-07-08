@@ -24,8 +24,8 @@ namespace scc
 #ifdef SCC_NEW_VARIABLE_IMPLEMENTATION
         vm::Error NewVariable::execute(vm::VM &vm)
         {
-            vm.ref_scope_stack().create_variable(m_name, scc::vm::Variable{m_type, vm.ref_stack_pointer()});
             vm.pad_stack(m_type.size_bytes());
+            vm.ref_scope_stack().create_variable(m_name, scc::vm::Variable{m_type, vm.ref_stack_pointer()});
             vm.ref_stack_pointer() -= m_type.size_bytes();
             if (vm.ref_stack_pointer() < 0)
                 return vm::Error::StackOverflow;

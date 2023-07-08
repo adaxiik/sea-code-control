@@ -46,9 +46,13 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    // std::stringstream ss;
-    // scc::debug::ast_as_puml(ss, parser);
-    // std::cout << ss.str() << std::endl;
+
+    {
+        std::stringstream puml;
+        scc::debug::ast_as_puml(puml, parser);
+        std::ofstream puml_file("ast.puml");
+        puml_file << puml.str();
+    }
 
     scc::Compiler compiler(parser);
     auto instructions = compiler.compile();
@@ -64,12 +68,8 @@ int main(int argc, char const *argv[])
     {
         instruction->accept(visitor);
         ss << std::endl;
-
     }
-    std::cerr << ss.str();
-
-
-    
+    std::cout << ss.str();
 
     // std::vector<scc::Instruction*> instructions; 
     // // // int a = 34;
@@ -108,14 +108,17 @@ int main(int argc, char const *argv[])
 
     // std::cout << "VM stack size: " << vm.get_vm_stack_size() << std::endl;
 
-    // std::stringstream ss;
-    ss.str("");
-    scc::debug::vars_as_json(ss, vm);
-    std::cout << ss.str() << std::endl;
+
+    {
+        std::stringstream vars_json;
+        scc::debug::vars_as_json(vars_json, vm);
+        std::ofstream vars_file("vars.json");
+        vars_file << vars_json.str();
+    }
 
 
-    auto to_delete = vm.clear_instructions();
-    for (auto i : to_delete)
+    auto to_delete = vm.clear_instructions(); 
+    for (auto i : to_delete) // TODOOO, stop allocating every single instruction
         delete i;
 
 

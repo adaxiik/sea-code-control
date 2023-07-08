@@ -12,14 +12,14 @@ namespace scc
             {
                 switch (c)
                 {
-                case '\n': ss << "\\n";  break;
-                case '\t': ss << "\\t";  break;
-                case '\r': ss << "\\r";  break;
-                case '\b': ss << "\\b";  break;
-                case '\f': ss << "\\f";  break;
-                case '\\': ss << "\\\\"; break;
-                case '\"': ss << "\\\""; break;
-                default:   ss << c;      break;
+                case '\n': ss << "\\\\n";  break; // for new line in puml
+                case '\t': ss << "\\t";    break;
+                case '\r': ss << "\\r";    break;
+                case '\b': ss << "\\b";    break;
+                case '\f': ss << "\\f";    break;
+                case '\\': ss << "\\\\";   break;
+                case '\"': ss << "\\\"";   break;
+                default:   ss << c;        break;
                 }
             }
         }
@@ -36,7 +36,7 @@ namespace scc
                 escape_string(ss, ts_node_type(node));
 
                 ss << "\",\"value\": \"";
-                escape_string(ss, parser.get_code().substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node)));
+                escape_string(ss, parser.get_node_value(node));
                 ss << "\"";
 
                 uint32_t child_count = ts_node_named_child_count(node);
@@ -85,18 +85,21 @@ namespace scc
                     escape_string(ss, var.first);
                     ss << "\",";
                     ss << "\"type\": \"" << var.second.type << "\",";
-                    ss << "\"address\": 0x" << std::hex << var.second.pointer << std::dec << ",";
+                    ss << "\"address\": \"0x" << std::hex << var.second.pointer << std::dec << "\",";
                     ss << "\" value\": \"";
 
+                    static_assert(std::variant_size_v<scc::type::Type::Kind> == 4, "Not all types are implemented");
                     // temporary :)
                     if(std::holds_alternative<scc::type::int_type>(var.second.type.kind))
                         ss << *reinterpret_cast<const int32_t*>(vm.get_memory() + var.second.pointer);
                     else if (std::holds_alternative<scc::type::float_type>(var.second.type.kind))
                         ss << *reinterpret_cast<const float*>(vm.get_memory() + var.second.pointer);
+                    else if (std::holds_alternative<scc::type::double_type>(var.second.type.kind))
+                        ss << *reinterpret_cast<const double*>(vm.get_memory() + var.second.pointer);
                     else
                         ss << "unknown";
 
-                    ss << "}";
+                    ss << "\"}";
                 }
             }
 

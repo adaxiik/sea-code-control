@@ -28,7 +28,6 @@ namespace scc
         // template <class... Ts>
         // overloaded(Ts...) -> overloaded<Ts...>;
 
-        
         // struct Type
         // {
         //     scc_type_Kind kind;
@@ -52,8 +51,8 @@ namespace scc
         //         return std::visit(overloaded{
         //             [](const I32& ) { return 4UL; },
         //             [](const F32& ) { return 4UL; },
-        //             [](const PTR& ptr) 
-        //             { 
+        //             [](const PTR& ptr)
+        //             {
         //                 if (ptr.is_static_array)
         //                     return static_cast<size_t>(ptr.size * ptr.pointing_to->size_bytes());
         //                 else
@@ -73,7 +72,7 @@ namespace scc
         struct GetSizeBytes
         {
             template <class T>
-            size_t operator()(const T& t) const
+            size_t operator()(const T &t) const
             {
                 return t.size_bytes();
             }
@@ -81,9 +80,9 @@ namespace scc
 
         struct OstreamPrint
         {
-            std::ostream& os;
+            std::ostream &os;
             template <class T>
-            void operator()(const T& t) const
+            void operator()(const T &t) const
             {
                 os << t;
             }
@@ -95,7 +94,7 @@ namespace scc
         {
             size_t size_bytes() const { return 4UL; }
 
-            friend std::ostream& operator<<(std::ostream& os, const int_type& )
+            friend std::ostream &operator<<(std::ostream &os, const int_type &)
             {
                 os << "int";
                 return os;
@@ -106,7 +105,7 @@ namespace scc
         {
             size_t size_bytes() const { return 4UL; }
 
-            friend std::ostream& operator<<(std::ostream& os, const float_type& )
+            friend std::ostream &operator<<(std::ostream &os, const float_type &)
             {
                 os << "float";
                 return os;
@@ -115,37 +114,44 @@ namespace scc
 
         struct ptr_type
         {
-            Type* pointing_to;
+            Type *pointing_to;
             size_t size;
             bool is_static_array;
             size_t size_bytes() const;
 
-            friend std::ostream& operator<<(std::ostream& os, const ptr_type& );
+            friend std::ostream &operator<<(std::ostream &os, const ptr_type &);
         };
-        
 
+        struct double_type
+        {
+            size_t size_bytes() const { return 8UL; }
 
+            friend std::ostream &operator<<(std::ostream &os, const double_type &)
+            {
+                os << "double";
+                return os;
+            }
+        };
 
         struct Type
         {
-            using Kind = std::variant<int_type, float_type, ptr_type>;
+            using Kind = std::variant<int_type, float_type, double_type, ptr_type>;
             Kind kind;
             bool is_const;
 
             Type(Kind kind, bool is_const = false)
-                : kind(kind)
-                , is_const(is_const)
-            {}
+                : kind(kind), is_const(is_const)
+            {
+            }
 
             Type() = default;
-
 
             size_t size_bytes() const
             {
                 return std::visit(GetSizeBytes{}, kind);
             }
 
-            friend std::ostream& operator<<(std::ostream& os, const Type& type)
+            friend std::ostream &operator<<(std::ostream &os, const Type &type)
             {
                 if (type.is_const)
                     os << "const ";
@@ -155,15 +161,31 @@ namespace scc
                 return os;
             }
 
-            static std::optional<Type> from_string(const std::string& str)
+            static std::optional<Type> from_string(const std::string &str)
             {
                 if (str == "int")
                     return Type(int_type{});
                 else if (str == "float")
                     return Type(float_type{});
+                else if (str == "double")
+                    return Type(double_type{});
                 else
                     return std::nullopt;
             }
+
+            bool operator==(const Type &other) const
+            {
+                return kind.index() == other.kind.index();
+            }
+
+            bool operator!=(const Type &other) const
+            {
+                return !(*this == other);
+            }
+
+            bool is_int()    const { return std::holds_alternative<int_type>(kind); }
+            bool is_float()  const { return std::holds_alternative<float_type>(kind); }
+            bool is_double() const { return std::holds_alternative<double_type>(kind); }
         };
 
     }

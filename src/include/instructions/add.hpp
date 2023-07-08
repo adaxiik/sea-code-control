@@ -5,17 +5,6 @@
 #include "vm.hpp"
 #include "./instruction.hpp"
 
-
-// https://en.cppreference.com/w/cpp/utility/variant/visit
-template <class... Ts>
-struct overloaded : Ts...
-{
-    using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
-
 namespace scc
 {
     namespace instructions
@@ -27,7 +16,7 @@ namespace scc
 
             Add(type::Type result_type) : m_result_type(result_type) {}
 
-            virtual void accept(Visitor &v) const override{ v.visit(*this); }
+            virtual void accept(Visitor &v) const override { v.visit(*this); }
         };
 
 #ifdef SCC_ADD_IMPLEMENTATION
@@ -42,6 +31,8 @@ namespace scc
             error = vm.vm_stack_pop(b);
             if (error != vm::Error::None)
                 return error;
+
+            static_assert(std::variant_size_v<scc::type::Type::Kind> == 4, "Add instruction not implemented for all types");
 
             // TODOOO: we probably want more add instructions, like add_i32, add_f32, etc?
             std::visit(overloaded{[&](const type::int_type &)
@@ -67,6 +58,15 @@ namespace scc
                                       assert(false && "Add instruction not implemented for pointers");
                                       return vm::Error::None;
                                   },
+                                  [&](const type::double_type &)
+                                  {
+                                      double result = a.as<double>() + b.as<double>();
+                                      error = vm.vm_stack_push(result);
+                                      if (error != vm::Error::None)
+                                          return error;
+
+                                      return vm::Error::None;
+                                  }
 
                        },
                        m_result_type.kind);
