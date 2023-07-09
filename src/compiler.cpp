@@ -18,8 +18,41 @@
         std::cerr << "Unexpected node: " << std::quoted(m_parser.get_symbol_name(ts_node_symbol(node))) << " at line " << ts_node_start_point(node).row << std::endl; \
         std::cerr << (message) << std::endl;                                                                                                                          \
         std::cerr << __FILE__ << ":" << __LINE__ << std::endl;                                                                                                        \
-        std::exit(1);                                                                                                                                                 \
+        std::exit(1);                                                                                                                                          \
     } while (0)
+
+#define COMPILER_EXPECT_NAMED_CHILD_COUNT(node, expected_count)                   \
+    do                                                                            \
+    {                                                                             \
+        if (ts_node_named_child_count(node) != (expected_count)){                 \
+            if constexpr (expected_count == 0)                                    \
+                COMPILER_UNEXPECTED((node), "Expected no children");              \
+            else if constexpr (expected_count == 1)                               \
+                COMPILER_UNEXPECTED((node), "Expected 1 child");                  \
+            else                                                                  \
+                COMPILER_UNEXPECTED((node), "Expected " #expected_count " children");}\
+    } while (0)
+
+#define COMPILER_EXPECT_CHILD_COUNT(node, expected_count)                   \
+    do                                                                      \
+    {                                                                       \
+        if (ts_node_child_count(node) != (expected_count)){                 \
+            if constexpr (expected_count == 0)                              \
+                COMPILER_UNEXPECTED((node), "Expected no children");        \
+            else if constexpr (expected_count == 1)                         \
+                COMPILER_UNEXPECTED((node), "Expected 1 child");            \
+            else                                                            \
+                COMPILER_UNEXPECTED((node), "Expected " #expected_count " children");} \
+    } while (0)
+
+#define COMPILER_EXPECT_SYMBOL(node, message, expected_symbol) \
+    do                                                         \
+    {                                                          \
+        if (ts_node_symbol(node) != (expected_symbol))         \
+            COMPILER_UNEXPECTED((node), (message));            \
+    } while (0)
+
+
 
 namespace scc
 {
@@ -51,7 +84,6 @@ namespace scc
 
     void Compiler::compile_declaration(TSNode node)
     {
-        // type, [init, identifier]
         auto child_count = ts_node_named_child_count(node);
         if (child_count != 2 && child_count != 3)
         {
@@ -64,8 +96,7 @@ namespace scc
         if (child_count == 3)
         {
             auto qualifier = ts_node_named_child(node, id++);
-            if (ts_node_symbol(qualifier) != Parser::TYPE_QUALIFIER_SYMBOL)
-                COMPILER_UNEXPECTED(qualifier, "Unexpected node");
+            COMPILER_EXPECT_SYMBOL(qualifier, "Unexpected node", Parser::TYPE_QUALIFIER_SYMBOL);
 
             auto qualifier_text = m_parser.get_node_value(qualifier);
             if (qualifier_text == "const")
@@ -75,8 +106,7 @@ namespace scc
         }
 
         auto decl_type = ts_node_named_child(node, id++);
-        if (ts_node_symbol(decl_type) != Parser::PRIMITIVE_TYPE_SYMBOL) // TODO: add support for struct, sized_type_specifier..
-            COMPILER_UNEXPECTED(decl_type, "Expected primitive type");
+        COMPILER_EXPECT_SYMBOL(decl_type, "Expected primitive type", Parser::PRIMITIVE_TYPE_SYMBOL);
 
         auto type = type::Type::from_string(m_parser.get_node_value(decl_type));
         if (!type)
@@ -100,8 +130,8 @@ namespace scc
             else if(ts_node_symbol(first_child_node) == Parser::POINTER_DECLARATOR_SYMBOL)
             {
                 auto identifier = ts_node_named_child(first_child_node, 0);
-                if(ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
-                    COMPILER_UNEXPECTED(identifier, "Expected identifier");
+                COMPILER_EXPECT_SYMBOL(identifier, "Expected identifier", Parser::IDENTIFIER_SYMBOL);
+
                 auto identifier_text = m_parser.get_node_value(identifier);
                 
                 auto previous_type = m_context.current_type;
@@ -131,17 +161,13 @@ namespace scc
 
     void Compiler::compile_init_declarator(TSNode node)
     {
-        auto child_count = ts_node_named_child_count(node);
-        if (child_count != 2)
-            COMPILER_UNEXPECTED(node, "Expected 2 children");
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 2);
 
         auto identifier = ts_node_named_child(node, 0);
         if (ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
         {
             // might be a pointer declarator, so identifier is one level deeper
-            if (ts_node_symbol(identifier) != Parser::POINTER_DECLARATOR_SYMBOL)
-                COMPILER_UNEXPECTED(identifier, "Expected pointer declarator");
-
+            COMPILER_EXPECT_SYMBOL(identifier, "Expected pointer declarator", Parser::POINTER_DECLARATOR_SYMBOL);
             identifier = ts_node_named_child(identifier, 0);
         }
 
@@ -160,7 +186,6 @@ namespace scc
 
     void Compiler::compile_number_literal(TSNode node)
     {
-        // TODOOOOOO: add support for floats somehow
         type::Type &type = m_context.current_type;
         auto value = m_parser.get_node_value(node);
 
@@ -183,16 +208,11 @@ namespace scc
         {
             COMPILER_UNEXPECTED(node, "Unknown type");
         }
-
-        // auto value = m_parser.get_node_value(node);
-        // m_instructions.push_back(new instructions::PushNumber(std::stoi(value)));
     }
 
     void Compiler::compile_expression_statement(TSNode node)
     {
-        auto child_count = ts_node_named_child_count(node);
-        if (child_count != 1)
-            COMPILER_UNEXPECTED(node, "Expected 1 child");
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 1);
 
         auto expression = ts_node_named_child(node, 0);
         compile_impl(expression);
@@ -200,13 +220,10 @@ namespace scc
 
     void Compiler::compile_assignment_expression(TSNode node)
     {
-        auto child_count = ts_node_named_child_count(node);
-        if (child_count != 2)
-            COMPILER_UNEXPECTED(node, "Expected 2 children");
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 2);
 
         auto identifier = ts_node_named_child(node, 0);
-        if (ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
-            COMPILER_UNEXPECTED(identifier, "Expected identifier");
+        COMPILER_EXPECT_SYMBOL(identifier, "Expected identifier", Parser::IDENTIFIER_SYMBOL);
 
         auto identifier_text = m_parser.get_node_value(identifier);
         auto type_opt = m_context.scope_stack.get_variable_type(identifier_text);
@@ -221,9 +238,7 @@ namespace scc
 
     void Compiler::compile_binary_expression(TSNode node)
     {
-        size_t child_count = ts_node_child_count(node); // NOTE: not named child count
-        if (child_count != 3)
-            COMPILER_UNEXPECTED(node, "Expected 3 children");
+        COMPILER_EXPECT_CHILD_COUNT(node, 3); // NOTE: not named child count
 
         auto operator_node = ts_node_child(node, 1);
         auto operator_text = m_parser.get_node_value(operator_node);
@@ -252,10 +267,7 @@ namespace scc
 
     void Compiler::compile_parenthesized_expression(TSNode node)
     {
-        size_t child_count = ts_node_named_child_count(node);
-        if (child_count != 1)
-            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); // TODOOOOOOO:
-
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 1); // TODOOOOOOO: parenthesized expr. has always one child??
         compile_impl(ts_node_named_child(node, 0));
     }
 
@@ -279,9 +291,7 @@ namespace scc
 
     void Compiler::compile_pointer_expression(TSNode node)
     {
-        size_t child_count = ts_node_named_child_count(node);
-        if (child_count != 1)
-            COMPILER_UNEXPECTED(node, "Expected 1 child");
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 1);
 
         auto identifier = ts_node_named_child(node, 0);
         if (ts_node_symbol(identifier) != Parser::IDENTIFIER_SYMBOL)
@@ -289,7 +299,7 @@ namespace scc
         
         auto pointer_text = m_parser.get_node_value(node);
         // if starts with * then it's a dereference
-        if(pointer_text.size()< 2)
+        if(pointer_text.size() < 2)
             COMPILER_UNEXPECTED(node, "Expected & or * + identifier");
         
         auto identifier_text = m_parser.get_node_value(identifier);
@@ -345,7 +355,7 @@ namespace scc
         case Parser::IDENTIFIER_SYMBOL:
         {
             // if is just an identifier, it its loading a variable..
-            // all other casess should are handled by the parent node.. might change in the future as compiler gets more mature
+            // all other cases should be handled by the parent node.. might change in the future as compiler gets more mature
             auto identifier_text = m_parser.get_node_value(node);
             auto type_opt = m_context.scope_stack.get_variable_type(identifier_text);
             if (!type_opt)
@@ -414,9 +424,7 @@ namespace scc
 
     std::optional<type::Type> Compiler::binary_expression_type(TSNode node)
     {
-        size_t child_count = ts_node_child_count(node); // NOTE: not named child count
-        if (child_count != 3)
-            COMPILER_UNEXPECTED(node, "Expected 3 children");
+        COMPILER_EXPECT_CHILD_COUNT(node, 3);
 
         auto left = ts_node_child(node, 0);
         auto right = ts_node_child(node, 2);
@@ -443,10 +451,7 @@ namespace scc
 
     std::optional<type::Type> Compiler::parenthesized_expression_type(TSNode node)
     {
-        size_t child_count = ts_node_named_child_count(node);
-        if (child_count != 1)
-            COMPILER_UNEXPECTED(node, "For now, only one expression is allowed inside parentheses"); // TODOOOOOOO:
-
+        COMPILER_EXPECT_NAMED_CHILD_COUNT(node, 1); // TODOOOOOOO: parenthesized expr. has always one child??
         return expression_type(ts_node_named_child(node, 0));
     }
 
