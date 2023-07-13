@@ -16,11 +16,7 @@
 #include "debug.hpp"
 #include "io.hpp"
 #include "parser.hpp"
-#include "instructions/instruction.hpp"
-#include "instructions.hpp"
-#include "vm.hpp"
-#include "compiler.hpp"
-#include "instruction_visitor.hpp"
+
 
 int main(int argc, char const *argv[])
 {
@@ -54,21 +50,21 @@ int main(int argc, char const *argv[])
         puml_file << puml.str();
     }
 
-    scc::Compiler compiler(parser);
-    auto instructions = compiler.compile();
-    if (!instructions)
-    {
-        std::cerr << "Failed to compile file: " << argv[1] << std::endl;
-        return 1;
-    }
+    // scc::Compiler compiler(parser);
+    // auto instructions = compiler.compile();
+    // if (!instructions)
+    // {
+    //     std::cerr << "Failed to compile file: " << argv[1] << std::endl;
+    //     return 1;
+    // }
     std::stringstream ss;
 
-    scc::OsTextVisitor visitor(ss);
-    for (auto instruction : instructions.value())
-    {
-        instruction->accept(visitor);
-        ss << std::endl;
-    }
+    // scc::OsTextVisitor visitor(ss);
+    // for (auto instruction : instructions.value())
+    // {
+    //     instruction->accept(visitor);
+    //     ss << std::endl;
+    // }
     std::cout << ss.str();
 
     // std::vector<scc::Instruction*> instructions; 
@@ -98,28 +94,28 @@ int main(int argc, char const *argv[])
     // instructions.push_back(new scc::instructions::DPrint());
 
 
-    scc::vm::VM vm{std::move(instructions.value())};
-    auto error = vm.run();
-    if (error != scc::vm::Error::None)
-    {
-        std::cerr << "VM error: " << static_cast<int>(error) << std::endl;
-        return 1;
-    }
+    // scc::vm::VM vm{std::move(instructions.value())};
+    // auto error = vm.run();
+    // if (error != scc::vm::Error::None)
+    // {
+    //     std::cerr << "VM error: " << static_cast<int>(error) << std::endl;
+    //     return 1;
+    // }
 
     // std::cout << "VM stack size: " << vm.get_vm_stack_size() << std::endl;
 
 
-    {
-        std::stringstream vars_json;
-        scc::debug::vars_as_json(vars_json, vm);
-        std::ofstream vars_file("vars.json");
-        vars_file << vars_json.str();
-    }
+    // {
+    //     std::stringstream vars_json;
+    //     scc::debug::vars_as_json(vars_json, vm);
+    //     std::ofstream vars_file("vars.json");
+    //     vars_file << vars_json.str();
+    // }
 
 
-    auto to_delete = vm.clear_instructions(); 
-    for (auto i : to_delete) // TODOOO, stop allocating every single instruction
-        delete i;
+    // auto to_delete = vm.clear_instructions(); 
+    // for (auto i : to_delete) // TODOOO, stop allocating every single instruction
+    //     delete i;
 
 
     return 0;

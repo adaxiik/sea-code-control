@@ -68,44 +68,44 @@ namespace scc
             ss << "@endjson" << std::endl;
         }
 
-        void vars_as_json(std::ostream &ss, const vm::VM& vm)
-        {
-            ss << "{\"variables\": [";
+        // void vars_as_json(std::ostream &ss, const vm::VM& vm)
+        // {
+        //     ss << "{\"variables\": [";
 
-            bool first = true;
-            for (const auto& scope : vm.ref_scope_stack().ref_scopes())
-            {
-                for (auto& var : scope.ref_variables())
-                {
-                    if (!first)
-                        ss << ",";
-                    first = false;
+        //     bool first = true;
+        //     for (const auto& scope : vm.ref_scope_stack().ref_scopes())
+        //     {
+        //         for (auto& var : scope.ref_variables())
+        //         {
+        //             if (!first)
+        //                 ss << ",";
+        //             first = false;
 
-                    ss << "{\"name\": \"";
-                    escape_string(ss, var.first);
-                    ss << "\",";
-                    ss << "\"type\": \"" << var.second.type << "\",";
-                    ss << "\"address\": \"0x" << std::hex << var.second.pointer << std::dec << "\",";
-                    ss << "\" value\": \"";
+        //             ss << "{\"name\": \"";
+        //             escape_string(ss, var.first);
+        //             ss << "\",";
+        //             ss << "\"type\": \"" << var.second.type << "\",";
+        //             ss << "\"address\": \"0x" << std::hex << var.second.pointer << std::dec << "\",";
+        //             ss << "\" value\": \"";
 
-                    static_assert(std::variant_size_v<scc::type::Type::Kind> == 4, "Not all types are implemented");
-                    // temporary :)
-                    if(std::holds_alternative<scc::type::int_type>(var.second.type.kind))
-                        ss << *reinterpret_cast<const int32_t*>(vm.get_memory() + var.second.pointer);
-                    else if (std::holds_alternative<scc::type::float_type>(var.second.type.kind))
-                        ss << *reinterpret_cast<const float*>(vm.get_memory() + var.second.pointer);
-                    else if (std::holds_alternative<scc::type::double_type>(var.second.type.kind))
-                        ss << *reinterpret_cast<const double*>(vm.get_memory() + var.second.pointer);
-                    else if (std::holds_alternative<scc::type::ptr_type>(var.second.type.kind))
-                        ss << "0x" << std::hex << *reinterpret_cast<const uint64_t*>(vm.get_memory() + var.second.pointer) << std::dec;
-                    else
-                        ss << "unknown";
+        //             static_assert(std::variant_size_v<scc::type::Type::Kind> == 4, "Not all types are implemented");
+        //             // temporary :)
+        //             if(std::holds_alternative<scc::type::int_type>(var.second.type.kind))
+        //                 ss << *reinterpret_cast<const int32_t*>(vm.get_memory() + var.second.pointer);
+        //             else if (std::holds_alternative<scc::type::float_type>(var.second.type.kind))
+        //                 ss << *reinterpret_cast<const float*>(vm.get_memory() + var.second.pointer);
+        //             else if (std::holds_alternative<scc::type::double_type>(var.second.type.kind))
+        //                 ss << *reinterpret_cast<const double*>(vm.get_memory() + var.second.pointer);
+        //             else if (std::holds_alternative<scc::type::ptr_type>(var.second.type.kind))
+        //                 ss << "0x" << std::hex << *reinterpret_cast<const uint64_t*>(vm.get_memory() + var.second.pointer) << std::dec;
+        //             else
+        //                 ss << "unknown";
 
-                    ss << "\"}";
-                }
-            }
+        //             ss << "\"}";
+        //         }
+        //     }
 
-            ss << "]}";
-        }
+        //     ss << "]}";
+        // }
     } 
 } 
