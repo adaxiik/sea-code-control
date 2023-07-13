@@ -25,7 +25,7 @@ namespace scc
         }
 
 
-        void ast_as_json(std::ostream & ss, const Parser& parser)
+        void ast_as_json(std::ostream & ss, const ParserResult& parser_result)
         {
             std::function<void(TSNode node)> ast_as_json_impl = [&](TSNode node)  {
                 ss << "{\"node_name\": \"";
@@ -36,7 +36,7 @@ namespace scc
                 escape_string(ss, ts_node_type(node));
 
                 ss << "\",\"value\": \"";
-                escape_string(ss, parser.get_node_value(node));
+                escape_string(ss, parser_result.get_node_value(node));
                 ss << "\"";
 
                 uint32_t child_count = ts_node_named_child_count(node);
@@ -56,14 +56,14 @@ namespace scc
                 ss << "}";
             };
 
-            ast_as_json_impl(parser.get_root_node());
+            ast_as_json_impl(parser_result.get_root_node());
         }
 
-        void  ast_as_puml(std::ostream &ss, const Parser &parser)
+        void  ast_as_puml(std::ostream &ss, const ParserResult &parser_result)
         {
 
             ss << "@startjson" << std::endl;
-            ast_as_json(ss, parser);
+            ast_as_json(ss, parser_result);
             ss << std::endl;
             ss << "@endjson" << std::endl;
         }

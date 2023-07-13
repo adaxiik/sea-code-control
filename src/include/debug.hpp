@@ -16,8 +16,8 @@ namespace scc
     {
         void escape_string(std::ostream &ss, const std::string &str);
 
-        void ast_as_json(std::ostream &ss, const Parser& parser);
-        void ast_as_puml(std::ostream &ss, const Parser& parser);
+        void ast_as_json(std::ostream &ss, const ParserResult &parser_result);
+        void ast_as_puml(std::ostream &ss, const ParserResult &parser_result);
 
         // void variable_as_string(std::ostream &ss, const scc::vm::Variable& var);
         // void vars_as_json(std::ostream &ss, const vm::VM& vm);
