@@ -7,23 +7,29 @@
 #include <string>
 #include <memory>
 
+#include "treenode.hpp"
+
 namespace scc
 {
+    class Parser;
     class ParserResult
     {
+    public:
+        using TSTreePtr = std::unique_ptr<TSTree, decltype(&ts_tree_delete)>;
     private:
         std::string m_code;
-        using TSTreePtr = std::unique_ptr<TSTree, decltype(&ts_tree_delete)>;
         TSTreePtr m_tree;
+        const Parser& m_parser;
 
     public:
-        ParserResult(const std::string &code, TSTreePtr tree);
+        ParserResult(const std::string &code, TSTreePtr tree, const Parser& parser);
+        ParserResult(const ParserResult&);
         ~ParserResult() = default;
 
-        TSNode get_root_node() const;
+        TreeNode root_node() const;
         bool has_error() const;
-        const std::string &get_code() const;
-        std::string get_node_value(TSNode node) const;
+        const std::string &code() const;
+        const Parser& parser() const;
     };
 
 

@@ -27,19 +27,19 @@ namespace scc
 
         void ast_as_json(std::ostream & ss, const ParserResult& parser_result)
         {
-            std::function<void(TSNode node)> ast_as_json_impl = [&](TSNode node)  {
+            std::function<void(TreeNode node)> ast_as_json_impl = [&](TreeNode node)  {
                 ss << "{\"node_name\": \"";
 
-                if (ts_node_has_error(node))
+                if (node.has_error())
                     ss << "<color:red><b>";
 
-                escape_string(ss, ts_node_type(node));
+                escape_string(ss, node.symbol_name());
 
                 ss << "\",\"value\": \"";
-                escape_string(ss, parser_result.get_node_value(node));
+                escape_string(ss, node.value());
                 ss << "\"";
 
-                uint32_t child_count = ts_node_named_child_count(node);
+                uint32_t child_count = node.named_child_count();
                 if (child_count > 0)
                 {
                     ss << ",\"children\": [";
@@ -48,15 +48,17 @@ namespace scc
                         if (i > 0)
                             ss << ",";
                         
-                        ast_as_json_impl(ts_node_named_child(node, i));
+                        ast_as_json_impl(node.named_child(i));
                     }
+
+
                     ss << "]";
                 }
 
                 ss << "}";
             };
 
-            ast_as_json_impl(parser_result.get_root_node());
+            ast_as_json_impl(parser_result.root_node());
         }
 
         void  ast_as_puml(std::ostream &ss, const ParserResult &parser_result)

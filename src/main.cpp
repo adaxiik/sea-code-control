@@ -16,6 +16,7 @@
 #include "debug.hpp"
 #include "io.hpp"
 #include "parser.hpp"
+#include "interpreter.hpp"
 
 
 int main(int argc, char const *argv[])
@@ -33,16 +34,14 @@ int main(int argc, char const *argv[])
         std::cerr << "Failed to open file: " << argv[1] << std::endl;
         return 1;
     }
-
-
-    scc::Parser parser;
-    auto parse_result = parser.parse(code.value());
+    
+    scc::Interpreter interpreter;
+    auto parse_result = interpreter.parse(code.value());
     if (parse_result.has_error())
     {
-        std::cerr << "Failed to parse file: " << argv[1] << std::endl;
+        std::cerr << "Parse error" << std::endl;
         return 1;
     }
-
 
     {
         std::stringstream puml;
@@ -51,18 +50,13 @@ int main(int argc, char const *argv[])
         puml_file << puml.str();
     }
 
+    auto interpret_result = interpreter.interpret(parse_result);
 
-
-   
-
-    // {
-    //     std::stringstream vars_json;
-    //     scc::debug::vars_as_json(vars_json, vm);
-    //     std::ofstream vars_file("vars.json");
-    //     vars_file << vars_json.str();
-    // }
-
-
+    if (interpret_result == scc::InterpreterResult::ParseError)
+    {
+        std::cerr << "Parse error" << std::endl;
+        return 1;
+    }
 
     return 0;
 }

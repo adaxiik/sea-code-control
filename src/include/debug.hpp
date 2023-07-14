@@ -9,6 +9,7 @@
 #include <tree_sitter-c/parser-c.h>
 
 #include "parser.hpp"
+#include "treenode.hpp"
 
 namespace scc
 {

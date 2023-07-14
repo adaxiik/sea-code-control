@@ -26,36 +26,56 @@ namespace scc
                 nullptr, 
                 code.c_str(),
                 code.size())
-            , ts_tree_delete));
+            , ts_tree_delete)
+            , *this);
     }
 
 
     // =======================
-    ParserResult::ParserResult(const std::string &code, TSTreePtr tree)
+    ParserResult::ParserResult(const std::string &code
+                             , TSTreePtr tree
+                             , const Parser& parser)
         : m_code(code)
         , m_tree(std::move(tree))
+        , m_parser(parser)
     {
     }
 
-
-    TSNode ParserResult::get_root_node() const
+    ParserResult::ParserResult(const ParserResult& other)
+        : m_code(other.m_code)
+        , m_tree(std::unique_ptr<TSTree, decltype(&ts_tree_delete)>(
+            ts_tree_copy(other.m_tree.get())
+            , ts_tree_delete))
+        , m_parser(other.m_parser)
     {
-        return ts_tree_root_node(m_tree.get());
+    }
+
+    const Parser& ParserResult::parser() const
+    {
+        return m_parser;
+    }
+
+    TreeNode ParserResult::root_node() const
+    {
+
+        return TreeNode(ts_tree_root_node(m_tree.get()),
+                        *this);
+        // return ts_tree_root_node(m_tree.get());
     }
 
     bool ParserResult::has_error() const
     {
-        return ts_node_has_error(get_root_node());
+        return root_node().has_error();
     }
 
-    const std::string& ParserResult::get_code() const
+    const std::string& ParserResult::code() const
     {
         return m_code;
     }
 
-    std::string ParserResult::get_node_value(TSNode node) const
-    {
-        return m_code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node));
-    }
+    // std::string ParserResult::get_node_value(TSNode node) const
+    // {
+    //     return m_code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node));
+    // }
 
 }

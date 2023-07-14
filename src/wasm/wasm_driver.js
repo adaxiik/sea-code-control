@@ -5,9 +5,8 @@ function main(code) {
         //     return 0;
         // }`;
 
-        const parser = new Module.Parser(code);
-        // console.log(parser.has_error());
-        console.log(Module.debug_ast_as_puml(parser));
+        const interpreter = new Module.Interpreter();
+        console.log(Module.debug_ast_as_puml(interpreter.parse(code)));
     } catch (e) {
         console.log(e);
     } finally {
