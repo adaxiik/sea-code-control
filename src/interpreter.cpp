@@ -28,7 +28,6 @@ namespace scc
     {
         auto root_node = parse_result.root_node();
         auto root_node_type = root_node.symbol_name();
-        std::cout << "Root node type: " << root_node_type << std::endl;
 
         return InterpreterResult::Ok;
     }

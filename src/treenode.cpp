@@ -30,22 +30,22 @@ namespace scc
         return m_parser_result.parser().get_symbol_name(symbol());
     }
 
-    size_t TreeNode::child_count() const
+    uint32_t TreeNode::child_count() const
     {
         return ts_node_child_count(m_node);
     }
 
-    size_t TreeNode::named_child_count() const
+    uint32_t TreeNode::named_child_count() const
     {
         return ts_node_named_child_count(m_node);
     }
 
-    TreeNode TreeNode::child(size_t index) const
+    TreeNode TreeNode::child(uint32_t index) const
     {
         return TreeNode(ts_node_child(m_node, index), m_parser_result);
     }
 
-    TreeNode TreeNode::named_child(size_t index) const
+    TreeNode TreeNode::named_child(uint32_t index) const
     {
         return TreeNode(ts_node_named_child(m_node, index), m_parser_result);
     }

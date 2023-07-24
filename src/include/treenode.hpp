@@ -22,11 +22,11 @@ namespace scc
         TSSymbol symbol() const;
         std::string symbol_name() const;
 
-        size_t child_count() const;
-        size_t named_child_count() const;
+        uint32_t child_count() const;
+        uint32_t named_child_count() const;
 
-        TreeNode child(size_t index) const;
-        TreeNode named_child(size_t index) const;
+        TreeNode child(uint32_t index) const;
+        TreeNode named_child(uint32_t index) const;
 
         // class NamedChildGenerator
         // {

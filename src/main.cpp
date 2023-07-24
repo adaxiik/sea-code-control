@@ -17,14 +17,17 @@
 #include "io.hpp"
 #include "parser.hpp"
 #include "interpreter.hpp"
-
+#include "repl.hpp"
 
 int main(int argc, char const *argv[])
 {
 
     if (argc < 2)
     {
-        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        // REPL
+
+        scc::REPL repl;
+        repl.run();
         return 1;
     }
 
