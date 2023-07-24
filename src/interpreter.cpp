@@ -20,8 +20,13 @@ namespace scc
 
     InterpreterResult Interpreter::interpret(const ParserResult &parse_result)
     {
+        if (parse_result.has_error())
+            return InterpreterResult::ParseError;
+
         return evaluate(parse_result);
     }
+
+    // types: int, long, uint, ulong, float, double, char, ptr, static array, struct, union, enum, function ptr
 
 
     InterpreterResult Interpreter::evaluate(const ParserResult &parse_result)

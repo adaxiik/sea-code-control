@@ -76,6 +76,7 @@ namespace scc
                 return os;
             }
         };
+        // types: int, long, uint, ulong, float, double, char, ptr, static array, struct, union, enum, function ptr
 
         struct Type
         {

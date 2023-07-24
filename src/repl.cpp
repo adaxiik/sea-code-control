@@ -25,18 +25,45 @@ namespace scc
         {
             auto quit = linenoise::Readline(PROMPT, line);
             if(quit)
-                break;
+                goto repl_end;
             
             if (line.empty())
                 continue;
             
             if (line == QUIT_COMMAND)
-                break;
+                goto repl_end;
             
+            constexpr auto OPEN_BRACE = '{';
+            constexpr auto CLOSE_BRACE = '}';
+
+            if(line.back() == OPEN_BRACE)
+            {
+                auto indent = 1;
+                std::string next_line;
+                do
+                {
+                    std::string indent_str = std::string(indent * INDENTATION_SPACES, ' ');
+                    std::string next_line_prompt = indent_str + ">> ";
+
+                    bool quit = linenoise::Readline(next_line_prompt.c_str(), next_line);
+                    if(quit)
+                        goto repl_end;
+                    
+                    if(next_line.back() == OPEN_BRACE)
+                        ++indent;
+                    else if(next_line.back() == CLOSE_BRACE)
+                        --indent;
+                
+                    line += '\n';
+                    line += next_line;
+
+                    if(indent == 0)
+                        break;
+                } while (true);
+            }
+
+
             linenoise::AddHistory(line.c_str());
-
-
-
             // =====================
 
             auto parse_result = m_interpreter.parse(line);
@@ -57,6 +84,9 @@ namespace scc
 
             
         } while (true);
+        
+        repl_end:
+        return;
     }
 
 
