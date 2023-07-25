@@ -67,6 +67,9 @@ namespace scc
             linenoise::AddHistory(line.c_str());
             // =====================
 
+            if(line.size() > 1 && line.front() == '#') // macro needs newline at the end for correct parsing 
+                line+= '\n';
+
             auto parse_result = m_interpreter.parse(line);
             if (parse_result.has_error())
             {
