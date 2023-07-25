@@ -201,48 +201,27 @@ namespace scc
                 {
                     auto& literal_expression = static_cast<const binding::BoundLiteralExpression&>(node);
                     ss << "LiteralExpression (" << literal_expression.type << ") ==> ";
+                    
+                    #define VISIT_LITERAL_EXPRESSION_TYPE(KIND, C_TYPE, EXPECTED_SIZE) \
+                    [&](const KIND&){ \
+                        static_assert(sizeof(C_TYPE) == EXPECTED_SIZE, "sizeof(" #C_TYPE ") is not " #EXPECTED_SIZE); \
+                        ss << std::any_cast<C_TYPE>(literal_expression.value) << std::endl; \
+                    }
 
                     std::visit(overloaded{
                         [&](const type::u8_type&){
                             static_assert(sizeof(char) == sizeof(uint8_t), "char is not 8 bits");
                             ss << "'" << std::any_cast<char>(literal_expression.value) << "'" << std::endl;
                         },
-                        [&](const type::u16_type&){
-                            static_assert(sizeof(unsigned short) == sizeof(uint16_t), "unsigned short is not 16 bits");
-                            ss << std::any_cast<unsigned short>(literal_expression.value) << std::endl;
-                        },
-                        [&](const type::u32_type&){
-                            static_assert(sizeof(unsigned int) == sizeof(uint32_t), "unsigned int is not 32 bits");
-                            ss  << std::any_cast<unsigned int>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::u64_type&){
-                            static_assert(sizeof(unsigned long long) == sizeof(uint64_t), "unsigned long long is not 64 bits");
-                            ss  << std::any_cast<unsigned long long>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::i8_type&){
-                            static_assert(sizeof(signed char) == sizeof(int8_t), "char is not 8 bits");
-                            ss  << std::any_cast<char>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::i16_type&){
-                            static_assert(sizeof(short) == sizeof(int16_t), "short is not 16 bits");
-                            ss  << std::any_cast<short>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::i32_type&){
-                            static_assert(sizeof(int) == sizeof(int32_t), "int is not 32 bits");
-                            ss  << std::any_cast<int>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::i64_type&){
-                            static_assert(sizeof(long long) == sizeof(int64_t), "long long is not 64 bits");
-                            ss  << std::any_cast<long long>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::f32_type&){
-                            static_assert(sizeof(float) == sizeof(float), "float is not 32 bits");
-                            ss  << std::any_cast<float>(literal_expression.value)  << std::endl;
-                        },
-                        [&](const type::f64_type&){
-                            static_assert(sizeof(double) == sizeof(double), "double is not 64 bits");
-                            ss  << std::any_cast<double>(literal_expression.value)  << std::endl;
-                        },
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::u16_type, unsigned short, sizeof(uint16_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::u32_type, unsigned int, sizeof(uint32_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::u64_type, unsigned long long, sizeof(uint64_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::i8_type, signed char, sizeof(int8_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::i16_type, short, sizeof(int16_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::i32_type, int, sizeof(int32_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::i64_type, long long, sizeof(int64_t)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::f32_type, float, sizeof(float)),
+                        VISIT_LITERAL_EXPRESSION_TYPE(type::f64_type, double, sizeof(double)),
                         [&](const type::boolean_type&)
                         {
                             static_assert(sizeof(bool) == sizeof(bool), "bool is not 8 bit");
@@ -254,12 +233,31 @@ namespace scc
                         }
                     }, literal_expression.type.kind);
                     break;
+                    #undef VISIT_LITERAL_EXPRESSION_TYPE
                 }
 
                 case binding::BoundNodeKind::BinaryExpression:
                 {
                     auto& binary_expression = static_cast<const binding::BoundBinaryExpression&>(node);
-                    ss << "BinaryExpression" << std::endl;
+                    ss << "BinaryExpression(" << binary_expression.type << ") ==> ";
+                    
+                    #define CASE_OP_KIND(KIND, OP) \
+                    case binding::BoundBinaryExpression::OpKind::KIND: \
+                        ss << std::quoted(OP) << std::endl; \
+                        break;
+
+                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OpKind::COUNT) == 2, "Update this switch statement");
+                    switch(binary_expression.op_kind)
+                    {
+                        CASE_OP_KIND(Addition, "+")
+                        CASE_OP_KIND(Subtraction, "-")
+                        default:
+                            ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                            break;
+                    }
+
+                    #undef CASE_OP_KIND
+
                     bound_ast_as_text_tree_impl(*binary_expression.left
                                                 , depth + 1
                                                 , false

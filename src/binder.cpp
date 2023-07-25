@@ -291,7 +291,19 @@ namespace scc
         auto bound_right = bind_expression(node.child(2));
         BUBBLE_ERROR(bound_right);
 
-        // auto bound_op =
+        std::string op = node.child(1).value();
+
+        #define BIND_BINARY_OPERATOR(x, y) \
+            if (op == (x)){ \
+                return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left), std::move(bound_right), binding::BoundBinaryExpression::OpKind::y); \
+            }
+
+        BIND_BINARY_OPERATOR("+", Addition);
+        BIND_BINARY_OPERATOR("-", Subtraction);
+
+        SCC_NOT_IMPLEMENTED(op);
+
+        #undef BIND_BINARY_OPERATOR
 
         return nullptr;
     }

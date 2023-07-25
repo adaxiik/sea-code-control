@@ -1,16 +1,41 @@
 #pragma once
 #include <memory>
 #include "binding/bound_expression.hpp"
-#include "binding/bound_binary_operator.hpp"
+
 namespace scc
 {
     namespace binding
     {
         struct BoundBinaryExpression : public BoundExpression
         {
+            enum class OpKind
+            {
+                Addition,
+                Subtraction,
+
+                COUNT
+            };
+
             std::unique_ptr<BoundExpression> left;
             std::unique_ptr<BoundExpression> right;
-            // std::unique_ptr<BoundBinaryOperator> op;
+            OpKind op_kind;
+
+            BoundBinaryExpression(std::unique_ptr<BoundExpression> left
+                                , std::unique_ptr<BoundExpression> right
+                                , OpKind op_kind)
+            : BoundExpression(derive_type(*left, *right))
+            , left(std::move(left))
+            , right(std::move(right))
+            , op_kind(op_kind)
+            {
+            }
+
+            static type::Type derive_type(const BoundExpression& left, const BoundExpression& right)
+            {
+                // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+                (void)right;
+                return left.type;
+            } 
 
             virtual BoundNodeKind bound_node_kind() const override
             {
