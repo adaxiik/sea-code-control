@@ -1,5 +1,7 @@
 #pragma once
 #include "parser.hpp"
+#include "binding/binder.hpp"
+
 
 namespace scc
 {
@@ -8,6 +10,7 @@ namespace scc
     {
         Ok,
         ParseError,
+        BindError,
     };
 
     class Interpreter
@@ -21,7 +24,9 @@ namespace scc
 
     private:
         Parser m_parser;
-        InterpreterResult evaluate(const ParserResult &parse_result);
+
+        InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
+
     };
 
 }

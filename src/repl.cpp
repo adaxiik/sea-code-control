@@ -2,21 +2,22 @@
 #include "debug.hpp"
 #include "3rdparty/linenoise.hpp"
 
+constexpr auto RED = "\033[0;31m";
+// constexpr auto GREEN = "\033[0;32m";
+constexpr auto RESET = "\033[0m";
+
 namespace scc
 {
-    REPL::REPL(std::istream &input_stream, std::ostream &output_stream)
-    : m_input_stream(input_stream)
-    , m_output_stream(output_stream)
+    REPL::REPL(std::ostream &output_stream)
+    : m_output_stream(output_stream)
     {
         linenoise::SetMultiLine(true);
         linenoise::SetHistoryMaxLen(HISTORY_CAPACITY);
     }
 
-    REPL::REPL() : REPL(std::cin, std::cout)
+    REPL::REPL() : REPL( std::cout)
     {
     }
-
-
 
     void REPL::run()
     {
@@ -43,7 +44,7 @@ namespace scc
                 do
                 {
                     std::string indent_str = std::string(indent * INDENTATION_SPACES, ' ');
-                    std::string next_line_prompt = indent_str + ">> ";
+                    std::string next_line_prompt = indent_str + PROMPT;
 
                     bool quit = linenoise::Readline(next_line_prompt.c_str(), next_line);
                     if(quit)
@@ -51,7 +52,7 @@ namespace scc
                     
                     if(next_line.back() == OPEN_BRACE)
                         ++indent;
-                    else if(next_line.back() == CLOSE_BRACE)
+                    if(next_line.back() == CLOSE_BRACE)
                         --indent;
                 
                     line += '\n';
@@ -69,20 +70,23 @@ namespace scc
             auto parse_result = m_interpreter.parse(line);
             if (parse_result.has_error())
             {
-                m_output_stream << "Parse error" << std::endl;
+                m_output_stream << RED << "Parse error" << RESET << std::endl;
                 continue;
             }
 
             auto result = m_interpreter.interpret(parse_result);
 
-            if (result != InterpreterResult::Ok)
-                m_output_stream << "Error: " << static_cast<int>(result) << std::endl;
-            else
-                debug::ast_as_text_tree(m_output_stream, parse_result);
+            switch (result)
+            {
+                case InterpreterResult::BindError:
+                    m_output_stream << RED << "Bind error" << RESET << std::endl;
+                    debug::ast_as_text_tree(m_output_stream, parse_result);
+                    break;
+                default:
+                    break;
+            }
 
             m_output_stream << std::endl;
-
-            
         } while (true);
         
         repl_end:

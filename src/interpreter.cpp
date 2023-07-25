@@ -1,6 +1,7 @@
 #include "interpreter.hpp"
 
 #include <iostream>
+#include "debug.hpp"
 
 namespace scc
 {
@@ -12,10 +13,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const std::string &code)
     {
         auto parse_result = m_parser.parse(code);
-        if (parse_result.has_error())
-            return InterpreterResult::ParseError;
-
-        return evaluate(parse_result);
+        return interpret(parse_result);
     }
 
     InterpreterResult Interpreter::interpret(const ParserResult &parse_result)
@@ -23,17 +21,22 @@ namespace scc
         if (parse_result.has_error())
             return InterpreterResult::ParseError;
 
-        return evaluate(parse_result);
+        auto binded {Binder::bind(parse_result.root_node())};
+        if (!binded)
+            return InterpreterResult::BindError;
+
+        if (binded->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
+            return InterpreterResult::BindError;
+        
+        
+        return interpret(*static_cast<binding::BoundBlockStatement*>(binded.get()));
     }
 
-    // types: int, long, uint, ulong, float, double, char, ptr, static array, struct, union, enum, function ptr
-
-
-    InterpreterResult Interpreter::evaluate(const ParserResult &parse_result)
+    InterpreterResult Interpreter::interpret(const binding::BoundBlockStatement &block_statement)
     {
-        auto root_node = parse_result.root_node();
-        auto root_node_type = root_node.symbol_name();
+        debug::bound_ast_as_text_tree(std::cout, block_statement);
 
         return InterpreterResult::Ok;
     }
+
 }

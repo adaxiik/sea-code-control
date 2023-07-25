@@ -28,28 +28,6 @@ namespace scc
 
         struct Type;
 
-        struct int_type
-        {
-            size_t size_bytes() const { return 4UL; }
-
-            friend std::ostream &operator<<(std::ostream &os, const int_type &)
-            {
-                os << "int";
-                return os;
-            }
-        };
-
-        struct float_type
-        {
-            size_t size_bytes() const { return 4UL; }
-
-            friend std::ostream &operator<<(std::ostream &os, const float_type &)
-            {
-                os << "float";
-                return os;
-            }
-        };
-
         struct ptr_type
         {
             // Type *pointing_to;
@@ -66,21 +44,49 @@ namespace scc
             friend std::ostream &operator<<(std::ostream &os, const ptr_type &);
         };
 
-        struct double_type
-        {
-            size_t size_bytes() const { return 8UL; }
-
-            friend std::ostream &operator<<(std::ostream &os, const double_type &)
-            {
-                os << "double";
-                return os;
-            }
+        // types: i64, i32, i16, i8, u64, u32, u16, u8, _Bool, ptr, static array, struct, union, enum, function ptr
+        #define DECLARE_TYPE(NAME, SIZE_BYTES, STREAM_PRINT) \
+        struct NAME##_type \
+        { \
+            size_t size_bytes() const { return SIZE_BYTES; } \
+            friend std::ostream &operator<<(std::ostream &os, const NAME##_type &) \
+            { \
+                os << STREAM_PRINT; \
+                return os; \
+            } \
         };
-        // types: int, long, uint, ulong, float, double, char, ptr, static array, struct, union, enum, function ptr
+    
+        DECLARE_TYPE(i8, 1UL, "signed char")
+        DECLARE_TYPE(u8, 1UL, "char")
+        DECLARE_TYPE(i16, 2UL, "short")
+        DECLARE_TYPE(u16, 2UL, "unsigned short")
+        DECLARE_TYPE(i32, 4UL, "int")
+        DECLARE_TYPE(u32, 4UL, "unsigned int")
+        DECLARE_TYPE(i64, 8UL, "long")
+        DECLARE_TYPE(u64, 8UL, "unsigned long")
+        DECLARE_TYPE(f32, 4UL, "float")
+        DECLARE_TYPE(f64, 8UL, "double")
+        DECLARE_TYPE(boolean, 1UL, "bool")
+        
+
 
         struct Type
         {
-            using Kind = std::variant<int_type, float_type, double_type, ptr_type>;
+            using Kind = std::variant<
+                i8_type,
+                u8_type,
+                i16_type,
+                u16_type,
+                i32_type,
+                u32_type,
+                i64_type,
+                u64_type,
+                f32_type,
+                f64_type,
+                boolean_type,
+                ptr_type
+                >;
+
             Kind kind;
             bool is_const;
 
@@ -119,17 +125,17 @@ namespace scc
                 return os;
             }
 
-            static std::optional<Type> from_string(const std::string &str)
-            {
-                if (str == "int")
-                    return Type(int_type{});
-                else if (str == "float")
-                    return Type(float_type{});
-                else if (str == "double")
-                    return Type(double_type{});
-                else
-                    return std::nullopt;
-            }
+            // static std::optional<Type> from_string(const std::string &str)
+            // {
+            //     if (str == "int")
+            //         return Type(i32_type{});
+            //     else if (str == "float")
+            //         return Type(f32_type{});
+            //     else if (str == "double")
+            //         return Type(f64_type{});
+            //     else
+            //         return std::nullopt;
+            // }
 
             bool operator==(const Type &other) const
             {
@@ -141,9 +147,9 @@ namespace scc
                 return !(*this == other);
             }
 
-            bool is_int()    const { return std::holds_alternative<int_type>(kind); }
-            bool is_float()  const { return std::holds_alternative<float_type>(kind); }
-            bool is_double() const { return std::holds_alternative<double_type>(kind); }
+            // bool is_int()    const { return std::holds_alternative<i32_type>(kind); }
+            // bool is_float()  const { return std::holds_alternative<f32_type>(kind); }
+            // bool is_double() const { return std::holds_alternative<f64_type>(kind); }
         };
 
     }
