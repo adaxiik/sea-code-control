@@ -5,7 +5,6 @@
 #include "binding/bound_expression.hpp"
 #include "binding/bound_expression_statement.hpp"
 #include "binding/bound_binary_expression.hpp"
-#include "binding/bound_binary_operator.hpp"
 #include "binding/bound_literal_expression.hpp"
 #include <optional>
 namespace scc
