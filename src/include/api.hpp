@@ -42,8 +42,8 @@ EMSCRIPTEN_BINDINGS(scc_api)
     emscripten::class_<scc::Interpreter>("Interpreter")
         .constructor<>()
         .function("parse", &scc::Interpreter::parse, emscripten::allow_raw_pointers())
-        .function("interpret", static_cast<scc::InterpreterResult (scc::Interpreter::*)(const std::string&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers())
-        .function("interpret", static_cast<scc::InterpreterResult (scc::Interpreter::*)(const scc::ParserResult&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers());
+        .function("interpret", static_cast<scc::InterpreterError (scc::Interpreter::*)(const std::string&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers())
+        .function("interpret", static_cast<scc::InterpreterError (scc::Interpreter::*)(const scc::ParserResult&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers());
 
     emscripten::function("debug_ast_as_json", &scc::api::debug_ast_as_json);
     emscripten::function("debug_ast_as_puml", &scc::api::debug_ast_as_puml);

@@ -153,7 +153,26 @@ namespace scc
                                 , std::string());
         }
 
-        
+        void type_as_text(std::ostream &ss, const Type &type)
+        {
+            static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+            switch (type.kind)
+            {
+                case Type::Kind::Char: ss << "char"; break;
+                case Type::Kind::U8: ss << "unsigned char"; break;
+                case Type::Kind::U16: ss << "unsigned short"; break;
+                case Type::Kind::U32: ss << "unsigned int"; break;
+                case Type::Kind::U64: ss << "unsigned long"; break;
+                case Type::Kind::I8: ss << "signed char"; break;
+                case Type::Kind::I16: ss << "short"; break;
+                case Type::Kind::I32: ss << "int"; break;
+                case Type::Kind::I64: ss << "long"; break;
+                case Type::Kind::F32: ss << "float"; break;
+                case Type::Kind::F64: ss << "double"; break;
+                case Type::Kind::Bool: ss << "bool"; break;
+                default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
+            }
+        }
 
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {  
@@ -202,38 +221,42 @@ namespace scc
                     auto& literal_expression = static_cast<const binding::BoundLiteralExpression&>(node);
                     ss << "LiteralExpression (" << literal_expression.type << ") ==> ";
                     
-                    #define VISIT_LITERAL_EXPRESSION_TYPE(KIND, C_TYPE, EXPECTED_SIZE) \
-                    [&](const KIND&){ \
-                        static_assert(sizeof(C_TYPE) == EXPECTED_SIZE, "sizeof(" #C_TYPE ") is not " #EXPECTED_SIZE); \
-                        ss << std::any_cast<C_TYPE>(literal_expression.value) << std::endl; \
-                    }
+                    /* #define VISIT_LITERAL_EXPRESSION_TYPE(KIND, C_TYPE, EXPECTED_SIZE) \
+                    // [&](const KIND&){ \
+                    //     static_assert(sizeof(C_TYPE) == EXPECTED_SIZE, "sizeof(" #C_TYPE ") is not " #EXPECTED_SIZE); \
+                    //     ss << std::any_cast<C_TYPE>(literal_expression.value) << std::endl; \
+                     }*/
 
-                    std::visit(overloaded{
-                        [&](const type::u8_type&){
-                            static_assert(sizeof(char) == sizeof(uint8_t), "char is not 8 bits");
-                            ss << "'" << std::any_cast<char>(literal_expression.value) << "'" << std::endl;
-                        },
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::u16_type, unsigned short, sizeof(uint16_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::u32_type, unsigned int, sizeof(uint32_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::u64_type, unsigned long long, sizeof(uint64_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::i8_type, signed char, sizeof(int8_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::i16_type, short, sizeof(int16_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::i32_type, int, sizeof(int32_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::i64_type, long long, sizeof(int64_t)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::f32_type, float, sizeof(float)),
-                        VISIT_LITERAL_EXPRESSION_TYPE(type::f64_type, double, sizeof(double)),
-                        [&](const type::boolean_type&)
-                        {
-                            static_assert(sizeof(bool) == sizeof(bool), "bool is not 8 bit");
-                            ss  << (std::any_cast<bool>(literal_expression.value) ? "true" : "false")  << std::endl;
-                        },
-                        [&](const type::ptr_type&)
-                        {
-                            ss << "TBD" << std::endl;
-                        }
-                    }, literal_expression.type.kind);
+                    // std::visit(overloaded{
+                    //     [&](const char_type&){
+                    //         static_assert(sizeof(char) == sizeof(uint8_t), "char is not 8 bits");
+                    //         ss << "'" << std::any_cast<char>(literal_expression.value) << "'" << std::endl;
+                    //     },
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(u8_type, unsigned char, sizeof(uint8_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(u16_type, unsigned short, sizeof(uint16_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(u32_type, unsigned int, sizeof(uint32_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(u64_type, unsigned long long, sizeof(uint64_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(i8_type, signed char, sizeof(int8_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(i16_type, short, sizeof(int16_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(i32_type, int, sizeof(int32_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(i64_type, long long, sizeof(int64_t)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(f32_type, float, sizeof(float)),
+                    //     VISIT_LITERAL_EXPRESSION_TYPE(f64_type, double, sizeof(double)),
+                    //     [&](const boolean_type&)
+                    //     {
+                    //         static_assert(sizeof(bool) == sizeof(bool), "bool is not 8 bit");
+                    //         ss  << (std::any_cast<bool>(literal_expression.value) ? "true" : "false")  << std::endl;
+                    //     },
+                    //     [&](const ptr_type&)
+                    //     {
+                    //         ss << "TBD" << std::endl;
+                    //     }
+                    // }, literal_expression.type.kind);
+                    // break;
+                    // #undef VISIT_LITERAL_EXPRESSION_TYPE
+                    type_as_text(ss, literal_expression.type); 
+                    ss << std::endl;
                     break;
-                    #undef VISIT_LITERAL_EXPRESSION_TYPE
                 }
 
                 case binding::BoundNodeKind::BinaryExpression:
@@ -247,6 +270,7 @@ namespace scc
                         break;
 
                     static_assert(static_cast<int>(binding::BoundBinaryExpression::OpKind::COUNT) == 2, "Update this switch statement");
+
                     switch(binary_expression.op_kind)
                     {
                         CASE_OP_KIND(Addition, "+")

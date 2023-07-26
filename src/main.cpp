@@ -55,7 +55,7 @@ int main(int argc, char const *argv[])
 
     auto interpret_result = interpreter.interpret(parse_result);
 
-    if (interpret_result == scc::InterpreterResult::ParseError)
+    if (interpret_result.is_error())
     {
         std::cerr << "Parse error" << std::endl;
         return 1;

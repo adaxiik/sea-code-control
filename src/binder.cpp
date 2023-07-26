@@ -69,7 +69,13 @@ namespace scc
             auto binded = bind_impl(child);
             BUBBLE_ERROR(binded);
 
-            block_statement->statements.push_back(std::move(binded));
+            if(!binded->is_statement())
+            {
+                // TODOOO: UNREACHABLE???
+                SCC_UNREACHABLE();                
+            }
+            auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release());
+            block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(bound_statement_ptr));
         }
         return block_statement;
     }
@@ -202,28 +208,28 @@ namespace scc
             {
             case NumberType::SIGNED:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stoi(value, nullptr, base_int),
-                                                                         type::Type(type::i32_type(), true));
+                                                                         Type::Kind::I32);
             case NumberType::LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stoll(value, nullptr, base_int),
-                                                                         type::Type(type::i64_type(), true));
+                                                                         Type::Kind::I64);
             case NumberType::LONG_LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stoll(value, nullptr, base_int),
-                                                                         type::Type(type::i64_type(), true));
+                                                                         Type::Kind::I64);
             case NumberType::UNSIGNED:
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<uint32_t>(std::stoul(value, nullptr, base_int)),
-                                                                         type::Type(type::u32_type(), true));
+                                                                         Type::Kind::U32);
             case NumberType::UNSIGNED_LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stoull(value, nullptr, base_int),
-                                                                         type::Type(type::u64_type(), true));
+                                                                         Type::Kind::U64);
             case NumberType::UNSIGNED_LONG_LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stoull(value, nullptr, base_int),
-                                                                         type::Type(type::u64_type(), true));
+                                                                         Type::Kind::U64);
             case NumberType::FLOAT:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stof(value, nullptr),
-                                                                         type::Type(type::f32_type(), true));
+                                                                         Type::Kind::F32);
             case NumberType::DOUBLE:
                 return std::make_unique<binding::BoundLiteralExpression>(std::stod(value, nullptr),
-                                                                         type::Type(type::f64_type(), true));
+                                                                         Type::Kind::F64);
             default:
                 SCC_UNREACHABLE();
             }
@@ -253,7 +259,7 @@ namespace scc
         }
         else if (node.symbol() == Parser::CHAR_LITERAL_SYMBOL)
         {
-            return std::make_unique<binding::BoundLiteralExpression>(node.value()[1], type::Type(type::u8_type(), true));
+            return std::make_unique<binding::BoundLiteralExpression>(node.value()[1], Type::Kind::Char);
         }
         else
         {

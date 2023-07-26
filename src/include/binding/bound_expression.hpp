@@ -7,8 +7,8 @@ namespace scc
     {
         struct BoundExpression : public BoundNode
         {
-            type::Type type;
-            BoundExpression(const type::Type& type)
+            Type type;
+            BoundExpression(Type type)
                 : type(type)
             {
             }

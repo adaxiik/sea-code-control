@@ -8,7 +8,7 @@ namespace scc
         struct BoundLiteralExpression : public BoundExpression
         {
             std::any value;
-            BoundLiteralExpression(const std::any& value, const type::Type& type)                
+            BoundLiteralExpression(const std::any& value, Type type)                
                 : BoundExpression(type), value(value)
             {
             }

@@ -18,6 +18,8 @@ namespace scc
         Interpreter m_interpreter;
         std::ostream &m_output_stream;
 
+        void print_result(const InterpreterResult &result);
+
     public:
         REPL();
         REPL(std::ostream &output_stream);

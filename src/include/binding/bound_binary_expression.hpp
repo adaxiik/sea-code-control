@@ -30,7 +30,7 @@ namespace scc
             {
             }
 
-            static type::Type derive_type(const BoundExpression& left, const BoundExpression& right)
+            static Type derive_type(const BoundExpression& left, const BoundExpression& right)
             {
                 // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
                 (void)right;
