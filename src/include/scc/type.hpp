@@ -144,5 +144,46 @@ namespace scc
 
             return Type(Kind::COUNT);
         }
+
+        static std::optional<Type> from_string(const std::string &str)
+        {
+            if (str == "char")
+                return Type(Kind::Char);
+            else if (str == "signed char")
+                return Type(Kind::I8);
+            else if (str == "unsigned char")
+                return Type(Kind::U8);
+            else if (str == "signed short")
+                return Type(Kind::I16);
+            else if (str == "unsigned short")
+                return Type(Kind::U16);
+            else if (str == "signed int")
+                return Type(Kind::I32);
+            else if (str == "unsigned int")
+                return Type(Kind::U32);
+            else if (str == "signed long")
+                return Type(Kind::I64);
+            else if (str == "unsigned long")
+                return Type(Kind::U64);
+            else if (str == "float")
+                return Type(Kind::F32);
+            else if (str == "double")
+                return Type(Kind::F64);
+            else if (str == "bool")
+                return Type(Kind::Bool);
+            else if (str == "int")
+                return Type(Kind::I32);
+            else if (str == "long")
+                return Type(Kind::I64);
+            else if (str == "short")
+                return Type(Kind::I16);
+            else if (str == "unsigned")
+                return Type(Kind::U32);
+            else if (str == "signed")
+                return Type(Kind::I32);
+            else
+               return std::nullopt;
+            
+        }
     };
 }

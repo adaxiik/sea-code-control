@@ -275,6 +275,8 @@ namespace scc
         {
         case Parser::BINARY_EXPRESSION_SYMBOL:
             return bind_binary_expression(node);
+        case Parser::CAST_EXPRESSION_SYMBOL:
+            return bind_cast_expression(node);
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::STRING_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
@@ -337,6 +339,35 @@ namespace scc
         #undef BIND_BINARY_OPERATOR
 
         return nullptr;
+    }
+
+    std::unique_ptr<binding::BoundCastExpression> Binder::bind_cast_expression(const TreeNode &node)
+    {
+        // cast_expression ==>     (float)1
+        // ├── type_descriptor ==> float
+        // │   └── primitive_type ==>      float
+        // └── number_literal ==>  1
+
+        SCC_ASSERT_NODE_SYMBOL(Parser::CAST_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 2);
+
+        auto bound_expression = bind_expression(node.named_child(1));
+        BUBBLE_ERROR(bound_expression);
+
+        auto type_descriptor = node.named_child(0);
+        SCC_ASSERT_EQ(type_descriptor.symbol(), Parser::TYPE_DESCRIPTOR_SYMBOL);
+        SCC_ASSERT_CHILD_COUNT(type_descriptor, 1);
+
+        std::string type_name = type_descriptor.child(0).value();
+
+        auto type = Type::from_string(type_name);
+        if (!type.has_value())
+        {
+            std::cerr << "Unknown type: " << type_name << std::endl;
+            return nullptr;
+        }
+
+        return std::make_unique<binding::BoundCastExpression>(std::move(bound_expression), type.value());
     }
 
     std::unique_ptr<binding::BoundExpressionStatement> Binder::bind_expression_statement(const TreeNode &node)

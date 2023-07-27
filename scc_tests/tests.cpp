@@ -27,6 +27,15 @@
         CHECK(result.is_error()); \
     }while(0)
 
+#define SCC_TEST_INTEPRET_RESULT(CTYPE, EXPECTED_VALUE, CODE) \
+    do{ \
+        auto result = interpreter.interpret(CODE); \
+        CHECK(result.is_ok_and_has_value()); \
+        CHECK(result.get_value().type.kind == scc::Type::deduce_type<CTYPE>().kind); \
+        CHECK(std::any_cast<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
+    }while(0)
+
+
 TEST_CASE("Single Expressions")
 {
     auto interpreter = scc::Interpreter();
@@ -95,6 +104,17 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR(0b2);
         SCC_TEST_IS_ERROR(0xg);
         SCC_TEST_IS_ERROR(0o8);
+
+        SCC_TEST_INTEPRET_RESULT(int, 7, "0b111;");
+        // this raises an ParseError, but on tree-sitter level
+        // if I really want to, I could probably bypass it, but I don't think it's worth it right now :)
+        // Im not sure if this syntax is actually valid in C99 (but it is in C++17)
+        // @HELP
+        // SCC_TEST_INTEPRET_RESULT(int, 7, "0B111;"); 
+        SCC_TEST_INTEPRET_RESULT(int, 255, "0xFF;");
+        // SCC_TEST_INTEPRET_RESULT(int, 255, "0Xff;");
+
+
     }
 
     SUBCASE("Binary Expressions")
@@ -119,7 +139,29 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR(1%1.0);
     }
 
+    SUBCASE("Cast Expressions")
+    {
+        SCC_TEST_TYPE(I32, (int)1);
+        SCC_TEST_TYPE(I32, (int)1.0f);
+        SCC_TEST_TYPE(I32, (int)1.0);
+        SCC_TEST_TYPE(I32, (int)1l);
+        SCC_TEST_TYPE(I32, (int)1L);
+        SCC_TEST_TYPE(I32, (int)1ll);
+        SCC_TEST_TYPE(I32, (int)1LL);
+        SCC_TEST_TYPE(I32, (int)1u);
+        SCC_TEST_TYPE(I32, (int)1U);
+        SCC_TEST_TYPE(I32, (int)1ul);
+        SCC_TEST_TYPE(I32, (int)1UL);
+        SCC_TEST_TYPE(I32, (int)1ull);
+        SCC_TEST_TYPE(I32, (int)1ULL);
 
+        SCC_TEST_TYPE(Char, (char)69);
+
+        
+        SCC_TEST_INTEPRET_RESULT(char, 'E', "(char)69;");
+        SCC_TEST_INTEPRET_RESULT(int, 420, "(int)420.69f;");
+
+    }
 
 }
 

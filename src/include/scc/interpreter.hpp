@@ -29,6 +29,7 @@ namespace scc
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);
+        InterpreterResult eval(const binding::BoundCastExpression &cast_expression);
 
     };
 

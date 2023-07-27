@@ -13,7 +13,7 @@ namespace scc
             // Expressions .. see is_statement() 
             BinaryExpression,   // binary_expression should be the first expression, see EXPRESSION_COUNT
             LiteralExpression,
-            
+            CastExpression,
             COUNT,
         };
 

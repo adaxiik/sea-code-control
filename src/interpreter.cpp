@@ -83,7 +83,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 2, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 3, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
@@ -94,12 +94,15 @@ namespace scc
             decltype(auto) literal = ikwid_rc<binding::BoundLiteralExpression>(expression);
             return InterpreterResult::ok(ResultValue(literal.value, literal.type));
         }
+        case binding::BoundNodeKind::CastExpression:
+            return eval(ikwid_rc<binding::BoundCastExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
         }
     }
     
+    //TODOOOOO: move to another cpp file.. it compilation is slow, and vscode analysis take 2gb of ram xd
     InterpreterResult Interpreter::eval(const binding::BoundBinaryExpression& binary_expression)
     {
         SCC_SUPPRESS_WARNING_PUSH_SIGN_COMPARISON
@@ -206,5 +209,60 @@ namespace scc
 
         SCC_SUPPRESS_WARNING_POP
         return InterpreterResult::ok(1);
+    }
+
+
+    InterpreterResult Interpreter::eval(const binding::BoundCastExpression &cast_expression)
+    {
+        TRACE();
+        auto result{eval(*cast_expression.expression)};
+        if (result.is_error())
+            return result;
+
+        auto target_type{cast_expression.type};
+
+        if (target_type == result.get_value().type)
+            return result;
+
+        static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+
+
+        #define CAST_CASE(KIND_TYPE, TARGET_TYPE,ORIGINAL_TYPE) case Type::Kind::KIND_TYPE: \
+            return InterpreterResult::ok(ResultValue(static_cast<TARGET_TYPE>(std::any_cast<ORIGINAL_TYPE>(result.get_value().value))));
+        
+        #define CAST_ORIGINAL(TARGET_TYPE) do{ \
+            switch(result.get_value().type.kind) \
+            { \
+                CAST_CASE(Char, TARGET_TYPE,char); \
+                CAST_CASE(U8, TARGET_TYPE,unsigned char); \
+                CAST_CASE(I8, TARGET_TYPE,signed char); \
+                CAST_CASE(U32, TARGET_TYPE,unsigned int); \
+                CAST_CASE(I32, TARGET_TYPE,int); \
+                CAST_CASE(U64, TARGET_TYPE,unsigned long long); \
+                CAST_CASE(I64, TARGET_TYPE,long long); \
+                CAST_CASE(F32, TARGET_TYPE,float); \
+                CAST_CASE(F64, TARGET_TYPE,double); \
+                CAST_CASE(Bool, TARGET_TYPE,bool); \
+                default: \
+                    return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
+            }}while(0)
+
+        switch(target_type.kind)
+        {
+            case Type::Kind::Char: CAST_ORIGINAL(char);
+            case Type::Kind::U8: CAST_ORIGINAL(unsigned char);
+            case Type::Kind::I8: CAST_ORIGINAL(signed char);
+            case Type::Kind::U32: CAST_ORIGINAL(unsigned int);
+            case Type::Kind::I32: CAST_ORIGINAL(int);
+            case Type::Kind::U64: CAST_ORIGINAL(unsigned long long);
+            case Type::Kind::I64: CAST_ORIGINAL(long long);
+            case Type::Kind::F32: CAST_ORIGINAL(float);
+            case Type::Kind::F64: CAST_ORIGINAL(double);
+            case Type::Kind::Bool: CAST_ORIGINAL(bool);
+            default:
+                return InterpreterResult::error(InterpreterError::ReachedUnreachableError); 
+        }
+        #undef CAST_CASE
+        #undef CAST_ORIGINAL
     }
 }

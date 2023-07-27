@@ -8,6 +8,7 @@
 #include "binding/bound_literal_expression.hpp"
 #include "binding/bound_binary_expression.hpp"
 #include "binding/bound_expression_statement.hpp"
+#include "binding/bound_cast_expression.hpp"
 
 
 // https://en.cppreference.com/w/cpp/utility/variant/visit
@@ -191,7 +192,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 4, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 5, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -303,6 +304,19 @@ namespace scc
                                                 , false
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
                     bound_ast_as_text_tree_impl(*binary_expression.right 
+                                                , depth + 1
+                                                , true
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+
+                case binding::BoundNodeKind::CastExpression:
+                {
+                    auto& cast_expression = static_cast<const binding::BoundCastExpression&>(node);
+                    ss << "CastExpression (" << cast_expression.type << ") ==> ";
+                    type_as_text(ss, cast_expression.type);
+                    ss << std::endl;
+                    bound_ast_as_text_tree_impl(*cast_expression.expression
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
