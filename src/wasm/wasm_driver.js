@@ -1,12 +1,14 @@
 function main(code) {
     try {
-        // const code = `
-        // int main() {
-        //     return 0;
-        // }`;
-
         const interpreter = new Module.Interpreter();
-        console.log(Module.debug_ast_as_puml(interpreter.parse(code)));
+        const parsed = interpreter.parse(code);
+        console.log(Module.debug_ast_as_puml(parsed));
+        const result = interpreter.interpret_parserresult(parsed);
+        if (result.is_error()) {
+            console.log("ERROR");
+        } else {
+            console.log("OK");
+        }
     } catch (e) {
         console.log(e);
     } finally {

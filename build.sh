@@ -14,6 +14,8 @@ BUILD_NATIVE_FOLDER="$BUILD_FOLDER/native"
 
 EXECUTABLE_NAME="scc"
 WASM_DRIVER_NAME="wasm_driver"
+WASM_SERVER_PORT="6969"
+SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM_FOLDER"
 
 BUILD_THREADS="${BUILD_THREADS=1}"
 
@@ -114,6 +116,9 @@ run()
     elif [ "$2" = "wasm" ]; then
         build_wasm
         node $BUILD_WASM_FOLDER/$WASM_DRIVER_NAME.js ${@:3} 
+    elif [ "$2" = "wasmserver" ]; then
+        build_wasm
+        $SERVER_COMMAND
     else
         usage
     fi
@@ -125,7 +130,7 @@ usage() {
     echo "  native: build native"
     echo "  all: build wasm and native"
     echo "  clean [wasm|native|all]: clean build folder"
-    echo "  run [wasm|native]: run executable"
+    echo "  run [wasm|wasmserver|native]: run executable"
     exit 0
 }
 
