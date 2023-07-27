@@ -269,12 +269,28 @@ namespace scc
                         ss << std::quoted(OP) << std::endl; \
                         break;
 
-                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 2, "Update this switch statement");
+                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 18, "Update this switch statement");
 
                     switch(binary_expression.op_kind)
                     {
                         CASE_OP_KIND(Addition, "+")
                         CASE_OP_KIND(Subtraction, "-")
+                        CASE_OP_KIND(Multiplication, "*")
+                        CASE_OP_KIND(Division, "/")
+                        CASE_OP_KIND(Modulo, "%")
+                        CASE_OP_KIND(BitwiseAnd, "&")
+                        CASE_OP_KIND(BitwiseOr, "|")
+                        CASE_OP_KIND(BitwiseXor, "^")
+                        CASE_OP_KIND(BitwiseShiftLeft, "<<")
+                        CASE_OP_KIND(BitwiseShiftRight, ">>")
+                        CASE_OP_KIND(LogicalAnd, "&&")
+                        CASE_OP_KIND(LogicalOr, "||")
+                        CASE_OP_KIND(Equals, "==")
+                        CASE_OP_KIND(NotEquals, "!=")
+                        CASE_OP_KIND(LessThan, "<")
+                        CASE_OP_KIND(GreaterThan, ">")
+                        CASE_OP_KIND(LessThanOrEqual, "<=")
+                        CASE_OP_KIND(GreaterThanOrEqual, ">=")
                         default:
                             ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
                             break;

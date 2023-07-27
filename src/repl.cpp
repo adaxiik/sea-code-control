@@ -30,40 +30,7 @@ namespace scc
 
     void REPL::print_result(const InterpreterResult &result)
     {
-/* #define VISIT_RESULT(KIND, C_TYPE)                                      \
-//     [&](const KIND &) {                                                                  \
-//         m_output_stream << std::any_cast<C_TYPE>(result.get_value().value) << std::endl; \
-     }*/
 
-//         std::visit(overloaded{[&](const type::char_type &)
-//                               {
-//                                   static_assert(sizeof(char) == sizeof(uint8_t), "char is not 8 bits");
-//                                   m_output_stream << "'" << std::any_cast<char>(result.get_value().value) << "'" << std::endl;
-//                               },
-//                               VISIT_RESULT(type::u8_type, unsigned char),
-//                               VISIT_RESULT(type::u16_type, unsigned short),
-//                               VISIT_RESULT(type::u32_type, unsigned int),
-//                               VISIT_RESULT(type::u64_type, unsigned long long),
-//                               VISIT_RESULT(type::i8_type, signed char),
-//                               VISIT_RESULT(type::i16_type, short),
-//                               VISIT_RESULT(type::i32_type, int),
-//                               VISIT_RESULT(type::i64_type, long long),
-//                               VISIT_RESULT(type::f32_type, float),
-//                               VISIT_RESULT(type::f64_type, double),
-//                               [&](const type::boolean_type &)
-//                               {
-//                                   static_assert(sizeof(bool) == sizeof(bool), "bool is not 8 bit");
-//                                   m_output_stream << (std::any_cast<bool>(result.get_value().value) ? "true" : "false") << std::endl;
-//                               },
-//                               [&](const type::ptr_type &)
-//                               {
-//                                   m_output_stream << "TBD" << std::endl;
-//                               }},
-//                    result.get_value().type.kind);
-
-
-
-// #undef VISIT_RESULT
         #define VISIT_CASE(KIND, C_TYPE) \
             case Type::Kind::KIND: \
                 m_output_stream << std::any_cast<C_TYPE>(result.get_value().value) ; \
@@ -164,7 +131,22 @@ namespace scc
 
             if (result.is_error())
             {
-                m_output_stream << RED << "Interpreter error" << RESET << std::endl;
+                switch (result.get_error())
+                {
+                    case InterpreterError::BindError:
+                        m_output_stream << RED << "Bind error" << RESET << std::endl;
+                        break;
+                    case InterpreterError::InvalidOperationError:
+                        m_output_stream << RED << "Invalid operation error" << RESET << std::endl;
+                        break;
+                    case InterpreterError::ReachedUnreachableError:
+                        m_output_stream << RED << "Reached unreachable error" << RESET << std::endl;
+                        break;
+                    default:
+                        m_output_stream << RED << "Unknown error" << RESET << std::endl;
+                        break;
+                }
+
                 debug::ast_as_text_tree(m_output_stream, parse_result);
                 continue;
             }

@@ -299,14 +299,39 @@ namespace scc
 
         std::string op = node.child(1).value();
 
-        #define BIND_BINARY_OPERATOR(x, y) \
-            if (op == (x)){ \
-                return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left), std::move(bound_right), binding::BoundBinaryExpression::OperatorKind::y); \
+        using OpKind = binding::BoundBinaryExpression::OperatorKind;
+        #define BIND_BINARY_OPERATOR(OP_STR, OP_KIND) \
+            if (op == (OP_STR)){ \
+                auto deduced_type = binding::BoundBinaryExpression::deduce_type(bound_left->type, bound_right->type,OpKind::OP_KIND); \
+                if(!deduced_type.has_value()){return nullptr;} \
+                return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left)   \
+                                                                      , std::move(bound_right)  \
+                                                                      , deduced_type.value()       \
+                                                                      , OpKind::OP_KIND); \
             }
+
+        static_assert(static_cast<int>(OpKind::COUNT) == 18, "Update this code");
+
 
         BIND_BINARY_OPERATOR("+", Addition);
         BIND_BINARY_OPERATOR("-", Subtraction);
-
+        BIND_BINARY_OPERATOR("*", Multiplication);
+        BIND_BINARY_OPERATOR("/", Division);
+        BIND_BINARY_OPERATOR("%", Modulo);
+        BIND_BINARY_OPERATOR("&", BitwiseAnd);
+        BIND_BINARY_OPERATOR("|", BitwiseOr);
+        BIND_BINARY_OPERATOR("^", BitwiseXor);
+        BIND_BINARY_OPERATOR("<<", BitwiseShiftLeft);
+        BIND_BINARY_OPERATOR(">>", BitwiseShiftRight);
+        BIND_BINARY_OPERATOR("&&", LogicalAnd);
+        BIND_BINARY_OPERATOR("||", LogicalOr);
+        BIND_BINARY_OPERATOR("==", Equals);
+        BIND_BINARY_OPERATOR("!=", NotEquals);
+        BIND_BINARY_OPERATOR("<", LessThan);
+        BIND_BINARY_OPERATOR(">", GreaterThan);
+        BIND_BINARY_OPERATOR("<=", LessThanOrEqual);
+        BIND_BINARY_OPERATOR(">=", GreaterThanOrEqual);
+   
         SCC_NOT_IMPLEMENTED(op);
 
         #undef BIND_BINARY_OPERATOR

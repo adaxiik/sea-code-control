@@ -1,5 +1,6 @@
 #pragma once
 #include "type.hpp"
+#include "binding/bound_node.hpp"
 
 namespace scc
 {

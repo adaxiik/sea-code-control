@@ -11,6 +11,7 @@ namespace scc
         ParseError,
         BindError,
         ReachedUnreachableError, 
+        InvalidOperationError,
     };
 
     struct ResultValue

@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include "debug.hpp"
+#include "cpp_compiler.hpp"
+#include "operation_result.hpp"
+
 
 #if 0
     #define TRACE() std::cout << __PRETTY_FUNCTION__ << std::endl
@@ -99,6 +102,9 @@ namespace scc
     
     InterpreterResult Interpreter::eval(const binding::BoundBinaryExpression& binary_expression)
     {
+        SCC_SUPPRESS_WARNING_PUSH_SIGN_COMPARISON
+
+
         TRACE();
         auto left_result{eval(*binary_expression.left)};
         if (left_result.is_error())
@@ -111,51 +117,57 @@ namespace scc
         
         
         using Operator = binding::BoundBinaryExpression::OperatorKind;
-        static_assert(static_cast<int>(Operator::COUNT) == 2, "Update this code");
+        static_assert(static_cast<int>(Operator::COUNT) == 18, "Update this code");
         static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
 
         // I'm so sorry
-        #define DO_CASTED_OP(OP,LEFT_CAST,RIGHT_CAST) do{ \
-            auto left {std::any_cast<LEFT_CAST>(left_result.get_value().value)}; \
-            auto right {std::any_cast<RIGHT_CAST>(right_result.get_value().value)}; \
-            return InterpreterResult::ok(ResultValue(static_cast<decltype(std::declval<LEFT_CAST>() + std::declval<RIGHT_CAST>())>(left OP right))); \
+        
+        #define DO_CASTED_OP(FN_NAME, STRUCT_NAME, LEFT_CAST, RIGHT_CAST) do{ \
+           if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,RIGHT_CAST>::type, OperationResult::InvalidOperation>) \
+           { \
+                return InterpreterResult::error(InterpreterError::InvalidOperationError); \
+           } \
+           else \
+           { \
+                return InterpreterResult::ok(ResultValue(OperationResult::perform_##FN_NAME(std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value)))); \
+           } \
         }while(0)
 
-        #define RIGHT_CASE(OP,LEFT_CAST,TYPE,CTYPE) case Type::Kind::TYPE: DO_CASTED_OP(OP,LEFT_CAST,CTYPE)
+        #define RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,TYPE,CTYPE) case Type::Kind::TYPE: DO_CASTED_OP(OP,STRUCT_NAME,LEFT_CAST,CTYPE)
 
-        #define DO_OP_RIGHT(OP, LEFT_CAST) do{                   \
+        #define DO_OP_RIGHT(OP,STRUCT_NAME,LEFT_CAST) do{        \
             switch (right_result.get_value().type.kind)          \
             {                                                    \
-                RIGHT_CASE(OP,LEFT_CAST,Char,char);              \
-                RIGHT_CASE(OP,LEFT_CAST,U8,unsigned char);       \
-                RIGHT_CASE(OP,LEFT_CAST,I8,signed char);         \
-                RIGHT_CASE(OP,LEFT_CAST,U32,unsigned int);       \
-                RIGHT_CASE(OP,LEFT_CAST,I32,int);                \
-                RIGHT_CASE(OP,LEFT_CAST,U64,unsigned long long); \
-                RIGHT_CASE(OP,LEFT_CAST,I64,long long);          \
-                RIGHT_CASE(OP,LEFT_CAST,F32,float);              \
-                RIGHT_CASE(OP,LEFT_CAST,F64,double);             \
-                RIGHT_CASE(OP,LEFT_CAST,Bool,bool);              \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Char,char);              \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U8,unsigned char);       \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I8,signed char);         \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U32,unsigned int);       \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I32,int);                \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U64,unsigned long long); \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I64,long long);          \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F32,float);              \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F64,double);             \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Bool,bool);              \
                 default:                                         \
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
             }                                                    \
         }while(0)
 
-        #define LEFT_CASE(OP,TYPE,CTYPE) case Type::Kind::TYPE: DO_OP_RIGHT(OP,CTYPE)
+        #define LEFT_CASE(OP,STRUCT_NAME,TYPE,CTYPE) case Type::Kind::TYPE: DO_OP_RIGHT(OP,STRUCT_NAME,CTYPE)
 
-        #define DO_OP_LEFT(OP) do{ \
+        #define DO_OP_LEFT(OP,STRUCT_NAME) do{ \
             switch (left_result.get_value().type.kind) \
             { \
-                LEFT_CASE(OP,Char,char); \
-                LEFT_CASE(OP,U8,unsigned char); \
-                LEFT_CASE(OP,I8,signed char); \
-                LEFT_CASE(OP,U32,unsigned int); \
-                LEFT_CASE(OP,I32,int); \
-                LEFT_CASE(OP,U64,unsigned long long); \
-                LEFT_CASE(OP,I64,long long); \
-                LEFT_CASE(OP,F32,float); \
-                LEFT_CASE(OP,F64,double); \
-                LEFT_CASE(OP,Bool,bool); \
+                LEFT_CASE(OP,STRUCT_NAME,Char,char); \
+                LEFT_CASE(OP,STRUCT_NAME,U8,unsigned char); \
+                LEFT_CASE(OP,STRUCT_NAME,I8,signed char); \
+                LEFT_CASE(OP,STRUCT_NAME,U32,unsigned int); \
+                LEFT_CASE(OP,STRUCT_NAME,I32,int); \
+                LEFT_CASE(OP,STRUCT_NAME,U64,unsigned long long); \
+                LEFT_CASE(OP,STRUCT_NAME,I64,long long); \
+                LEFT_CASE(OP,STRUCT_NAME,F32,float); \
+                LEFT_CASE(OP,STRUCT_NAME,F64,double); \
+                LEFT_CASE(OP,STRUCT_NAME,Bool,bool); \
                 default: \
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
             } \
@@ -163,10 +175,25 @@ namespace scc
 
         switch (binary_expression.op_kind)
         {
-            case Operator::Addition:
-                DO_OP_LEFT(+);
-            case Operator::Subtraction:
-                DO_OP_LEFT(-);
+            case Operator::Addition: DO_OP_LEFT(addition,Addition);
+            case Operator::Subtraction: DO_OP_LEFT(subtraction,Subtraction);
+            case Operator::Multiplication: DO_OP_LEFT(multiplication,Multiplication);
+            case Operator::Division: DO_OP_LEFT(division,Division);
+            case Operator::Modulo: DO_OP_LEFT(modulo,Modulo);
+            case Operator::BitwiseAnd: DO_OP_LEFT(bitwiseand,BitwiseAnd);
+            case Operator::BitwiseOr: DO_OP_LEFT(bitwiseor,BitwiseOr);
+            case Operator::BitwiseXor: DO_OP_LEFT(bitwisexor,BitwiseXor);
+            case Operator::BitwiseShiftLeft: DO_OP_LEFT(bitwiseshiftleft,BitwiseShiftLeft);
+            case Operator::BitwiseShiftRight: DO_OP_LEFT(bitwiseshiftright,BitwiseShiftRight);
+            case Operator::LogicalAnd: DO_OP_LEFT(logicaland,LogicalAnd);
+            case Operator::LogicalOr: DO_OP_LEFT(logicalor,LogicalOr);
+            case Operator::Equals: DO_OP_LEFT(equals,Equals);
+            case Operator::NotEquals: DO_OP_LEFT(notequals,NotEquals);
+            case Operator::LessThan: DO_OP_LEFT(lessthan,LessThan);
+            case Operator::GreaterThan: DO_OP_LEFT(greaterthan,GreaterThan);
+            case Operator::LessThanOrEqual: DO_OP_LEFT(lessthanorequal,LessThanOrEqual);
+            case Operator::GreaterThanOrEqual: DO_OP_LEFT(greaterthanorequal,GreaterThanOrEqual);
+
             default:
                 // UNREACHABLE
                 return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
@@ -177,7 +204,7 @@ namespace scc
         #undef RIGHT_CASE
         #undef DO_CASTED_OP
 
-
+        SCC_SUPPRESS_WARNING_POP
         return InterpreterResult::ok(1);
     }
 }
