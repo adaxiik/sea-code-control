@@ -54,15 +54,35 @@ set_target_properties(tree-sitter-c PROPERTIES LINKER_LANGUAGE C)
 
 
 file(GLOB_RECURSE SCC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-set(SCC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/include)
-add_executable(scc ${SCC_FILES})
-set_target_properties(scc PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic" )
-target_include_directories(scc PUBLIC ${TREE_SITTER_INCLUDE_DIRS_PUBLIC} ${TREE_SITTER_C_INCLUDE_DIRS})
-target_include_directories(scc PRIVATE ${SCC_INCLUDE_DIRS})
-target_link_libraries(scc tree-sitter tree-sitter-c)
+list(REMOVE_ITEM SCC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+set(SCC_INCLUDE_DIRS_PREFIXED ${CMAKE_CURRENT_SOURCE_DIR}/src/include/)
+set(SCC_INCLUDE_DIRS ${SCC_INCLUDE_DIRS_PREFIXED}/scc/)
+
+add_library(scc-lib ${SCC_FILES})
+set_target_properties(scc-lib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic" )
+target_include_directories(scc-lib PUBLIC ${TREE_SITTER_INCLUDE_DIRS_PUBLIC} ${TREE_SITTER_C_INCLUDE_DIRS})
+target_include_directories(scc-lib PRIVATE ${SCC_INCLUDE_DIRS})
+target_link_libraries(scc-lib tree-sitter tree-sitter-c)
+target_compile_features(scc-lib PUBLIC cxx_std_17)
 
 
 if(BUILDING_WASM)
-    target_link_libraries(scc embind)
+    target_link_libraries(scc-lib embind)
 endif()
 
+
+add_executable(scc src/main.cpp)
+target_link_libraries(scc scc-lib)
+target_include_directories(scc PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE_DIRS})
+
+
+
+set(SCC_TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/scc_tests/tests.cpp)
+
+include(CTest)
+add_executable(tests ${SCC_TEST_FILES})
+target_link_libraries(tests scc-lib)
+target_include_directories(tests PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE_DIRS})
+
+enable_testing()
+add_test(NAME tests COMMAND tests)

@@ -81,7 +81,7 @@ build_native() {
     fi
 
     cd "$BUILD_NATIVE_FOLDER"
-    make -j$BUILD_THREADS
+    make -j$BUILD_THREADS 
     cd "$PROJECT_PATH"
 }
 
@@ -124,6 +124,25 @@ run()
     fi
 }
 
+test()
+{
+    ARG_COUNT=$#
+    if [ $ARG_COUNT -lt 2 ]; then
+        usage
+    fi
+
+    if [ "$2" = "native" ]; then
+        build_native 
+        $BUILD_NATIVE_FOLDER/tests
+    # TODOOO:
+    # elif [ "$2" = "wasm" ]; then
+    #     build_wasm 
+    #     node $BUILD_WASM_FOLDER/$WASM_DRIVER_NAME.js ${@:3} 
+    else
+        usage
+    fi
+}
+
 usage() {
     echo "Usage: $0 [wasm|native|all|clean|run]"
     echo "  wasm: build wasm"
@@ -131,6 +150,7 @@ usage() {
     echo "  all: build wasm and native"
     echo "  clean [wasm|native|all]: clean build folder"
     echo "  run [wasm|wasmserver|native]: run executable"
+    echo "  test [native]: run executable"
     exit 0
 }
 
@@ -151,9 +171,8 @@ elif [ "$1" = "clean" ]; then
     clean $@
 elif [ "$1" = "run" ]; then
     run $@
+elif [ "$1" = "test" ]; then
+    test $@
 else
-    print_green "Building native"
-    build_native
-    print_green "Building wasm"
-    build_wasm
+    usage
 fi

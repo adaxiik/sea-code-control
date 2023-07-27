@@ -13,11 +13,11 @@
 #include <string>
 
 
-#include "debug.hpp"
-#include "io.hpp"
-#include "parser.hpp"
-#include "interpreter.hpp"
-#include "repl.hpp"
+#include <scc/debug.hpp>
+#include <scc/io.hpp>
+#include <scc/parser.hpp>
+#include <scc/interpreter.hpp>
+#include <scc/repl.hpp>
 
 int main(int argc, char const *argv[])
 {
