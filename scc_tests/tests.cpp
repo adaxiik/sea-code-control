@@ -109,6 +109,14 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE_AUTO(1 - 1);
         SCC_TEST_TYPE_AUTO(1 + 1u);
         SCC_TEST_TYPE_AUTO(1ll + 1u);
+
+        SCC_TEST_TYPE(Bool, 1 == 1);
+        SCC_TEST_TYPE(Bool, 1 != 1);
+        SCC_TEST_TYPE(Bool, 1 < 1);
+
+        SCC_TEST_IS_ERROR(1<<1.0);
+        SCC_TEST_IS_ERROR(1>>1.0);
+        SCC_TEST_IS_ERROR(1%1.0);
     }
 
 
