@@ -110,7 +110,7 @@ namespace scc
 
         
         
-        using Operator = binding::BoundBinaryExpression::OpKind;
+        using Operator = binding::BoundBinaryExpression::OperatorKind;
         static_assert(static_cast<int>(Operator::COUNT) == 2, "Update this code");
         static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
 

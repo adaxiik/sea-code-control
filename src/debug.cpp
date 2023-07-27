@@ -265,11 +265,11 @@ namespace scc
                     ss << "BinaryExpression(" << binary_expression.type << ") ==> ";
                     
                     #define CASE_OP_KIND(KIND, OP) \
-                    case binding::BoundBinaryExpression::OpKind::KIND: \
+                    case binding::BoundBinaryExpression::OperatorKind::KIND: \
                         ss << std::quoted(OP) << std::endl; \
                         break;
 
-                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OpKind::COUNT) == 2, "Update this switch statement");
+                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 2, "Update this switch statement");
 
                     switch(binary_expression.op_kind)
                     {

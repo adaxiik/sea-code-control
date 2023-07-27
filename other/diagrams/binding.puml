@@ -1,0 +1,59 @@
+@startuml class
+
+enum BoundNodeKind
+struct Type{
+    + kind : op_kind
+    + size_bytes() : size_t
+    + operator<<()
+    + deduce_type<>() : Type
+}
+
+
+abstract BoundNode {
+    {abstract} + bound_node_kind() : BoundNodeKind 
+    + is_statement() : bool 
+    + is_expression() : bool 
+}
+
+struct BoundExpression{
+    + type : Type
+}
+
+struct BoundStatement
+
+struct BoundExpressionStatement{
+    + expression : BoundExpression
+    + bound_node_kind() : BoundNodeKind 
+}
+
+struct BoundBlockStatement{
+    statements : List<BoundStatement>
+    + bound_node_kind() : BoundNodeKind
+}
+
+struct BoundLiteralExpression {
+    + value : std::any
+    + bound_node_kind() : BoundNodeKind
+}
+
+struct BoundBinaryExpression{
+    left : BoundExpression
+    right : BoundExpression
+    op_kind : OperatorKind
+
+    + bound_node_kind() : BoundNodeKind
+    + deduce_type() : Type
+
+}
+
+BoundNode <|-- BoundStatement
+BoundStatement <|-- BoundExpressionStatement
+BoundStatement <|-- BoundBlockStatement
+
+
+BoundNode <|-- BoundExpression
+BoundExpression <|-- BoundLiteralExpression
+BoundExpression <|-- BoundBinaryExpression
+
+
+@enduml

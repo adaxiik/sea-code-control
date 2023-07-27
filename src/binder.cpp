@@ -301,7 +301,7 @@ namespace scc
 
         #define BIND_BINARY_OPERATOR(x, y) \
             if (op == (x)){ \
-                return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left), std::move(bound_right), binding::BoundBinaryExpression::OpKind::y); \
+                return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left), std::move(bound_right), binding::BoundBinaryExpression::OperatorKind::y); \
             }
 
         BIND_BINARY_OPERATOR("+", Addition);

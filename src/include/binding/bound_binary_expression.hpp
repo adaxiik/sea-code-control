@@ -8,7 +8,7 @@ namespace scc
     {
         struct BoundBinaryExpression : public BoundExpression
         {
-            enum class OpKind
+            enum class OperatorKind
             {
                 Addition,
                 Subtraction,
@@ -18,16 +18,16 @@ namespace scc
 
             std::unique_ptr<BoundExpression> left;
             std::unique_ptr<BoundExpression> right;
-            OpKind op_kind;
+            OperatorKind op_kind;
 
-            BoundBinaryExpression(std::unique_ptr<BoundExpression> left, std::unique_ptr<BoundExpression> right, OpKind op_kind)
-                : BoundExpression(derive_type(*left, *right, op_kind)), left(std::move(left)), right(std::move(right)), op_kind(op_kind)
+            BoundBinaryExpression(std::unique_ptr<BoundExpression> left, std::unique_ptr<BoundExpression> right, OperatorKind op_kind)
+                : BoundExpression(deduce_type(*left, *right, op_kind)), left(std::move(left)), right(std::move(right)), op_kind(op_kind)
             {
             }
-
-            static Type derive_type(const BoundExpression &left, const BoundExpression &right, OpKind op_kind)
+            // TODOO: move it to cpp file
+            static Type deduce_type(const BoundExpression &left, const BoundExpression &right, OperatorKind op_kind)
             {
-                static_assert(static_cast<int>(OpKind::COUNT) == 2, "Update this code");
+                static_assert(static_cast<int>(OperatorKind::COUNT) == 2, "Update this code");
                 // it is what it is
                 #define DO_CASTED_OP(OP, LEFT_CAST, RIGHT_CAST)                                                                        \
                     do                                                                                                                 \
@@ -87,9 +87,9 @@ namespace scc
 
                 switch (op_kind)
                 {
-                case OpKind::Addition:
+                case OperatorKind::Addition:
                     DO_OP_LEFT(+);
-                case OpKind::Subtraction:
+                case OperatorKind::Subtraction:
                     DO_OP_LEFT(-);
                 default:
                    // UNREACHABLE
