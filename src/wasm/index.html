@@ -21,21 +21,12 @@
     <script>
         function main() {
             try {
-                var code = `
-                int main() {
-                    return 0
-                }`;
-
-                var parser = new Module.Parser(code);
-
-                const ast_json = JSON.parse(Module.debug_ast_as_json(parser));
-                console.log(ast_json);
-
+                var interpreter = new Module.Interpreter();
             } catch (e) {
                 console.log(e);
 
             } finally {
-                parser.delete();
+                interpreter.delete();
             }
         }
 

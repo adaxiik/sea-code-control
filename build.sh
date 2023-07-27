@@ -14,8 +14,52 @@ BUILD_NATIVE_FOLDER="$BUILD_FOLDER/native"
 
 EXECUTABLE_NAME="scc"
 WASM_DRIVER_NAME="wasm_driver"
+WASM_SERVER_PORT="6969"
+SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM_FOLDER"
+
+BUILD_THREADS="${BUILD_THREADS=1}"
+
+
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RESET='\033[0m' # No Color
+
+print_green() {
+    echo -e "${GREEN}$1${RESET}"
+}
+print_red() {
+    echo -e "${RED}$1${RESET}"
+}
+print_yellow() {
+    echo -e "${YELLOW}$1${RESET}"
+}
+
+print_build_type() {
+    if [ "$BUILD_TYPE" = "Debug" ]; then
+        print_yellow "Debug build"
+    else
+        print_yellow "Release build"
+    fi
+}
+
+print_threads() {
+    if [ "$BUILD_THREADS" -gt 1 ]; then
+        print_yellow "Building with $BUILD_THREADS threads"
+    else
+        print_yellow "Building with $BUILD_THREADS thread"
+    fi
+}
+
+print_build_info() {
+    print_build_type
+    print_threads
+}
 
 build_wasm() {
+    print_build_info
+
     if [ ! -d "$BUILD_WASM_FOLDER" ]; then
         mkdir -p "$BUILD_WASM_FOLDER"
         cd "$BUILD_WASM_FOLDER"
@@ -23,11 +67,13 @@ build_wasm() {
     fi
 
     cd "$BUILD_WASM_FOLDER"
-    make 
+    make -j$BUILD_THREADS 
     cd "$PROJECT_PATH"
 }
 
 build_native() {
+    print_build_info
+
     if [ ! -d "$BUILD_NATIVE_FOLDER" ]; then
         mkdir -p "$BUILD_NATIVE_FOLDER"
         cd "$BUILD_NATIVE_FOLDER"
@@ -35,7 +81,7 @@ build_native() {
     fi
 
     cd "$BUILD_NATIVE_FOLDER"
-    make
+    make -j$BUILD_THREADS
     cd "$PROJECT_PATH"
 }
 
@@ -70,6 +116,9 @@ run()
     elif [ "$2" = "wasm" ]; then
         build_wasm
         node $BUILD_WASM_FOLDER/$WASM_DRIVER_NAME.js ${@:3} 
+    elif [ "$2" = "wasmserver" ]; then
+        build_wasm
+        $SERVER_COMMAND
     else
         usage
     fi
@@ -81,20 +130,8 @@ usage() {
     echo "  native: build native"
     echo "  all: build wasm and native"
     echo "  clean [wasm|native|all]: clean build folder"
-    echo "  run [wasm|native]: run executable"
+    echo "  run [wasm|wasmserver|native]: run executable"
     exit 0
-}
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-RESET='\033[0m' # No Color
-
-
-print_green() {
-    echo -e "${GREEN}$1${RESET}"
-}
-print_red() {
-    echo -e "${RED}$1${RESET}"
 }
 
 if [ "$1" = "wasm" ]; then

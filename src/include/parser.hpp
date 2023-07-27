@@ -7,27 +7,46 @@
 #include <string>
 #include <memory>
 
+#include "treenode.hpp"
+
 namespace scc
 {
+    class Parser;
+    class ParserResult
+    {
+    public:
+        using TSTreePtr = std::unique_ptr<TSTree, decltype(&ts_tree_delete)>;
+    private:
+        std::string m_code;
+        TSTreePtr m_tree;
+        const Parser& m_parser;
+
+    public:
+        ParserResult(const std::string &code, TSTreePtr tree, const Parser& parser);
+        ParserResult(const ParserResult&);
+        ~ParserResult() = default;
+
+        TreeNode root_node() const;
+        bool has_error() const;
+        const std::string &code() const;
+        const Parser& parser() const;
+    };
+
+
     class Parser
     {
     private:
         std::unique_ptr<TSParser, decltype(&ts_parser_delete)> m_parser;
-        std::unique_ptr<TSTree, decltype(&ts_tree_delete)> m_tree;
-        TSNode m_root_node;
-        const std::string m_code;
         const TSLanguage *m_language;
 
     public:
-        explicit Parser(const std::string &code);
+        Parser();
         ~Parser() = default;
-
-        TSNode get_root_node() const;
-        bool has_error() const;
-        const std::string &get_code() const;
-
         std::string get_symbol_name(TSSymbol symbol) const;
-        std::string get_node_value(TSNode node) const;
+
+        ParserResult parse(const std::string &code);
+
+        
 
         // =======================
         // = Tree-sitter symbols =
