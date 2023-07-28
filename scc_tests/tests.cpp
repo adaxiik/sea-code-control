@@ -27,7 +27,7 @@
         CHECK(result.is_error()); \
     }while(0)
 
-#define SCC_TEST_INTEPRET_RESULT(CTYPE, EXPECTED_VALUE, CODE) \
+#define SCC_TEST_INTERPRET_RESULT(CTYPE, EXPECTED_VALUE, CODE) \
     do{ \
         auto result = interpreter.interpret(CODE); \
         CHECK(result.is_ok_and_has_value()); \
@@ -105,14 +105,14 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR(0xg);
         SCC_TEST_IS_ERROR(0o8);
 
-        SCC_TEST_INTEPRET_RESULT(int, 7, "0b111;");
+        SCC_TEST_INTERPRET_RESULT(int, 7, "0b111;");
         // this raises an ParseError, but on tree-sitter level
         // if I really want to, I could probably bypass it, but I don't think it's worth it right now :)
         // Im not sure if this syntax is actually valid in C99 (but it is in C++17)
         // @HELP
-        // SCC_TEST_INTEPRET_RESULT(int, 7, "0B111;"); 
-        SCC_TEST_INTEPRET_RESULT(int, 255, "0xFF;");
-        // SCC_TEST_INTEPRET_RESULT(int, 255, "0Xff;");
+        // SCC_TEST_INTERPRET_RESULT(int, 7, "0B111;"); 
+        SCC_TEST_INTERPRET_RESULT(int, 255, "0xFF;");
+        // SCC_TEST_INTERPRET_RESULT(int, 255, "0Xff;");
 
 
     }
@@ -158,9 +158,18 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE(Char, (char)69);
 
         
-        SCC_TEST_INTEPRET_RESULT(char, 'E', "(char)69;");
-        SCC_TEST_INTEPRET_RESULT(int, 420, "(int)420.69f;");
+        SCC_TEST_INTERPRET_RESULT(char, 'E', "(char)69;");
+        SCC_TEST_INTERPRET_RESULT(int, 420, "(int)420.69f;");
+        SCC_TEST_INTERPRET_RESULT(short, 420, "(short)420.69f;");
 
+    }
+
+    SUBCASE("Parenthesized Expression")
+    {
+        SCC_TEST_INTERPRET_RESULT(int, 69 , "(1,2,3,69);");
+        SCC_TEST_INTERPRET_RESULT(int, 420 , "2 * (105 + 105);");
+        SCC_TEST_INTERPRET_RESULT(char, 'E' , "(char)(65 + (1 + (1 + (1 + 1))));");
+        SCC_TEST_INTERPRET_RESULT(short, 100, "(1,2,3,(short)100);");
     }
 
 }

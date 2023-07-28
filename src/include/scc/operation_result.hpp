@@ -51,17 +51,6 @@ namespace scc
 
         SCC_SUPPRESS_WARNING_POP
 
-        template <class T, class U> 
-        static auto perform_moduloo(T a, U b) -> typename ModuloOperationResult<T, U>::type 
-        { 
-            if constexpr (std::is_same_v<typename ModuloOperationResult<T, U>::type, InvalidOperation>)
-            {
-                return InvalidOperation{};
-            }
-            else
-            {
-                return a % b;
-            }
-        }
+
     }
 }

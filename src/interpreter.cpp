@@ -254,6 +254,8 @@ namespace scc
             case Type::Kind::Char: CAST_ORIGINAL(char);
             case Type::Kind::U8: CAST_ORIGINAL(unsigned char);
             case Type::Kind::I8: CAST_ORIGINAL(signed char);
+            case Type::Kind::U16: CAST_ORIGINAL(unsigned short);
+            case Type::Kind::I16: CAST_ORIGINAL(signed short);
             case Type::Kind::U32: CAST_ORIGINAL(unsigned int);
             case Type::Kind::I32: CAST_ORIGINAL(int);
             case Type::Kind::U64: CAST_ORIGINAL(unsigned long long);
