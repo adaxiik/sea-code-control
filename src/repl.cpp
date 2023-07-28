@@ -129,27 +129,29 @@ namespace scc
                 continue;
             }
 
-            if (result.is_error())
-            {
-                switch (result.get_error())
-                {
-                    case InterpreterError::BindError:
-                        m_output_stream << RED << "Bind error" << RESET << std::endl;
-                        break;
-                    case InterpreterError::InvalidOperationError:
-                        m_output_stream << RED << "Invalid operation error" << RESET << std::endl;
-                        break;
-                    case InterpreterError::ReachedUnreachableError:
-                        m_output_stream << RED << "Reached unreachable error" << RESET << std::endl;
-                        break;
-                    default:
-                        m_output_stream << RED << "Unknown error" << RESET << std::endl;
-                        break;
-                }
+            if (result.is_ok())
+                continue;;
 
-                debug::ast_as_text_tree(m_output_stream, parse_result);
-                continue;
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 6, "Edit this code");
+            switch (result.get_error())
+            {
+                case InterpreterError::BindError:
+                    m_output_stream << RED << "Bind error" << RESET << std::endl;
+                    break;
+                case InterpreterError::InvalidOperationError:
+                    m_output_stream << RED << "Invalid operation error" << RESET << std::endl;
+                    break;
+                case InterpreterError::ReachedUnreachableError:
+                    m_output_stream << RED << "Reached unreachable error" << RESET << std::endl;
+                    break;
+                case InterpreterError::DivisionByZeroError:
+                    m_output_stream << RED << "Division by zero error" << RESET << std::endl;
+                    break;
+                default:
+                    m_output_stream << RED << "Unknown error" << RESET << std::endl;
+                    break;
             }
+            debug::ast_as_text_tree(m_output_stream, parse_result);
 
         } while (true);
 

@@ -1,4 +1,6 @@
 Sorted TODO list:
 
-src/interpreter.cpp:105:     //TODOOOOO: move to another cpp file.. it compilation is slow, and vscode analysis take 2gb of ram xd
+src/interpreter.cpp:107:     //TODOOOOO: move to another cpp file.. it compilation is slow, and vscode analysis take 2gb of ram xd
+src/include/scc/type.hpp:172:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
 src/binder.cpp:74:                 // TODOOO: UNREACHABLE???
+src/binder.cpp:255:             // TODOOO: 

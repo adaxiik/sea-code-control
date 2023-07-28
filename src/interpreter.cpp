@@ -134,7 +134,11 @@ namespace scc
            } \
            else \
            { \
-                return InterpreterResult::ok(ResultValue(OperationResult::perform_##FN_NAME(std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value)))); \
+                auto result {OperationResult::perform_ ## FN_NAME (std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value))}; \
+                if (!result.has_value()) \
+                    return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
+                else \
+                    return InterpreterResult::ok(ResultValue(result.value())); \
            } \
         }while(0)
 

@@ -12,6 +12,9 @@ namespace scc
         BindError,
         ReachedUnreachableError, 
         InvalidOperationError,
+        DivisionByZeroError,
+
+        COUNT
     };
 
     struct ResultValue

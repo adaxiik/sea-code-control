@@ -6,7 +6,6 @@
 
 
 #### TODO's in order
-- parenthesized expressions
 - division by zero
 - even more tests!
 - variable creation, assignment expression
