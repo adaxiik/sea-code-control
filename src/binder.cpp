@@ -252,9 +252,9 @@ namespace scc
         }
         else if (node.symbol() == Parser::STRING_LITERAL_SYMBOL)
         {
+            // TODOOO: 
             // it has quotes, so we need to remove them
             // return std::make_unique<binding::BoundLiteralExpression>(node.value().substr(1, node.value().size() - 2),
-            /// TODOOO);
             SCC_UNIMPLEMENTED();
         }
         else if (node.symbol() == Parser::CHAR_LITERAL_SYMBOL)
@@ -277,6 +277,8 @@ namespace scc
             return bind_binary_expression(node);
         case Parser::CAST_EXPRESSION_SYMBOL:
             return bind_cast_expression(node);
+        case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
+            return bind_parenthesized_expression(node);
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::STRING_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
@@ -368,6 +370,57 @@ namespace scc
         }
 
         return std::make_unique<binding::BoundCastExpression>(std::move(bound_expression), type.value());
+    }
+
+    std::unique_ptr<binding::BoundParenthesizedExpression> Binder::bind_parenthesized_expression(const TreeNode &node)
+    {
+        // parenthesized_expression ==>    (1,2,3)
+        // └── comma_expression ==>        1,2,3
+        //     ├── number_literal ==>      1
+        //     └── comma_expression ==>    2,3
+        //         ├── number_literal ==>  2
+        //         └── number_literal ==>  3
+
+        // or
+
+        // binary_expression ==>   2 * (3 + 3)
+        // ├── number_literal ==>  2
+        // └── parenthesized_expression ==>        (3 + 3)
+        //     └── binary_expression ==>   3 + 3
+        //         ├── number_literal ==>  3
+        //         └── number_literal ==>  3
+
+        SCC_ASSERT_NODE_SYMBOL(Parser::PARENTHESIZED_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+        std::vector<std::unique_ptr<binding::BoundExpression>> expressions;
+        if (node.first_named_child().symbol() == Parser::COMMA_EXPRESSION_SYMBOL)
+        {
+            auto current_node = node.first_named_child();
+
+            do
+            {
+                auto expression = bind_expression(current_node.first_named_child());
+                BUBBLE_ERROR(expression);
+
+                expressions.push_back(std::move(expression));
+                current_node = current_node.last_named_child();
+            
+            } while (current_node.symbol() == Parser::COMMA_EXPRESSION_SYMBOL);
+
+            auto last_expression = bind_expression(current_node);
+            BUBBLE_ERROR(last_expression);
+            expressions.push_back(std::move(last_expression));
+            
+            return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expressions));
+        }
+        else
+        {
+            auto expression = bind_expression(node.first_named_child());
+            BUBBLE_ERROR(expression);
+
+            return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expression));
+        }
+
     }
 
     std::unique_ptr<binding::BoundExpressionStatement> Binder::bind_expression_statement(const TreeNode &node)

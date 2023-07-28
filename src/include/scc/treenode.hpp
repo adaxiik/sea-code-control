@@ -4,6 +4,7 @@
 #include <tree_sitter-c/parser-c.h>
 
 #include <string>
+#include <algorithm>
 
 namespace scc
 {
@@ -11,11 +12,29 @@ namespace scc
     class TreeNode
     {
         TSNode m_node;
-        const ParserResult &m_parser_result;
+        const ParserResult *m_parser_result;
 
     public:
-        TreeNode(TSNode node, const ParserResult &parser_result);
+        TreeNode(TSNode node, const ParserResult &parser_result)
+            : m_node(node)
+            , m_parser_result(&parser_result){}
+
+        TreeNode(TSNode node, const ParserResult *parser_result) 
+            : m_node(node)
+            , m_parser_result(parser_result){}
+        
         ~TreeNode() = default;
+
+        TreeNode(const TreeNode & node) : m_node(node.m_node), m_parser_result(node.m_parser_result) {}
+        TreeNode & operator=(const TreeNode & node)
+        {
+            if (this != &node)
+            {
+                m_node = node.m_node;
+                m_parser_result = node.m_parser_result;
+            }
+            return *this;
+        }
 
         std::string value() const;
         bool has_error() const;
@@ -28,56 +47,9 @@ namespace scc
         TreeNode child(uint32_t index) const;
         TreeNode named_child(uint32_t index) const;
 
-        // class NamedChildGenerator
-        // {
-        //     class NamedChildIterator
-        //     {
-        //         const TreeNode &m_node;
-        //         size_t m_index;
-
-        //     public:
-        //         NamedChildIterator &operator++()
-        //         {
-        //             m_index++;
-        //             return *this;
-        //         }
-        //         bool operator==(const NamedChildIterator &other) const
-        //         {
-        //             return this->m_index == other.m_index;
-        //         }
-        //         bool operator!=(const NamedChildIterator &other) const
-        //         {
-        //             return !(*this == other);
-        //         }
-        //         TreeNode operator*() const
-        //         {
-        //             return m_node.named_child(m_index);
-        //         }
-
-        //         NamedChildIterator(const TreeNode &node, size_t index)
-        //             : m_node(node), m_index(index){};
-        //     };
-        //     const TreeNode &m_node;
-
-        // public:
-        //     NamedChildIterator begin() const
-        //     {
-        //         return NamedChildIterator(m_node, 0);
-        //     };
-
-        //     NamedChildIterator end() const
-        //     {
-        //         return NamedChildIterator(m_node, m_node.named_child_count());
-        //     };
-
-        // public:
-        //     NamedChildGenerator(const TreeNode &node)
-        //         : m_node(node){};
-        // };
-
-        // NamedChildGenerator named_children_iterator() const
-        // {
-        //     return NamedChildGenerator(*this);
-        // };
+        TreeNode first_child() const;
+        TreeNode first_named_child() const;
+        TreeNode last_child() const;
+        TreeNode last_named_child() const;
     };
 }

@@ -14,6 +14,7 @@ namespace scc
             BinaryExpression,   // binary_expression should be the first expression, see EXPRESSION_COUNT
             LiteralExpression,
             CastExpression,
+            ParenthesizedExpression,
             COUNT,
         };
 

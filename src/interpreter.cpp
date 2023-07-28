@@ -83,7 +83,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 3, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 4, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
@@ -96,6 +96,8 @@ namespace scc
         }
         case binding::BoundNodeKind::CastExpression:
             return eval(ikwid_rc<binding::BoundCastExpression>(expression));
+        case binding::BoundNodeKind::ParenthesizedExpression:
+            return eval(ikwid_rc<binding::BoundParenthesizedExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
@@ -264,5 +266,22 @@ namespace scc
         }
         #undef CAST_CASE
         #undef CAST_ORIGINAL
+    }
+
+    InterpreterResult Interpreter::eval(const binding::BoundParenthesizedExpression &parenthesized_expression)
+    {
+        TRACE();
+        for (size_t i = 0; i < parenthesized_expression.expressions.size(); i++)
+        {
+            auto result{eval(*parenthesized_expression.expressions[i])};
+            if (result.is_error())
+                return result;
+            
+            if (i == parenthesized_expression.expressions.size() - 1)
+                return result;
+        }
+
+        // UNREACHABLE
+        return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
     }
 }

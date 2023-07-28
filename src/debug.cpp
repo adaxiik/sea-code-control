@@ -9,6 +9,7 @@
 #include "binding/bound_binary_expression.hpp"
 #include "binding/bound_expression_statement.hpp"
 #include "binding/bound_cast_expression.hpp"
+#include "binding/bound_parenthesized_expression.hpp"
 
 
 // https://en.cppreference.com/w/cpp/utility/variant/visit
@@ -192,7 +193,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 5, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 6, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -221,41 +222,9 @@ namespace scc
                 {
                     auto& literal_expression = static_cast<const binding::BoundLiteralExpression&>(node);
                     ss << "LiteralExpression (" << literal_expression.type << ") ==> ";
-                    
-                    /* #define VISIT_LITERAL_EXPRESSION_TYPE(KIND, C_TYPE, EXPECTED_SIZE) \
-                    // [&](const KIND&){ \
-                    //     static_assert(sizeof(C_TYPE) == EXPECTED_SIZE, "sizeof(" #C_TYPE ") is not " #EXPECTED_SIZE); \
-                    //     ss << std::any_cast<C_TYPE>(literal_expression.value) << std::endl; \
-                     }*/
 
-                    // std::visit(overloaded{
-                    //     [&](const char_type&){
-                    //         static_assert(sizeof(char) == sizeof(uint8_t), "char is not 8 bits");
-                    //         ss << "'" << std::any_cast<char>(literal_expression.value) << "'" << std::endl;
-                    //     },
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(u8_type, unsigned char, sizeof(uint8_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(u16_type, unsigned short, sizeof(uint16_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(u32_type, unsigned int, sizeof(uint32_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(u64_type, unsigned long long, sizeof(uint64_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(i8_type, signed char, sizeof(int8_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(i16_type, short, sizeof(int16_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(i32_type, int, sizeof(int32_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(i64_type, long long, sizeof(int64_t)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(f32_type, float, sizeof(float)),
-                    //     VISIT_LITERAL_EXPRESSION_TYPE(f64_type, double, sizeof(double)),
-                    //     [&](const boolean_type&)
-                    //     {
-                    //         static_assert(sizeof(bool) == sizeof(bool), "bool is not 8 bit");
-                    //         ss  << (std::any_cast<bool>(literal_expression.value) ? "true" : "false")  << std::endl;
-                    //     },
-                    //     [&](const ptr_type&)
-                    //     {
-                    //         ss << "TBD" << std::endl;
-                    //     }
-                    // }, literal_expression.type.kind);
-                    // break;
-                    // #undef VISIT_LITERAL_EXPRESSION_TYPE
                     type_as_text(ss, literal_expression.type); 
+                    
                     ss << std::endl;
                     break;
                 }
@@ -334,6 +303,20 @@ namespace scc
                     break;
                 }
 
+                case binding::BoundNodeKind::ParenthesizedExpression:
+                {
+                    auto& parenthesized_expression = static_cast<const binding::BoundParenthesizedExpression&>(node);
+                    ss << "ParenthesizedExpression" << std::endl;
+                    
+                    for(size_t i = 0; i < parenthesized_expression.expressions.size(); i++)
+                    {
+                        bound_ast_as_text_tree_impl(*parenthesized_expression.expressions[i]
+                                                    , depth + 1
+                                                    , i == parenthesized_expression.expressions.size() - 1
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
                 default:
                     ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
                     break;
