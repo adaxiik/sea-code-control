@@ -144,7 +144,7 @@ test()
 }
 
 usage() {
-    echo "Usage: $0 [wasm|native|all|clean|run]"
+    echo "Usage: $0 [wasm|native|all|clean|run|test]"
     echo "  wasm: build wasm"
     echo "  native: build native"
     echo "  all: build wasm and native"

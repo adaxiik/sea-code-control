@@ -1,4 +1,4 @@
-@startuml class
+@startuml binding
 
 enum BoundNodeKind
 struct Type{
@@ -6,6 +6,7 @@ struct Type{
     + size_bytes() : size_t
     + operator<<()
     + deduce_type<>() : Type
+    + {static} from_string(std::string) : std::optional<Type>
 }
 
 
@@ -16,13 +17,14 @@ abstract BoundNode {
 }
 
 struct BoundExpression{
-    + type : Type
+    type : Type
 }
 
 struct BoundStatement
 
 struct BoundExpressionStatement{
-    + expression : BoundExpression
+    expression : BoundExpression
+
     + bound_node_kind() : BoundNodeKind 
 }
 
@@ -32,7 +34,8 @@ struct BoundBlockStatement{
 }
 
 struct BoundLiteralExpression {
-    + value : std::any
+    value : std::any
+
     + bound_node_kind() : BoundNodeKind
 }
 
@@ -46,6 +49,12 @@ struct BoundBinaryExpression{
 
 }
 
+struct BoundCastExpression{
+    expression : BoundExpression
+
+    + bound_node_kind() : BoundNodeKind
+}
+
 BoundNode <|-- BoundStatement
 BoundStatement <|-- BoundExpressionStatement
 BoundStatement <|-- BoundBlockStatement
@@ -54,6 +63,7 @@ BoundStatement <|-- BoundBlockStatement
 BoundNode <|-- BoundExpression
 BoundExpression <|-- BoundLiteralExpression
 BoundExpression <|-- BoundBinaryExpression
+BoundExpression <|-- BoundCastExpression
 
 
 @enduml

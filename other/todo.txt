@@ -1,0 +1,4 @@
+Sorted TODO list:
+
+src/interpreter.cpp:105:     //TODOOOOO: move to another cpp file.. it compilation is slow, and vscode analysis take 2gb of ram xd
+src/binder.cpp:74:                 // TODOOO: UNREACHABLE???

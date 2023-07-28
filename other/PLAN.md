@@ -5,11 +5,14 @@
 ![binding_class](diagrams/output/binding.png)
 
 
-- tests
-- casting
+#### TODO's in order
+- parenthesized expressions
+- division by zero
+- even more tests!
 - variable creation, assignment expression
+- pointers?
 - control flow, if, while, for..  (goto ??)
 - functions
-- script vs source code
+- script vs main()
 - ... ???
 
