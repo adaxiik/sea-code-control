@@ -137,6 +137,16 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR(1<<1.0);
         SCC_TEST_IS_ERROR(1>>1.0);
         SCC_TEST_IS_ERROR(1%1.0);
+
+        SCC_TEST_IS_ERROR(1/0);
+        SCC_TEST_IS_ERROR(1%0);
+        SCC_TEST_IS_ERROR(1/0.0);
+        SCC_TEST_IS_ERROR(1%0.0);
+        SCC_TEST_IS_ERROR(1.0/0);
+        SCC_TEST_IS_ERROR(1.0%0);
+        SCC_TEST_IS_ERROR(1.0/0.0);
+        SCC_TEST_IS_ERROR(1.0%0.0);
+        
     }
 
     SUBCASE("Cast Expressions")
