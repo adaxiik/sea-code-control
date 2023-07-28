@@ -169,6 +169,7 @@ namespace scc
                 return Type(Kind::F32);
             else if (str == "double")
                 return Type(Kind::F64);
+            // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
             else if (str == "bool")
                 return Type(Kind::Bool);
             else if (str == "int")
