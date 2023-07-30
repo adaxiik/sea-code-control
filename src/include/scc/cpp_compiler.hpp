@@ -60,3 +60,10 @@
     SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
 
 
+
+
+#if 0
+    #define TRACE() std::cout << __PRETTY_FUNCTION__ << std::endl
+#else
+    #define TRACE()
+#endif

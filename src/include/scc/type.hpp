@@ -26,11 +26,19 @@ namespace scc
         };
 
         Kind kind;
+        uint32_t pointer_depth; // 0 = not a pointer, 1 = pointer to <kind>, 2 = pointer to pointer to <kind>, etc.
+        // I hope no one needs more than 4 billion levels of indirection :D
 
-        constexpr Type(Kind kind) : kind(kind) {}
+        constexpr Type(Kind kind) : kind(kind), pointer_depth(0) {}
+        constexpr Type(Kind kind, uint32_t pointer_depth) : kind(kind), pointer_depth(pointer_depth) {}
+        constexpr Type(Kind kind, bool is_pointer) : kind(kind), pointer_depth(static_cast<uint32_t>(is_pointer)) {}
 
         constexpr size_t size_bytes() const
         {
+            static_assert(sizeof(void*) == 8, "only 64-bit is supported");
+
+            if (pointer_depth > 0)
+                return sizeof(void*);
 
             switch (kind)
             {
