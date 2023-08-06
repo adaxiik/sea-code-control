@@ -35,10 +35,10 @@ namespace scc
 
         constexpr size_t size_bytes() const
         {
-            static_assert(sizeof(void*) == 8, "only 64-bit is supported");
+            static_assert(sizeof(void *) == 8, "only 64-bit is supported");
 
             if (pointer_depth > 0)
-                return sizeof(void*);
+                return sizeof(void *);
 
             switch (kind)
             {
@@ -79,29 +79,55 @@ namespace scc
             static_assert(static_cast<size_t>(Kind::COUNT) == 12, "Update this code");
             switch (type.kind)
             {
-            case Kind::Char: os << "char";           break;
-            case Kind::I8:   os << "signed char";    break;
-            case Kind::U8:   os << "unsigned char";  break;
-            case Kind::I16:  os << "signed short";   break;
-            case Kind::U16:  os << "unsigned short"; break;
-            case Kind::I32:  os << "signed int";     break;
-            case Kind::U32:  os << "unsigned int";   break;
-            case Kind::I64:  os << "signed long";    break;
-            case Kind::U64:  os << "unsigned long";  break;
-            case Kind::F32:  os << "float";          break;
-            case Kind::F64:  os << "double";         break;
-            case Kind::Bool: os << "bool";           break;
+            case Kind::Char:
+                os << "char";
+                break;
+            case Kind::I8:
+                os << "signed char";
+                break;
+            case Kind::U8:
+                os << "unsigned char";
+                break;
+            case Kind::I16:
+                os << "signed short";
+                break;
+            case Kind::U16:
+                os << "unsigned short";
+                break;
+            case Kind::I32:
+                os << "signed int";
+                break;
+            case Kind::U32:
+                os << "unsigned int";
+                break;
+            case Kind::I64:
+                os << "signed long";
+                break;
+            case Kind::U64:
+                os << "unsigned long";
+                break;
+            case Kind::F32:
+                os << "float";
+                break;
+            case Kind::F64:
+                os << "double";
+                break;
+            case Kind::Bool:
+                os << "bool";
+                break;
             default:
                 std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::exit(1);
             };
 
+            for (uint32_t i = 0; i < type.pointer_depth; i++)
+                os << "*";
             return os;
         }
 
         bool operator==(const Type &other) const
         {
-            return kind == other.kind;
+            return kind == other.kind && pointer_depth == other.pointer_depth;
         }
 
         bool operator!=(const Type &other) const
@@ -109,11 +135,10 @@ namespace scc
             return !(*this == other);
         }
 
-
         template <typename T>
         static constexpr Type deduce_type()
         {
-           
+
             if constexpr (std::is_same_v<T, char>)
                 return Type(Kind::Char);
             else if constexpr (std::is_same_v<T, signed char>)
@@ -151,6 +176,12 @@ namespace scc
                 static_assert(!sizeof(T), "Invalid type");
 
             return Type(Kind::COUNT);
+        }
+
+        template <typename T>
+        static constexpr Type deduce_type(T)
+        {
+            return deduce_type<T>();
         }
 
         static std::optional<Type> from_string(const std::string &str)
@@ -191,8 +222,13 @@ namespace scc
             else if (str == "signed")
                 return Type(Kind::I32);
             else
-               return std::nullopt;
-            
+                return std::nullopt;
+        }
+
+        bool is_pointer() const
+        {
+            return pointer_depth > 0;
         }
     };
+
 }

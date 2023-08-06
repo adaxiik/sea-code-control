@@ -60,16 +60,25 @@ namespace scc
         return InterpreterError::None;
     }
 
+    InterpreterResult Interpreter::interpret(const binding::BoundVariableDeclarationStatement &variable_declaration)
+    {
+        TRACE();
+        // TODOOOOOOOOOOOOOOOOOOOO:
+        return InterpreterError::RuntimeError;
+    }
+
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 2, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 3, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
             return eval(*ikwid_rc<binding::BoundExpressionStatement>(statement).expression);
         case binding::BoundNodeKind::BlockStatement:
             return interpret(ikwid_rc<binding::BoundBlockStatement>(statement));
+        case binding::BoundNodeKind::VariableDeclarationStatement:
+            return interpret(ikwid_rc<binding::BoundVariableDeclarationStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;

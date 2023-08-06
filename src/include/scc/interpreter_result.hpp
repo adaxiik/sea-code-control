@@ -10,10 +10,12 @@ namespace scc
         None,
         ParseError,
         BindError,
+        RuntimeError,
         ReachedUnreachableError, 
         InvalidOperationError,
         DivisionByZeroError,
-
+        VariableAlreadyExistsError,
+        VariableDoesntExistError,
         COUNT
     };
 

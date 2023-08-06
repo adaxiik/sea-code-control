@@ -30,6 +30,12 @@ namespace scc
 
     void REPL::print_result(const InterpreterResult &result)
     {
+        if (result.get_value().type.pointer_depth > 0)
+        {
+            m_output_stream << std::any_cast<unsigned long long>(result.get_value().value);
+            return;
+        }
+
 
         #define VISIT_CASE(KIND, C_TYPE) \
             case Type::Kind::KIND: \
@@ -123,20 +129,21 @@ namespace scc
             if (result.is_ok_and_has_value())
             {
                 print_result(result);
-                m_output_stream << " (";
-                debug::type_as_text(m_output_stream, result.get_value().type);
-                m_output_stream << ")" << std::endl;
+                m_output_stream << " (" << result.get_value().type << ")" << std::endl;
                 continue;
             }
 
             if (result.is_ok())
                 continue;;
 
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 6, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 9, "Edit this code");
             switch (result.get_error())
             {
                 case InterpreterError::BindError:
                     m_output_stream << RED << "Bind error" << RESET << std::endl;
+                    break;
+                case InterpreterError::RuntimeError:
+                    m_output_stream << RED << "Runtime error" << RESET << std::endl;
                     break;
                 case InterpreterError::InvalidOperationError:
                     m_output_stream << RED << "Invalid operation error" << RESET << std::endl;
@@ -146,6 +153,12 @@ namespace scc
                     break;
                 case InterpreterError::DivisionByZeroError:
                     m_output_stream << RED << "Division by zero error" << RESET << std::endl;
+                    break;
+                case InterpreterError::VariableAlreadyExistsError:
+                    m_output_stream << RED << "Variable already exists error" << RESET << std::endl;
+                    break;
+                case InterpreterError::VariableDoesntExistError:
+                    m_output_stream << RED << "Variable doesn't exist error" << RESET << std::endl;
                     break;
                 default:
                     m_output_stream << RED << "Unknown error" << RESET << std::endl;

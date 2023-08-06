@@ -2,7 +2,7 @@
 #include "parser.hpp"
 #include "binding/binder.hpp"
 #include "interpreter_result.hpp"
-
+#include "scope.hpp"
 namespace scc
 {
     class Interpreter
@@ -23,9 +23,12 @@ namespace scc
         }
 
         Parser m_parser;
+        ScopeStack m_scope_stack;
+        
 
         InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
         InterpreterResult interpret(const binding::BoundStatement &statement);
+        InterpreterResult interpret(const binding::BoundVariableDeclarationStatement &variable_declaration);
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);

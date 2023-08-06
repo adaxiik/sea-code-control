@@ -109,7 +109,7 @@ TEST_CASE("Single Expressions")
         // this raises an ParseError, but on tree-sitter level
         // if I really want to, I could probably bypass it, but I don't think it's worth it right now :)
         // Im not sure if this syntax is actually valid in C99 (but it is in C++17)
-        // @HELP
+        // @help
         // SCC_TEST_INTERPRET_RESULT(int, 7, "0B111;"); 
         SCC_TEST_INTERPRET_RESULT(int, 255, "0xFF;");
         // SCC_TEST_INTERPRET_RESULT(int, 255, "0Xff;");

@@ -8,6 +8,7 @@ namespace scc
         {
             ExpressionStatement = 0,
             BlockStatement,
+            VariableDeclarationStatement,
 
 
             // Expressions .. see is_statement() 

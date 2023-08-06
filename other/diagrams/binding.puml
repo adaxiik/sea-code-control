@@ -55,10 +55,45 @@ struct BoundCastExpression{
     + bound_node_kind() : BoundNodeKind
 }
 
+struct BoundVariableDeclarationStatement{
+    variable_name : std::string
+    type : Type
+    is_constant : bool
+
+    + bound_node_kind() : BoundNodeKind
+    {abstract} + variable_declaration_statement_kind() : VariableDeclarationStatementKind
+    {abstract} + size_bytes() : size_t
+}
+
+struct BoundVariableValueDeclarationStatement{
+    initializer : BoundExpression
+
+    + variable_declaration_statement_kind() : VariableDeclarationStatementKind
+    + size_bytes() : size_t
+}
+
+struct BoundVariablePointerDeclarationStatement{
+    initializer : BoundExpression
+
+    + variable_declaration_statement_kind() : VariableDeclarationStatementKind
+    + size_bytes() : size_t
+}
+
+struct BoundVariableStaticArrayDeclarationStatement{
+    initializers : std::vector<BoundExpression>
+    array_size : size_t
+
+    + variable_declaration_statement_kind() : VariableDeclarationStatementKind
+    + size_bytes() : size_t
+}
+
 BoundNode <|-- BoundStatement
 BoundStatement <|-- BoundExpressionStatement
 BoundStatement <|-- BoundBlockStatement
-
+BoundStatement <|-- BoundVariableDeclarationStatement
+BoundVariableDeclarationStatement <|-- BoundVariableValueDeclarationStatement
+BoundVariableDeclarationStatement <|-- BoundVariablePointerDeclarationStatement
+BoundVariableDeclarationStatement <|-- BoundVariableStaticArrayDeclarationStatement
 
 BoundNode <|-- BoundExpression
 BoundExpression <|-- BoundLiteralExpression

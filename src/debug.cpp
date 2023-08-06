@@ -10,6 +10,7 @@
 #include "binding/bound_expression_statement.hpp"
 #include "binding/bound_cast_expression.hpp"
 #include "binding/bound_parenthesized_expression.hpp"
+#include "binding/bound_variable_declaration_statement.hpp"
 
 
 // https://en.cppreference.com/w/cpp/utility/variant/visit
@@ -160,22 +161,25 @@ namespace scc
             static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
             switch (type.kind)
             {
-                case Type::Kind::Char: ss << "char"; break;
-                case Type::Kind::U8: ss << "unsigned char"; break;
-                case Type::Kind::U16: ss << "unsigned short"; break;
-                case Type::Kind::U32: ss << "unsigned int"; break;
-                case Type::Kind::U64: ss << "unsigned long"; break;
-                case Type::Kind::I8: ss << "signed char"; break;
-                case Type::Kind::I16: ss << "short"; break;
-                case Type::Kind::I32: ss << "int"; break;
-                case Type::Kind::I64: ss << "long"; break;
-                case Type::Kind::F32: ss << "float"; break;
-                case Type::Kind::F64: ss << "double"; break;
-                case Type::Kind::Bool: ss << "bool"; break;
+                case Type::Kind::Char: ss << "char";           break;
+                case Type::Kind::U8:   ss << "unsigned char";  break;
+                case Type::Kind::U16:  ss << "unsigned short"; break;
+                case Type::Kind::U32:  ss << "unsigned int";   break;
+                case Type::Kind::U64:  ss << "unsigned long";  break;
+                case Type::Kind::I8:   ss << "signed char";    break;
+                case Type::Kind::I16:  ss << "short";          break;
+                case Type::Kind::I32:  ss << "int";            break;
+                case Type::Kind::I64:  ss << "long";           break;
+                case Type::Kind::F32:  ss << "float";          break;
+                case Type::Kind::F64:  ss << "double";         break;
+                case Type::Kind::Bool: ss << "bool";           break;
                 default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
             }
+            for (size_t i = 0; i < type.pointer_depth; i++)
+                ss << "*";            
         }
 
+        // TODOO: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {  
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
@@ -193,7 +197,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 6, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 7, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -314,6 +318,70 @@ namespace scc
                                                     , depth + 1
                                                     , i == parenthesized_expression.expressions.size() - 1
                                                     , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::VariableDeclarationStatement:
+                {
+                    auto& variable_declaration_statement = static_cast<const binding::BoundVariableDeclarationStatement&>(node);
+                    switch(variable_declaration_statement.variable_declaration_statement_kind())
+                    {
+                        using Kind = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
+                        static_assert(static_cast<int>(Kind::COUNT) == 3, "Update this switch statement");
+                        case Kind::Value:
+                        {
+                            ss << "VariableValueDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            ss << variable_declaration_statement.variable_name << ")" << std::endl;
+
+                            auto& vvds = static_cast<const binding::BoundVariableValueDeclarationStatement&>(variable_declaration_statement);
+                            if (vvds.initializer)
+                            {
+                                bound_ast_as_text_tree_impl(*vvds.initializer
+                                                            , depth + 1
+                                                            , true
+                                                            , prefix + (last ? SPACE : DOWN_PIPE));
+                            }
+                            break;
+                        }
+                        case Kind::Pointer:
+                        {
+                            ss << "VariablePointerDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            ss << variable_declaration_statement.variable_name << ")" << std::endl;
+
+                            auto& vpds = static_cast<const binding::BoundVariablePointerDeclarationStatement&>(variable_declaration_statement);
+                            if (vpds.initializer)
+                            {
+                                bound_ast_as_text_tree_impl(*vpds.initializer
+                                                            , depth + 1
+                                                            , true
+                                                            , prefix + (last ? SPACE : DOWN_PIPE));
+                            }
+                            break;
+                        }
+                        case Kind::StaticArray:
+                        {
+                            ss << "VariableStaticArrayDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            auto& vsads = static_cast<const binding::BoundVariableStaticArrayDeclarationStatement&>(variable_declaration_statement);
+                            ss << variable_declaration_statement.variable_name << " [" << vsads.array_size << "])" << std::endl;
+
+                            for(size_t i = 0; i < vsads.initializers.size(); i++)
+                            {
+                                if(depth > 0)
+                                    bound_ast_as_text_tree_impl(*vsads.initializers[i]
+                                                                , depth + 1
+                                                                , i == vsads.initializers.size() - 1
+                                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                                else
+                                    bound_ast_as_text_tree_impl(*vsads.initializers[i]
+                                                                , depth + 1
+                                                                , i == vsads.initializers.size() - 1
+                                                                , std::string());
+                            }
+                            break;
+                        }
+                        default:
+                            ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                            break;
                     }
                     break;
                 }
