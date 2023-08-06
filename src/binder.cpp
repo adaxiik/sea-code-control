@@ -463,7 +463,9 @@ namespace scc
 
         SCC_ASSERT_NODE_SYMBOL(Parser::DECLARATION_SYMBOL);
         // 3 if have qualifier (eg.: `const`)
+        // TODOOO: int a, b, c; 
         SCC_ASSERT(node.named_child_count() == 2 || node.named_child_count() == 3);
+
 
         bool has_qualifier = node.named_child_count() == 3;
         int type_index = static_cast<int>(has_qualifier);
@@ -483,8 +485,6 @@ namespace scc
 
         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
         // multidimensional arrays and multidimensional initializer..
-
-
 
         auto resolve_declarator = [&type, is_constant](const TreeNode &node, int identifier_index, bool has_initializer = false)
         {

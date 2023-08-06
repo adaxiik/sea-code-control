@@ -3,6 +3,7 @@
 
 
 #include <scc/interpreter.hpp>
+#include <scc/binding/binder.hpp>
 
 #define SCC_TEST_TYPE(TYPE, VALUE) \
     do \
@@ -10,6 +11,15 @@
         auto result = interpreter.interpret(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
+    }while(0)
+
+#define SCC_TEST_TYPE_PTR(TYPE,PTR_DEPTH, VALUE) \
+    do \
+    {  \
+        auto result = interpreter.interpret(#VALUE ";"); \
+        CHECK(result.is_ok_and_has_value()); \
+        CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
+        CHECK(result.get_value().type.pointer_depth == PTR_DEPTH); \
     }while(0)
 
 #define SCC_TEST_TYPE_AUTO(VALUE) \
@@ -35,6 +45,21 @@
         CHECK(std::any_cast<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
     }while(0)
 
+#define SCC_TEST_BINDER(CODE) \
+    do{ \
+        auto parse_result = interpreter.parse(CODE); \
+        CHECK(!parse_result.has_error()); \
+        auto binded {scc::Binder::bind(parse_result.root_node())}; \
+        CHECK(binded); \
+    }while(0)
+
+#define SCC_TEST_BINDER_ERROR(CODE) \
+    do{ \
+        auto parse_result = interpreter.parse(CODE); \
+        CHECK(!parse_result.has_error()); \
+        auto binded {scc::Binder::bind(parse_result.root_node())}; \
+        CHECK(!binded); \
+    }while(0)
 
 TEST_CASE("Single Expressions")
 {
@@ -44,7 +69,6 @@ TEST_CASE("Single Expressions")
     {
         SCC_TEST_IS_ERROR(1 + );
         CHECK(interpreter.interpret("1").is_error());
-
     }
 
     SUBCASE("Literals")
@@ -147,6 +171,10 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR(1.0/0.0);
         SCC_TEST_IS_ERROR(1.0%0.0);
         
+        SCC_TEST_TYPE_PTR(I32, 1, (int*)1 + 2);
+        SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)1);
+        SCC_TEST_IS_ERROR((int*)1 + (int*)1);
+
     }
 
     SUBCASE("Cast Expressions")
@@ -172,6 +200,9 @@ TEST_CASE("Single Expressions")
         SCC_TEST_INTERPRET_RESULT(int, 420, "(int)420.69f;");
         SCC_TEST_INTERPRET_RESULT(short, 420, "(short)420.69f;");
 
+        SCC_TEST_TYPE_PTR(I32, 1, (int*)1);
+        SCC_TEST_TYPE_PTR(Char, 1, (char*)1);
+        SCC_TEST_TYPE_PTR(I32, 2, (int**)2);
     }
 
     SUBCASE("Parenthesized Expression")
@@ -182,5 +213,23 @@ TEST_CASE("Single Expressions")
         SCC_TEST_INTERPRET_RESULT(short, 100, "(1,2,3,(short)100);");
     }
 
+    SUBCASE("Declaration")
+    {
+        SCC_TEST_BINDER("int a;");
+        SCC_TEST_BINDER("int* a;");
+        // TODOO: multiple declarations
+        SCC_TEST_BINDER("int a, b;"); 
+        SCC_TEST_BINDER("int a = 1;");
+        // TODOO: multiple initializers
+        SCC_TEST_BINDER("int a = 1, b = 2;"); 
+        SCC_TEST_BINDER("int a[1];");
+        // TODO: 2d arrays 
+        // SCC_TEST_BINDER("int a[1][2];");
+        SCC_TEST_BINDER("int a[1] = {1};");
+        SCC_TEST_BINDER_ERROR("int a[1] = {1, 2};"); 
+        SCC_TEST_BINDER("int a = {1};");
+        SCC_TEST_BINDER_ERROR("int a = {1, 2};"); 
+
+    }
 }
 

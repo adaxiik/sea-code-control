@@ -1,6 +1,16 @@
 Sorted TODO list:
 
-src/interpreter.cpp:107:     //TODOOOOO: move to another cpp file.. it compilation is slow, and vscode analysis take 2gb of ram xd
-src/include/scc/type.hpp:172:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
+src/binder.cpp:480:             // TODOOOOOOOOOOOOO: custom types
+src/binder.cpp:526:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
+src/binder.cpp:651:                                     // TODOOOOO: what if its custom type? investigate or @help
+src/include/scc/type.hpp:211:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
+src/binder.cpp:486:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:670:                 // TODOOO: investigate other initializers
+src/binder.cpp:466:         // TODOOO: int a, b, c; 
 src/binder.cpp:74:                 // TODOOO: UNREACHABLE???
 src/binder.cpp:255:             // TODOOO: 
+scc_tests/tests.cpp:220:         // TODOO: multiple declarations
+scc_tests/tests.cpp:223:         // TODOO: multiple initializers
+src/binder.cpp:511:                     // TODOO: int x[1][2];  multi dimensional arrays
+src/debug.cpp:182:         // TODOO: convert it into multiple functions for each node type
+scc_tests/tests.cpp:226:         // TODO: 2d arrays 

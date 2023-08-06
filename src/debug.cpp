@@ -330,7 +330,7 @@ namespace scc
                         static_assert(static_cast<int>(Kind::COUNT) == 3, "Update this switch statement");
                         case Kind::Value:
                         {
-                            ss << "VariableValueDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            ss << "VariableValueDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "")  << variable_declaration_statement.type << " " ;
                             ss << variable_declaration_statement.variable_name << ")" << std::endl;
 
                             auto& vvds = static_cast<const binding::BoundVariableValueDeclarationStatement&>(variable_declaration_statement);
@@ -345,7 +345,7 @@ namespace scc
                         }
                         case Kind::Pointer:
                         {
-                            ss << "VariablePointerDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            ss << "VariablePointerDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "") <<  variable_declaration_statement.type << " " ;
                             ss << variable_declaration_statement.variable_name << ")" << std::endl;
 
                             auto& vpds = static_cast<const binding::BoundVariablePointerDeclarationStatement&>(variable_declaration_statement);
@@ -360,7 +360,7 @@ namespace scc
                         }
                         case Kind::StaticArray:
                         {
-                            ss << "VariableStaticArrayDeclarationStatement (" << variable_declaration_statement.type << " " ;
+                            ss << "VariableStaticArrayDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "") << variable_declaration_statement.type << " " ;
                             auto& vsads = static_cast<const binding::BoundVariableStaticArrayDeclarationStatement&>(variable_declaration_statement);
                             ss << variable_declaration_statement.variable_name << " [" << vsads.array_size << "])" << std::endl;
 

@@ -60,3 +60,6 @@ just building:
 ```bash
 $ ./build.sh <wasm|native|all>
 ```
+
+# Other
+- see [todo](other/todo.txt) or [plan](other/PLAN.md) for more
