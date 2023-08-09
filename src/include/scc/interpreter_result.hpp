@@ -7,7 +7,7 @@ namespace scc
 {
     enum class InterpreterError
     {
-        None,
+        None = 0,
         ParseError,
         BindError,
         RuntimeError,
@@ -19,35 +19,35 @@ namespace scc
         COUNT
     };
 
-    struct ResultValue
+    struct InterpreterResultValue
     {
         std::any value;
         Type type;
 
         template <typename T>
-        ResultValue(T value, Type type)
+        InterpreterResultValue(T value, Type type)
             : value(value), type(type) {}
         
         template <typename T>
-        ResultValue(T value)
+        InterpreterResultValue(T value)
             : value(value), type(Type::deduce_type<T>()) {}
       
     };
 
     class InterpreterResult
     {
-        std::optional<ResultValue> value;
+        std::optional<InterpreterResultValue> value;
         InterpreterError interpreter_result;
 
-        InterpreterResult(std::optional<ResultValue> value, InterpreterError interpreter_result)
+        InterpreterResult(std::optional<InterpreterResultValue> value, InterpreterError interpreter_result)
             : value(value), interpreter_result(interpreter_result){}
 
     public:
-        static InterpreterResult ok(ResultValue value) { return InterpreterResult(value, InterpreterError::None); }
+        static InterpreterResult ok(InterpreterResultValue value) { return InterpreterResult(value, InterpreterError::None); }
         static InterpreterResult error(InterpreterError interpreter_result) { return InterpreterResult(std::nullopt, interpreter_result); }
 
         // Ill left them implicit
-        InterpreterResult(std::optional<ResultValue> value)
+        InterpreterResult(std::optional<InterpreterResultValue> value)
             : value(value), interpreter_result(InterpreterError::None) {}
         
         InterpreterResult(InterpreterError interpreter_result)
@@ -57,7 +57,7 @@ namespace scc
         bool is_error() const { return !is_ok(); }
         bool has_value() const { return value.has_value(); }
         bool is_ok_and_has_value() const { return is_ok() && has_value(); }
-        ResultValue get_value() const { return *value; }
+        InterpreterResultValue get_value() const { return *value; }
         InterpreterError get_error() const { return interpreter_result; }
     };
 }

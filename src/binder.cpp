@@ -8,9 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 
-#define BUBBLE_ERROR(x) \
-    if (!(x))           \
-    return nullptr
+        
 #define SCC_ASSERT(x)                                                        \
     do                                                                       \
     {                                                                        \
@@ -54,13 +52,42 @@
     } while (0)
 #define SCC_UNREACHABLE() SCC_ASSERT(false)
 
+#define SCC_BINDER_RESULT_TYPE(x) using ResultType = std::result_of_t<decltype(&Binder::x)(const TreeNode &)>::type
+
+constexpr bool TRACE_BINDER = false;
+
+// #define BUBBLE_ERROR(x) if ((x).is_error()) return (x)
+
+#define SOURCE_LOCATION_STR std::string("at ") + std::string( __FILE__) + ":" + std::to_string(__LINE__)
+
+
+#define BUBBLE_ERROR(x) do{ \
+    if ((x).is_error()) \
+    { \
+        if constexpr (TRACE_BINDER) \
+            (x).add_diagnostic(std::string(__func__) + " " + SOURCE_LOCATION_STR); \
+        return (x); \
+    } \
+} while(0)
+
+
+using ErrorKind = scc::binding::BinderError::BinderErrorKind;
+
+
+#include <string>
 namespace scc
 {
-    std::unique_ptr<binding::BoundBlockStatement> Binder::bind_block_statement(const TreeNode &node)
+    // std::unique_ptr<(\w*::\w*)> Binder
+    // binding::BinderResult<$1> Binder
+
+    binding::BinderResult<binding::BoundBlockStatement> Binder::bind_block_statement(const TreeNode &node)
     {
         // SCC_ASSERT_NODE_SYMBOL(Parser::TRANSLATION_UNIT_SYMBOL);
-        if (node.symbol() != Parser::TRANSLATION_UNIT_SYMBOL && node.symbol() != Parser::COMPOUND_STATEMENT_SYMBOL)
-            return nullptr;
+        SCC_BINDER_RESULT_TYPE(bind_block_statement);
+
+        // if (node.symbol() != Parser::TRANSLATION_UNIT_SYMBOL && node.symbol() != Parser::COMPOUND_STATEMENT_SYMBOL)
+        //     return binding::BinderResult<ResultType>::error(binding::BinderError::None());
+        SCC_ASSERT(node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL || node.symbol() == Parser::COMPOUND_STATEMENT_SYMBOL);
 
         auto block_statement = std::make_unique<binding::BoundBlockStatement>();
         for (uint32_t i = 0; i < node.named_child_count(); i++)
@@ -69,18 +96,18 @@ namespace scc
             auto binded = bind_impl(child);
             BUBBLE_ERROR(binded);
 
-            if(!binded->is_statement())
+            if(!binded.get_value()->is_statement())
             {
                 // TODOOO: UNREACHABLE???
                 SCC_UNREACHABLE();                
             }
-            auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release());
+            auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release_value().release());
             block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(bound_statement_ptr));
         }
-        return block_statement;
+        return binding::BinderResult<ResultType>::ok(std::move(block_statement));
     }
 
-    std::unique_ptr<binding::BoundLiteralExpression> Binder::bind_number_literal(const TreeNode &node)
+    binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_number_literal(const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::NUMBER_LITERAL_SYMBOL);
         auto value = node.value();
@@ -236,15 +263,22 @@ namespace scc
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Binder::bind_number_literal: " << e.what() << std::endl;
-            return nullptr;
+            // std::cerr << "Binder::bind_number_literal: " << e.what() << std::endl;
+            // return nullptr;
+            SCC_BINDER_RESULT_TYPE(bind_number_literal);
+            
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::InvalidNumberLiteralError, node));
+            
         }
 
         SCC_UNREACHABLE();
-        return nullptr;
+        SCC_BINDER_RESULT_TYPE(bind_number_literal);
+            
+        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+      
     }
 
-    std::unique_ptr<binding::BoundLiteralExpression> Binder::bind_literal_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_literal_expression(const TreeNode &node)
     {
         if (node.symbol() == Parser::NUMBER_LITERAL_SYMBOL)
         {
@@ -261,14 +295,16 @@ namespace scc
         {
             return std::make_unique<binding::BoundLiteralExpression>(node.value()[1], Type::Kind::Char);
         }
-        else
-        {
-            SCC_UNREACHABLE();
-        }
-        return nullptr;
+
+        
+        SCC_UNREACHABLE();
+        
+        SCC_BINDER_RESULT_TYPE(bind_literal_expression);  
+        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+      
     }
 
-    std::unique_ptr<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
         // SCC_UNIMPLEMENTED();
         switch (node.symbol())
@@ -288,26 +324,36 @@ namespace scc
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
         }
-        return nullptr;
+
+        SCC_BINDER_RESULT_TYPE(bind_expression);  
+        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+
     }
 
-    std::unique_ptr<binding::BoundBinaryExpression> Binder::bind_binary_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundBinaryExpression> Binder::bind_binary_expression(const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::BINARY_EXPRESSION_SYMBOL);
         SCC_ASSERT_CHILD_COUNT(node, 3);
 
-        auto bound_left = bind_expression(node.child(0));
-        BUBBLE_ERROR(bound_left);
-        auto bound_right = bind_expression(node.child(2));
-        BUBBLE_ERROR(bound_right);
+        auto bound_left_result = bind_expression(node.child(0));
+        BUBBLE_ERROR(bound_left_result);
+        auto bound_right_result = bind_expression(node.child(2));
+        BUBBLE_ERROR(bound_right_result);
+
+        auto bound_left = bound_left_result.release_value();
+        auto bound_right = bound_right_result.release_value();
 
         std::string op = node.child(1).value();
 
         using OpKind = binding::BoundBinaryExpression::OperatorKind;
+        SCC_BINDER_RESULT_TYPE(bind_binary_expression);  
+        
         #define BIND_BINARY_OPERATOR(OP_STR, OP_KIND) \
             if (op == (OP_STR)){ \
-                auto deduced_type = binding::BoundBinaryExpression::deduce_type(bound_left->type, bound_right->type,OpKind::OP_KIND); \
-                if(!deduced_type.has_value()){return nullptr;} \
+                auto deduced_type = binding::BoundBinaryExpression::deduce_type(bound_left->type, bound_right->type, OpKind::OP_KIND); \
+                if(!deduced_type.has_value()){ \
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::InvalidOperationError, node)); \
+                } \
                 return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left)   \
                                                                       , std::move(bound_right)  \
                                                                       , deduced_type.value()       \
@@ -340,10 +386,12 @@ namespace scc
 
         #undef BIND_BINARY_OPERATOR
 
-        return nullptr;
+        SCC_BINDER_RESULT_TYPE(bind_binary_expression);  
+        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+
     }
 
-    std::unique_ptr<binding::BoundCastExpression> Binder::bind_cast_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundCastExpression> Binder::bind_cast_expression(const TreeNode &node)
     {
         // cast_expression ==>     (float)1
         // ├── type_descriptor ==> float
@@ -378,16 +426,20 @@ namespace scc
         auto type = Type::from_string(type_name);
         if (!type.has_value())
         {
-            std::cerr << "Unknown type: " << type_name << std::endl;
-            return nullptr;
+            // std::cerr << "Unknown type: " << type_name << std::endl;
+            // return nullptr;
+            SCC_BINDER_RESULT_TYPE(bind_cast_expression);
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, type_descriptor));
+            error.add_diagnostic("Unknown type: " + type_name);
+            return error;
         }
 
         type.value().pointer_depth = pointer_depth;
 
-        return std::make_unique<binding::BoundCastExpression>(std::move(bound_expression), type.value());
+        return std::make_unique<binding::BoundCastExpression>(std::move(bound_expression.release_value()), type.value());
     }
 
-    std::unique_ptr<binding::BoundParenthesizedExpression> Binder::bind_parenthesized_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundParenthesizedExpression> Binder::bind_parenthesized_expression(const TreeNode &node)
     {
         // parenthesized_expression ==>    (1,2,3)
         // └── comma_expression ==>        1,2,3
@@ -416,15 +468,14 @@ namespace scc
             {
                 auto expression = bind_expression(current_node.first_named_child());
                 BUBBLE_ERROR(expression);
-
-                expressions.push_back(std::move(expression));
+                expressions.push_back(std::move(expression.release_value()));
                 current_node = current_node.last_named_child();
             
             } while (current_node.symbol() == Parser::COMMA_EXPRESSION_SYMBOL);
 
             auto last_expression = bind_expression(current_node);
             BUBBLE_ERROR(last_expression);
-            expressions.push_back(std::move(last_expression));
+            expressions.push_back(std::move(last_expression.release_value()));
             
             return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expressions));
         }
@@ -433,16 +484,18 @@ namespace scc
             auto expression = bind_expression(node.first_named_child());
             BUBBLE_ERROR(expression);
 
-            return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expression));
+            return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expression.release_value()));
         }
 
     }
 
-    std::unique_ptr<binding::BoundExpressionStatement> Binder::bind_expression_statement(const TreeNode &node)
+    binding::BinderResult<binding::BoundExpressionStatement> Binder::bind_expression_statement(const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::EXPRESSION_STATEMENT_SYMBOL);
+        SCC_BINDER_RESULT_TYPE(bind_expression_statement);  
+        
         if (node.named_child_count() == 0) // eg.: `;`
-            return nullptr;
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::EmptyExpressionError, node));
 
         SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
         auto expression_statement = std::make_unique<binding::BoundExpressionStatement>();
@@ -450,12 +503,14 @@ namespace scc
         auto expression = bind_expression(node.named_child(0));
         BUBBLE_ERROR(expression);
 
-        expression_statement->expression = std::move(expression);
-        return expression_statement;
+        expression_statement->expression = std::move(expression.release_value());
+        return  binding::BinderResult<ResultType>::ok(std::move(expression_statement));
     }
 
-    std::unique_ptr<binding::BoundVariableDeclarationStatement> Binder::bind_variable_declaration(const TreeNode &node)
+    binding::BinderResult<binding::BoundVariableDeclarationStatement> Binder::bind_variable_declaration(const TreeNode &node)
     {
+        SCC_BINDER_RESULT_TYPE(bind_variable_declaration);
+
         // translation_unit ==>    int a;
         // └── declaration ==>     int a;
         //     ├── primitive_type ==>      int
@@ -478,8 +533,12 @@ namespace scc
         if(!type.has_value())
         {
             // TODOOOOOOOOOOOOO: custom types
-            std::cerr << "Unknown type: " << type_descriptor << std::endl;
-            return nullptr;
+            // std::cerr << "Unknown type: " << type_descriptor << std::endl;
+            // return nullptr;
+            SCC_BINDER_RESULT_TYPE(bind_variable_declaration);
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown type: " + type_descriptor);
+            return error;
         }
 
 
@@ -487,6 +546,7 @@ namespace scc
         // multidimensional arrays and multidimensional initializer..
 
         auto resolve_declarator = [&type, is_constant](const TreeNode &node, int identifier_index, bool has_initializer = false)
+        ->  binding::BinderResult<binding::BoundVariableDeclarationStatement>
         {
             switch (node.named_child(identifier_index).symbol())
             {
@@ -594,7 +654,8 @@ namespace scc
                 auto initializer_node = init_declarator_node.named_child(1);
                 if (initializer_node.symbol() == Parser::INITIALIZER_LIST_SYMBOL)
                 {                
-                    switch (declaration->variable_declaration_statement_kind())
+     
+                    switch (declaration.get_value()->variable_declaration_statement_kind())
                     {
                         using DeclarationKind = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
                         case DeclarationKind::Value:
@@ -602,29 +663,31 @@ namespace scc
                             // int x = {1}; is ok, but int x = {1,2}; is not
                             // int x = {}; is not valid C99
                             if (initializer_node.named_child_count() != 1 )
-                                return nullptr;
-                            
+                                return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
+
                             auto initializer = bind_expression(initializer_node.named_child(0));
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get())->initializer = std::move(initializer);
+                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
                             return declaration;
                         }
                         case DeclarationKind::Pointer:
                         {
                             if (initializer_node.named_child_count() != 1 )
-                                return nullptr;
+                                return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
+
                             
                             auto initializer = bind_expression(initializer_node.named_child(0));
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get())->initializer = std::move(initializer);
+                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
                             return declaration;
                         }
                         case DeclarationKind::StaticArray:
                         {
+                                // int x[2] = {}; is not valid C99
                             if (initializer_node.named_child_count() == 0)
-                                return nullptr; // int x[2] = {}; is not valid C99
+                                return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node)); 
 
-                            auto array_declaration = static_cast<binding::BoundVariableStaticArrayDeclarationStatement*>(declaration.get());
+                            auto array_declaration = static_cast<binding::BoundVariableStaticArrayDeclarationStatement*>(declaration.get_value());
                             bool forced_size = array_declaration->array_size != 0;
                             if (forced_size && initializer_node.named_child_count() > array_declaration->array_size)
                             {
@@ -632,7 +695,7 @@ namespace scc
                                 // int x[2] = {1,2,3}; 
                                 // but 
                                 // int x[10] = {1,2,3}; is ok, and rest of the elements are 0
-                                return nullptr;
+                                return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
                             }
 
                             if (!forced_size)
@@ -644,7 +707,7 @@ namespace scc
                                 {
                                     auto initializer = bind_expression(initializer_node.named_child(i));
                                     BUBBLE_ERROR(initializer);
-                                    array_declaration->initializers.push_back(std::move(initializer));
+                                    array_declaration->initializers.push_back(std::move(initializer.release_value()));
                                 }
                                 else
                                 {
@@ -670,20 +733,20 @@ namespace scc
                 // TODOOO: investigate other initializers
                 using DeclarationKind = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
                 static_assert(static_cast<int>(DeclarationKind::COUNT) == 3, "Update this switch");
-                switch (declaration->variable_declaration_statement_kind())
+                switch (declaration.get_value()->variable_declaration_statement_kind())
                 {
                     case DeclarationKind::Value:
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get())->initializer = std::move(initializer);
+                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
                         return declaration;
                     }
                     case DeclarationKind::Pointer:
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get())->initializer = std::move(initializer);
+                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
                         return declaration;
                     }
                     case DeclarationKind::StaticArray:
@@ -691,18 +754,20 @@ namespace scc
                         // int x[] = 1;
                         // int x[2] = 1; 
                         // both are invalid
-                        return nullptr; 
+                        return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
                     }
                     default:
                         SCC_UNREACHABLE();
                 } 
             }
         }
-        return nullptr;
+        return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
     }
 
-    std::unique_ptr<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
+    binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
     {
+        SCC_BINDER_RESULT_TYPE(bind_impl);
+
         switch (node.symbol())
         {
         case Parser::TRANSLATION_UNIT_SYMBOL:
@@ -715,14 +780,15 @@ namespace scc
             return bind_variable_declaration(node);
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
-            return nullptr;
+            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
         }
     }
 
-    std::unique_ptr<binding::BoundNode> Binder::bind(const TreeNode &node)
+    binding::BinderResult<binding::BoundNode> Binder::bind(const TreeNode &node)
     {
+        SCC_BINDER_RESULT_TYPE(bind);
         if (node.symbol() != Parser::TRANSLATION_UNIT_SYMBOL)
-            return nullptr;
+            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
 
         return bind_impl(node);
     }

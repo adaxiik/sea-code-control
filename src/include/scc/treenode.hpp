@@ -5,6 +5,7 @@
 
 #include <string>
 #include <algorithm>
+#include "location.hpp"
 
 namespace scc
 {
@@ -51,5 +52,6 @@ namespace scc
         TreeNode first_named_child() const;
         TreeNode last_child() const;
         TreeNode last_named_child() const;
+        Location location() const;
     };
 }

@@ -59,7 +59,7 @@ namespace scc
                 { \
                     auto result_type {Type::deduce_type(result.value())}; \
                     result_type.pointer_depth = LEFT_PTR_DEPTH; \
-                    return InterpreterResult::ok(ResultValue(result.value(), result_type)); \
+                    return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type)); \
                 }*/ \
                 if (LEFT_PTR_DEPTH > 0) \
                 { \
@@ -70,7 +70,7 @@ namespace scc
                     { \
                         auto result_type {Type::deduce_type<LEFT_CAST>()}; \
                         result_type.pointer_depth = LEFT_PTR_DEPTH; \
-                        return InterpreterResult::ok(ResultValue(result.value(), result_type)); \
+                        return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type)); \
                     } \
                 } \
                 else if (RIGHT_PTR_DEPTH > 0) \
@@ -82,7 +82,7 @@ namespace scc
                     { \
                          auto result_type {Type::deduce_type<RIGHT_CAST>()}; \
                         result_type.pointer_depth = RIGHT_PTR_DEPTH; \
-                        return InterpreterResult::ok(ResultValue(result.value(), result_type)); \
+                        return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type)); \
                     } \
                 } \
                 else \
@@ -92,7 +92,7 @@ namespace scc
                         return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
                     else \
                     { \
-                        return InterpreterResult::ok(ResultValue(result.value())); \
+                        return InterpreterResult::ok(InterpreterResultValue(result.value())); \
                     } \
                 }\
            } \
@@ -193,29 +193,29 @@ namespace scc
             switch (result.get_value().type.kind)
             {
                 case Type::Kind::Char:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<char>(result.get_value().value)), target_type));
                 case Type::Kind::U8:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<unsigned char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned char>(result.get_value().value)), target_type));
                 case Type::Kind::I8:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<signed char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed char>(result.get_value().value)), target_type));
                 case Type::Kind::U16:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<unsigned short>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned short>(result.get_value().value)), target_type));
                 case Type::Kind::I16:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<signed short>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed short>(result.get_value().value)), target_type));
                 case Type::Kind::U32:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<unsigned int>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned int>(result.get_value().value)), target_type));
                 case Type::Kind::I32:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<signed int>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed int>(result.get_value().value)), target_type));
                 case Type::Kind::U64:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<unsigned long long>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned long long>(result.get_value().value)), target_type));
                 case Type::Kind::I64:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<signed long long>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed long long>(result.get_value().value)), target_type));
                 case Type::Kind::F32:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<float>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<float>(result.get_value().value)), target_type));
                 case Type::Kind::F64:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<double>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<double>(result.get_value().value)), target_type));
                 case Type::Kind::Bool:
-                    return InterpreterResult::ok(ResultValue(static_cast<unsigned long long>(std::any_cast<bool>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<bool>(result.get_value().value)), target_type));
                 default:
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
             }
@@ -225,7 +225,7 @@ namespace scc
 
 
         #define CAST_CASE(KIND_TYPE, TARGET_TYPE,ORIGINAL_TYPE) case Type::Kind::KIND_TYPE: \
-            return InterpreterResult::ok(ResultValue(static_cast<TARGET_TYPE>(std::any_cast<ORIGINAL_TYPE>(result.get_value().value))));
+            return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::any_cast<ORIGINAL_TYPE>(result.get_value().value))));
         
         #define CAST_ORIGINAL(TARGET_TYPE) do{ \
             switch(result.get_value().type.kind) \

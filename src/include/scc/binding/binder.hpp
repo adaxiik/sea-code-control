@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include "treenode.hpp"
+#include "binding/binder_result.hpp"
 #include "binding/bound_node.hpp"
 #include "binding/bound_block_statement.hpp"
 #include "binding/bound_expression.hpp"
@@ -28,17 +29,17 @@ namespace scc
         Binder() = delete;
         ~Binder() = delete;
 
-        static std::unique_ptr<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
-        static std::unique_ptr<binding::BoundNode> bind_impl(const TreeNode &node);
-        static std::unique_ptr<binding::BoundExpressionStatement> bind_expression_statement(const TreeNode &node);
-        static std::unique_ptr<binding::BoundExpression> bind_expression(const TreeNode &node);
-        static std::unique_ptr<binding::BoundBinaryExpression> bind_binary_expression(const TreeNode &node);
-        static std::unique_ptr<binding::BoundCastExpression> bind_cast_expression(const TreeNode &node);
-        static std::unique_ptr<binding::BoundParenthesizedExpression> bind_parenthesized_expression(const TreeNode &node);
-        static std::unique_ptr<binding::BoundLiteralExpression> bind_literal_expression(const TreeNode &node);
-        static std::unique_ptr<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
-        static std::unique_ptr<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
+        static binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
+        static binding::BinderResult<binding::BoundNode> bind_impl(const TreeNode &node);
+        static binding::BinderResult<binding::BoundExpressionStatement> bind_expression_statement(const TreeNode &node);
+        static binding::BinderResult<binding::BoundExpression> bind_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundBinaryExpression> bind_binary_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundCastExpression> bind_cast_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundParenthesizedExpression> bind_parenthesized_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundLiteralExpression> bind_literal_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
+        static binding::BinderResult<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
     public:
-        static std::unique_ptr<binding::BoundNode> bind(const TreeNode &node);
+        static binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
     };  
 }

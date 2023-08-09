@@ -64,4 +64,9 @@ namespace scc
         return TreeNode(ts_node_named_child(m_node, ts_node_named_child_count(m_node) - 1), m_parser_result);
     }
 
+    Location TreeNode::location() const
+    {
+        TSPoint start_point = ts_node_start_point(m_node);
+        return Location{start_point.row, start_point.column};
+    }
 }

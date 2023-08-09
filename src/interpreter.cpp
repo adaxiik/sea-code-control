@@ -34,14 +34,14 @@ namespace scc
             return InterpreterError::ParseError;
 
         auto binded {Binder::bind(parse_result.root_node())};
-        if (!binded)
+        if (binded.is_error())
             return InterpreterError::BindError;
 
-        if (binded->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
+        if (binded.get_value()->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
             return InterpreterError::BindError;
         
         TRACE();
-        return interpret(ikwid_rc<binding::BoundBlockStatement>(*binded));
+        return interpret(ikwid_rc<binding::BoundBlockStatement>(*binded.get_value()));
     }
 
     InterpreterResult Interpreter::interpret(const binding::BoundBlockStatement &block_statement)
@@ -97,7 +97,7 @@ namespace scc
         {
             // return interpret(ikwid_rc<binding::BoundLiteralExpression>(expression));
             decltype(auto) literal = ikwid_rc<binding::BoundLiteralExpression>(expression);
-            return InterpreterResult::ok(ResultValue(literal.value, literal.type));
+            return InterpreterResult::ok(InterpreterResultValue(literal.value, literal.type));
         }
         case binding::BoundNodeKind::CastExpression:
             return eval(ikwid_rc<binding::BoundCastExpression>(expression));
