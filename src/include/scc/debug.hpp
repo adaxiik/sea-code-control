@@ -12,6 +12,7 @@
 #include "treenode.hpp"
 #include "binding/bound_node.hpp"
 #include "type.hpp"
+#include "memory.hpp"
 
 namespace scc
 {
@@ -27,6 +28,10 @@ namespace scc
 
         // void variable_as_string(std::ostream &ss, const scc::vm::Variable& var);
         // void vars_as_json(std::ostream &ss, const vm::VM& vm);
+
+        void memory_chunks_as_json(std::ostream &ss, const Memory& memory);
+        void memory_chunks_as_puml(std::ostream &ss, const Memory& memory);
+        void memory_chunks_as_text(std::ostream &ss, const Memory& memory);
 
     } 
 } 

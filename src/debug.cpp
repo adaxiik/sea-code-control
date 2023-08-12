@@ -397,5 +397,47 @@ namespace scc
                                 , std::string());
 
         }
+    
+        void memory_chunks_as_json(std::ostream& ss, const Memory& memory)
+        {
+            ss << "[";
+            const std::map<Memory::MemoryChunkId, Memory::MemoryChunk>& chunks = memory.get_chunks();
+            
+            bool first = true;
+            for (auto& [id, chunk] : chunks)
+            {
+                ss << (first ? "" : ", ") << std::endl;
+                first = false;
+                ss << "{";
+                ss << "\"id\": " << id << ", ";
+                ss << "\"start\": " << memory.get_chunk_begin(id) << ", ";
+                ss << "\"end\": " << memory.get_chunk_end(id) << ", ";
+                ss << "\"size\": " << memory.get_chunk_size(id) << ", ";
+                ss << "\"free\": " << (memory.is_chunk_free(id) ? "true" : "false") << ", ";
+                ss << "}";
+            }
+
+            ss << "]";
+        }
+
+        void memory_chunks_as_puml(std::ostream& ss, const Memory& memory)
+        {
+            ss << "@startjson" << std::endl;
+            memory_chunks_as_json(ss, memory);
+            ss << std::endl;
+            ss << "@endjson" << std::endl;
+        }
+
+        void memory_chunks_as_text(std::ostream &ss, const Memory& memory)
+        {
+            const std::map<Memory::MemoryChunkId, Memory::MemoryChunk>& chunks = memory.get_chunks();
+            
+            for (auto& [id, chunk] : chunks)
+            {
+                ss << "Chunk " << id << " [" << memory.get_chunk_begin(id) << ", " << memory.get_chunk_end(id) << "] (" << memory.get_chunk_size(id) << ") ";
+                ss << (memory.is_chunk_free(id) ? " free" : " used") << std::endl;
+            }
+        }
+
     }
 }

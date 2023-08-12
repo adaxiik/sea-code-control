@@ -84,5 +84,6 @@ add_executable(tests ${SCC_TEST_FILES})
 target_link_libraries(tests scc-lib)
 target_include_directories(tests PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE_DIRS})
 
+
 enable_testing()
 add_test(NAME tests COMMAND tests)
