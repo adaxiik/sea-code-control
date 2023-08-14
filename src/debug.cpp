@@ -401,19 +401,17 @@ namespace scc
         void memory_chunks_as_json(std::ostream& ss, const Memory& memory)
         {
             ss << "[";
-            const std::map<Memory::MemoryChunkId, Memory::MemoryChunk>& chunks = memory.get_chunks();
+            const std::map<Memory::address_t, Memory::MemoryChunk>& chunks = memory.get_chunks();
             
             bool first = true;
-            for (auto& [id, chunk] : chunks)
+            for (auto& [address, chunk] : chunks)
             {
                 ss << (first ? "" : ", ") << std::endl;
                 first = false;
                 ss << "{";
-                ss << "\"id\": " << id << ", ";
-                ss << "\"start\": " << memory.get_chunk_begin(id) << ", ";
-                ss << "\"end\": " << memory.get_chunk_end(id) << ", ";
-                ss << "\"size\": " << memory.get_chunk_size(id) << ", ";
-                ss << "\"free\": " << (memory.is_chunk_free(id) ? "true" : "false") << ", ";
+                ss << "\"start\": " << address << ", ";
+                ss << "\"end\": "   << memory.get_chunk_end(address).value() << ", ";
+                ss << "\"size\": "  << memory.get_chunk_size(address).value() << ", ";
                 ss << "}";
             }
 
@@ -430,13 +428,10 @@ namespace scc
 
         void memory_chunks_as_text(std::ostream &ss, const Memory& memory)
         {
-            const std::map<Memory::MemoryChunkId, Memory::MemoryChunk>& chunks = memory.get_chunks();
+            const std::map<Memory::address_t, Memory::MemoryChunk>& chunks = memory.get_chunks();
             
-            for (auto& [id, chunk] : chunks)
-            {
-                ss << "Chunk " << id << " [" << memory.get_chunk_begin(id) << ", " << memory.get_chunk_end(id) << "] (" << memory.get_chunk_size(id) << ") ";
-                ss << (memory.is_chunk_free(id) ? " free" : " used") << std::endl;
-            }
+            for (auto& [address, chunk] : chunks)
+                ss << "Chunk " << address << " [" << address << ", " << memory.get_chunk_end(address).value() << "] (" << memory.get_chunk_size(address).value() << ") " << std::endl;
         }
 
     }

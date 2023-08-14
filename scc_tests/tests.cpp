@@ -236,78 +236,82 @@ TEST_CASE("Single Expressions")
     }
 }
 
-#define SCC_TEST_MEMORY_CHUNK(CHUNK_ID, BEGIN, END, SIZE, IS_FREE) do { \
-    CHECK(memory.get_chunk_begin(CHUNK_ID) == BEGIN); \
-    CHECK(memory.get_chunk_end(CHUNK_ID) == END); \
-    CHECK(memory.get_chunk_size(CHUNK_ID) == SIZE); \
-    CHECK(memory.is_chunk_free(CHUNK_ID) == IS_FREE); \
+// #define SCC_TEST_MEMORY_CHUNK(CHUNK_ID, BEGIN, END, SIZE, IS_FREE) do { \
+//     CHECK(memory.get_chunk_begin(CHUNK_ID) == BEGIN); \
+//     CHECK(memory.get_chunk_end(CHUNK_ID) == END); \
+//     CHECK(memory.get_chunk_size(CHUNK_ID) == SIZE); \
+//     CHECK(memory.is_chunk_free(CHUNK_ID) == IS_FREE); \
+// } while(0)
+
+#define SCC_TEST_MEMORY_CHUNK(ADDRESS, ADDRESS_START, ADDRESS_END, SIZE) do { \
+    CHECK(ADDRESS_START == ADDRESS); \
+    CHECK(memory.get_chunk_end(ADDRESS_START).value() == ADDRESS_END); \
+    CHECK(memory.get_chunk_size(ADDRESS_START).value() == SIZE); \
 } while(0)
+
+#define SCC_TEST_MEMORY_FREE(ADDRESS, SUCCESS) CHECK(memory.free(ADDRESS) == SUCCESS)
+
+#define SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(COUNT) CHECK(memory.allocated_chunk_count() == COUNT)
+
+#define SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(SIZE) CHECK(memory.allocated_memory_size_bytes() == SIZE)
 
 
 TEST_CASE("Memory alloc and free")
 {
-    scc::Memory memory;
+    scc::Memory memory(0);
     // Chunk 0 [0, 9] (10)  used
     // Chunk 1 [10, 19] (10)  used
     // Chunk 2 [20, 29] (10)  used
     // Chunk 3 [30, 39] (10)  used
     // Chunk 4 [40, 49] (10)  used
 
-    scc::Memory::MemoryChunkId chunk0 = memory.allocate(10);
-    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10, false);
-
-    scc::Memory::MemoryChunkId chunk1 = memory.allocate(10);
-    scc::Memory::MemoryChunkId chunk2 = memory.allocate(10);
-    scc::Memory::MemoryChunkId chunk3 = memory.allocate(10);
-    scc::Memory::MemoryChunkId chunk4 = memory.allocate(10);
-    SCC_TEST_MEMORY_CHUNK(chunk1, 10, 19, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
+    scc::Memory::address_t chunk0 = memory.allocate(10);
+    scc::Memory::address_t chunk1 = memory.allocate(10);
+    scc::Memory::address_t chunk2 = memory.allocate(10);
+    scc::Memory::address_t chunk3 = memory.allocate(10);
+    scc::Memory::address_t chunk4 = memory.allocate(10);
+    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk1, 10, 19, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(5);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(50);
 
     // Chunk 0 [0, 9] (10)  used
-    // Chunk 1 [10, 19] (10)  free
     // Chunk 2 [20, 29] (10)  used
-    // Chunk 3 [30, 39] (10)  free
     // Chunk 4 [40, 49] (10)  used
 
-    memory.free(chunk1);
-    memory.free(chunk3);
-    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk1, 10, 19, 10, true);
-    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10, true);
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
+    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
+    SCC_TEST_MEMORY_FREE(chunk1, true);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_FREE(chunk3, true);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(3);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(30);
     
-    // Chunk 0 [0, 19] (20)  free
     // Chunk 2 [20, 29] (10)  used
-    // Chunk 3 [30, 39] (10)  free
     // Chunk 4 [40, 49] (10)  used
-    memory.free(chunk0);
-    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 19, 20, true); // 0 and 1 merged into 0
-    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10, true);
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
+    SCC_TEST_MEMORY_FREE(chunk0, true);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(20);
 
-    // Chunk 2 [0, 39] (40)  free
-    // Chunk 4 [40, 49] (10)  used
-    memory.free(chunk2);
-    SCC_TEST_MEMORY_CHUNK(chunk2, 0, 39, 40, true); // 0 and 3 merged into 2
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
 
-    // Chunk 2 [0, 29] (30)  used       // again returned id 2
     // Chunk 4 [40, 49] (10)  used
-    // Chunk 5 [30, 39] (10)  free      // rest of the memory is free and assigned to new chunk
-    scc::Memory::MemoryChunkId chunk2_new = memory.allocate(30);
-    SCC_TEST_MEMORY_CHUNK(chunk2_new, 0, 29, 30, false);
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
+    SCC_TEST_MEMORY_FREE(chunk2, true);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
 
-    // Chunk 2 [0, 29] (30)  used
-    // Chunk 4 [40, 49] (10)  used
-    // Chunk 5 [30, 39] (10)  free
-    // Chunk 6 [50, 79] (30)  used
-    scc::Memory::MemoryChunkId chunk6 = memory.allocate(30);
-    SCC_TEST_MEMORY_CHUNK(chunk2_new, 0, 29, 30, false);
-    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10, false);
-    SCC_TEST_MEMORY_CHUNK(chunk6, 50, 79, 30, false);
+    scc::Memory::address_t chunk5 = memory.allocate(100);
+    SCC_TEST_MEMORY_CHUNK(chunk5, 50, 149, 100);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(110);
+
+    SCC_TEST_MEMORY_FREE(chunk5, true);
+    SCC_TEST_MEMORY_FREE(chunk5, false); // double free
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
 }
