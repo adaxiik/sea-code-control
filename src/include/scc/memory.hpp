@@ -48,7 +48,7 @@ namespace scc
 
 
         template<typename T>
-        std::optional<T> read(address_t address)
+        std::optional<T> read(address_t address) const
         {
             static_assert(sizeof(T) <= 8, "T is too big");
             std::optional<address_t> start_address_opt = find_start_of_chunk(address);
@@ -57,8 +57,11 @@ namespace scc
             
             address_t start_address = start_address_opt.value();
             address_t real_memory_index = address - start_address;
+
+            if (real_memory_index + sizeof(T) > m_memory.at(start_address).size)
+                return std::nullopt;
             
-            return *reinterpret_cast<T*>(&m_memory[start_address].data[real_memory_index]);
+            return *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]);
         }
 
         /**
@@ -80,7 +83,11 @@ namespace scc
             
             address_t start_address = start_address_opt.value();
             address_t real_memory_index = address - start_address;
-            *reinterpret_cast<T*>(&m_memory[start_address].data[real_memory_index]) = value;
+            
+            if (real_memory_index + sizeof(T) > m_memory.at(start_address).size)
+                return false;
+
+            *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) = value;
             
             return true;
         }

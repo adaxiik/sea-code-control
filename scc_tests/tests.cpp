@@ -255,6 +255,11 @@ TEST_CASE("Single Expressions")
 
 #define SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(SIZE) CHECK(memory.allocated_memory_size_bytes() == SIZE)
 
+#define SCC_TEST_MEMORY_EXPECT_VALUE(ADDRESS, VALUE, TYPE) do { \
+    auto value = memory.read<TYPE>(ADDRESS); \
+    CHECK(value.has_value()); \
+    CHECK(value.value() == VALUE); \
+} while(0)
 
 TEST_CASE("Memory alloc and free")
 {
@@ -305,13 +310,43 @@ TEST_CASE("Memory alloc and free")
     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
 
+    // Chunk 4 [40, 49] (10)  used
+    // Chunk 5 [50, 149] (100)  used
     scc::Memory::address_t chunk5 = memory.allocate(100);
     SCC_TEST_MEMORY_CHUNK(chunk5, 50, 149, 100);
     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(110);
 
+    // Chunk 4 [40, 49] (10)  used
     SCC_TEST_MEMORY_FREE(chunk5, true);
     SCC_TEST_MEMORY_FREE(chunk5, false); // double free
     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
+
+    // Chunk 4 [40, 49] (10)  used
+    CHECK(memory.write<uint64_t>(chunk4, 0xffeeddccbbaa9988));
+    
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4, 0xffeeddccbbaa9988, uint64_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 0, 0x88, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 1, 0x99, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 2, 0xaa, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 3, 0xbb, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 4, 0xcc, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 5, 0xdd, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xee, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 7, 0xff, uint8_t);
+
+    // out of bounds
+    // ... | 5 | 6 | 7 | 8 | 9 | - | - | - | ...
+    //                   ^   ^   ^   ^
+
+    CHECK(!memory.read<int32_t>(chunk4 + 8).has_value());
+    CHECK(!memory.read<int32_t>(chunk4 + 7).has_value());
+    CHECK( memory.read<int32_t>(chunk4 + 6).has_value());
+    CHECK( memory.read<int32_t>(chunk4 + 5).has_value());
+
+    CHECK(!memory.write<int32_t>(chunk4 + 8, 0xdeadbeef));
+    CHECK(!memory.write<int32_t>(chunk4 + 7, 0xdeadbeef));
+    CHECK( memory.write<int32_t>(chunk4 + 6, 0xdeadbeef));
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xdeadbeef, int32_t);
 }
