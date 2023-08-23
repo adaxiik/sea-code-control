@@ -40,30 +40,102 @@ namespace scc
         if (binded.get_value()->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
             return InterpreterError::BindError;
         
+        auto& block_statement = ikwid_rc<binding::BoundBlockStatement>(ikwid_rc<binding::BoundStatement>(*binded.get_value()));    
+        debug::bound_ast_as_text_tree(std::cout, block_statement);
+   
+        if(block_statement.statements.size() != 1)
+            return InterpreterError::BindError;
+
         TRACE();
-        return interpret(ikwid_rc<binding::BoundBlockStatement>(*binded.get_value()));
+        return interpret(*block_statement.statements[0]);
     }
 
     InterpreterResult Interpreter::interpret(const binding::BoundBlockStatement &block_statement)
     {
-        debug::bound_ast_as_text_tree(std::cout, block_statement);
         if(block_statement.statements.size() == 1)
-            return interpret(*block_statement.statements[0]);
+        {
+            m_scope_stack.push();
+            auto result = interpret(*block_statement.statements[0]);
+            m_scope_stack.pop();
+            return result;
+        }
 
+        m_scope_stack.push();
         for (const auto& statement : block_statement.statements)
         {
             auto result = interpret(*statement);
             if (result.is_error())
                 return result;
         }
+        m_scope_stack.pop(); 
 
         return InterpreterError::None;
     }
 
     InterpreterResult Interpreter::interpret(const binding::BoundVariableDeclarationStatement &variable_declaration)
     {
+        static_assert(static_cast<int>(binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind::COUNT)  == 3, "Update this code");
+        TRACE();
+
+        auto creation_result = m_scope_stack.create_variable(variable_declaration.variable_name
+                                                           , variable_declaration.type
+                                                           , variable_declaration.size_bytes()
+                                                           , variable_declaration.is_constant);
+
+        switch (variable_declaration.variable_declaration_statement_kind())
+        {
+        case binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind::Value:
+        {
+            auto& vd = ikwid_rc<binding::BoundVariableValueDeclarationStatement>(variable_declaration);
+            if (!vd.initializer)
+                return creation_result;
+
+            return interpret(vd);
+        }
+        case binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind::Pointer:
+        {
+            auto& vd = ikwid_rc<binding::BoundVariablePointerDeclarationStatement>(variable_declaration);
+            if (!vd.initializer)
+                return creation_result;
+
+            return interpret(vd);
+        }
+        case binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind::StaticArray:
+        {
+            auto& vd = ikwid_rc<binding::BoundVariableStaticArrayDeclarationStatement>(variable_declaration);
+            if (vd.initializers.empty())
+                return creation_result;
+
+            return interpret(vd);
+        }
+        default:
+            // UNREACHABLE
+            return InterpreterError::ReachedUnreachableError;
+        }
+        return InterpreterError::RuntimeError;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration)
+    {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:
+        
+        return InterpreterError::RuntimeError;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration)
+    {
+        TRACE();
+        // TODOOOOOOOOOOOOOOOOOOOO:
+        
+        return InterpreterError::RuntimeError;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundVariableStaticArrayDeclarationStatement &variable_reference_declaration)
+    {
+        TRACE();
+        // TODOOOOOOOOOOOOOOOOOOOO:
+        
         return InterpreterError::RuntimeError;
     }
 

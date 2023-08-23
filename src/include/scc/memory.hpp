@@ -16,9 +16,9 @@ namespace scc
         constexpr static auto GIGABYTE = 1024 * MEGABYTE;
 
         using address_t = uint64_t;
-        constexpr static address_t ADDRESS_OFFSET = 8 * MEGABYTE;
+        constexpr static address_t DEFAULT_ADDRESS_OFFSET = 8 * MEGABYTE;
 
-        Memory(address_t offset = ADDRESS_OFFSET) : m_next_address(offset) {}
+        Memory(address_t offset = DEFAULT_ADDRESS_OFFSET) : m_next_address(offset) {}
         ~Memory() = default;
 
         struct MemoryChunk

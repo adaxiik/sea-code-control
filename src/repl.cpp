@@ -134,7 +134,7 @@ namespace scc
             }
 
             if (result.is_ok())
-                continue;;
+                continue;
 
             static_assert(static_cast<int>(InterpreterError::COUNT) == 9, "Edit this code");
             switch (result.get_error())

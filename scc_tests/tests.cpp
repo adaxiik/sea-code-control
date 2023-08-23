@@ -350,3 +350,24 @@ TEST_CASE("Memory alloc and free")
     CHECK( memory.write<int32_t>(chunk4 + 6, 0xdeadbeef));
     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xdeadbeef, int32_t);
 }
+
+#define SCC_GET_PTR_FROM_RESULT(INTERPRETER_RESULT) \
+    std::any_cast<unsigned long long>(INTERPRETER_RESULT.get_value().value)
+
+
+TEST_CASE("Scopes")
+{
+    auto interpreter = scc::Interpreter();
+    auto a = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int a;"));
+    auto b = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int b;"));
+
+    CHECK(a != b);
+    CHECK(a == b + sizeof(int));
+    CHECK(interpreter.interpret("int a;").is_error());
+    CHECK(interpreter.interpret("int b;").is_error());
+
+    auto c1 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
+    auto c2 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
+    CHECK(c1 == c2);
+    CHECK(b == c1 + sizeof(int));
+}

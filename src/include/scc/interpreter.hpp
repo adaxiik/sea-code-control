@@ -3,12 +3,14 @@
 #include "binding/binder.hpp"
 #include "interpreter_result.hpp"
 #include "scope.hpp"
+#include "memory.hpp"
 namespace scc
 {
+    constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
     class Interpreter
     {
     public:
-        Interpreter() = default;
+        Interpreter(): m_memory(8 * Memory::MEGABYTE), m_scope_stack(m_memory.allocate(STACK_SIZE)) {}
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);
         InterpreterResult interpret(const std::string &code);
@@ -18,17 +20,20 @@ namespace scc
         template <typename T, typename U>
         const T& ikwid_rc (const U& u) // I know what I'm doing reference cast (used for downcasting)
         {
-            static_assert(std::is_base_of_v<U,T>, "U must be a base of T");
+            static_assert(std::is_base_of_v<U,T>);
             return *static_cast<const T*>(&u);
         }
 
         Parser m_parser;
+        Memory m_memory;
         ScopeStack m_scope_stack;
-        
 
         InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
         InterpreterResult interpret(const binding::BoundStatement &statement);
         InterpreterResult interpret(const binding::BoundVariableDeclarationStatement &variable_declaration);
+        InterpreterResult interpret(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration);
+        InterpreterResult interpret(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration);
+        InterpreterResult interpret(const binding::BoundVariableStaticArrayDeclarationStatement &variable_reference_declaration);
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);
