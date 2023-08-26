@@ -2,6 +2,7 @@
 #include "binding/bound_binary_expression.hpp"
 #include "binding/bound_cast_expression.hpp"
 #include "cpp_compiler.hpp"
+#include "type.hpp"
 
 namespace scc
 {
@@ -52,18 +53,9 @@ namespace scc
            } \
            else \
            { \
-                /* auto result {OperationResult::perform_ ## FN_NAME (std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value))}; \
-                if (!result.has_value()) \
-                    return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
-                else \
-                { \
-                    auto result_type {Type::deduce_type(result.value())}; \
-                    result_type.pointer_depth = LEFT_PTR_DEPTH; \
-                    return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type)); \
-                }*/ \
                 if (LEFT_PTR_DEPTH > 0) \
                 { \
-                    auto result {OperationResult::perform_ ## FN_NAME (std::any_cast<unsigned long long>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value))}; \
+                    auto result {OperationResult::perform_ ## FN_NAME (std::get<Type::Primitive::U64>(left_result.get_value().value), std::get<RIGHT_CAST>(right_result.get_value().value))}; \
                     if (!result.has_value()) \
                         return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
                     else \
@@ -75,64 +67,64 @@ namespace scc
                 } \
                 else if (RIGHT_PTR_DEPTH > 0) \
                 { \
-                    auto result {OperationResult::perform_ ## FN_NAME (std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<unsigned long long>(right_result.get_value().value))}; \
+                    auto result {OperationResult::perform_ ## FN_NAME (std::get<LEFT_CAST>(left_result.get_value().value), std::get<Type::Primitive::U64>(right_result.get_value().value))}; \
                     if (!result.has_value()) \
                         return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
                     else \
                     { \
-                         auto result_type {Type::deduce_type<RIGHT_CAST>()}; \
+                        auto result_type {Type::deduce_type<RIGHT_CAST>()}; \
                         result_type.pointer_depth = RIGHT_PTR_DEPTH; \
                         return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type)); \
                     } \
                 } \
                 else \
                 { \
-                    auto result {OperationResult::perform_ ## FN_NAME (std::any_cast<LEFT_CAST>(left_result.get_value().value), std::any_cast<RIGHT_CAST>(right_result.get_value().value))}; \
+                    auto result {OperationResult::perform_ ## FN_NAME (std::get<LEFT_CAST>(left_result.get_value().value), std::get<RIGHT_CAST>(right_result.get_value().value))}; \
                     if (!result.has_value()) \
                         return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
                     else \
                     { \
-                        return InterpreterResult::ok(InterpreterResultValue(result.value())); \
+                        return InterpreterResult::ok(result.value()); \
                     } \
                 }\
            } \
         }while(0)
 
-        #define RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,TYPE,CTYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) case Type::Kind::TYPE: DO_CASTED_OP(OP,STRUCT_NAME,LEFT_CAST,CTYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH)
+        #define RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,TYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) case Type::Kind::TYPE: DO_CASTED_OP(OP,STRUCT_NAME,LEFT_CAST,Type::Primitive::TYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH)
 
-        #define DO_OP_RIGHT(OP,STRUCT_NAME,LEFT_CAST,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) do{                    \
-            switch (right_result.get_value().type.kind)                                \
-            {                                                                          \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Char,char,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);              \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U8,unsigned char,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);       \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I8,signed char,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);         \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U32,unsigned int,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);       \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I32,int,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);                \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U64,unsigned long long,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH); \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I64,long long,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);          \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F32,float,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);              \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F64,double,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);             \
-                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Bool,bool,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);              \
+        #define DO_OP_RIGHT(OP,STRUCT_NAME,LEFT_CAST,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) do{   \
+            switch (right_result.get_value().type.kind)                                    \
+            {                                                                              \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Char,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);  \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U8,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);    \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I8,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);    \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,U64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,I64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,F64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);   \
+                RIGHT_CASE(OP,STRUCT_NAME,LEFT_CAST,Bool,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH);  \
                 default:                                         \
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
             }                                                    \
         }while(0)
 
-        #define LEFT_CASE(OP,STRUCT_NAME,TYPE,CTYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) case Type::Kind::TYPE: DO_OP_RIGHT(OP,STRUCT_NAME,CTYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH)
+        #define LEFT_CASE(OP,STRUCT_NAME,TYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) case Type::Kind::TYPE: DO_OP_RIGHT(OP,STRUCT_NAME,Type::Primitive::TYPE,LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH)
 
         #define DO_OP_LEFT(OP,STRUCT_NAME,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT) do{ \
             switch (left_result.get_value().type.kind) \
             { \
-                LEFT_CASE(OP,STRUCT_NAME,Char,char ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,U8,unsigned char ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,I8,signed char ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,U32,unsigned int ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,I32,int ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,U64,unsigned long long ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,I64,long long ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,F32,float ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,F64,double ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
-                LEFT_CASE(OP,STRUCT_NAME,Bool,bool ,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,Char,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,U8,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,I8,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,U32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,I32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,U64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,I64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,F32,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,F64,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
+                LEFT_CASE(OP,STRUCT_NAME,Bool,LEFT_PTR_DEPTH,RIGHT_PTR_DEPT); \
                 default: \
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
             } \
@@ -171,7 +163,7 @@ namespace scc
         #undef DO_CASTED_OP
 
         SCC_SUPPRESS_WARNING_POP
-        return InterpreterResult::ok(1);
+        return InterpreterError::ReachedUnreachableError;
     }
 
 
@@ -193,29 +185,29 @@ namespace scc
             switch (result.get_value().type.kind)
             {
                 case Type::Kind::Char:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Char>(result.get_value().value)), target_type));
                 case Type::Kind::U8:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U8>(result.get_value().value)), target_type));
                 case Type::Kind::I8:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed char>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I8>(result.get_value().value)), target_type));
                 case Type::Kind::U16:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned short>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U16>(result.get_value().value)), target_type));
                 case Type::Kind::I16:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed short>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I16>(result.get_value().value)), target_type));
                 case Type::Kind::U32:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned int>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U32>(result.get_value().value)), target_type));
                 case Type::Kind::I32:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed int>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I32>(result.get_value().value)), target_type));
                 case Type::Kind::U64:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<unsigned long long>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value)), target_type));
                 case Type::Kind::I64:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<signed long long>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value)), target_type));
                 case Type::Kind::F32:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<float>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F32>(result.get_value().value)), target_type));
                 case Type::Kind::F64:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<double>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F64>(result.get_value().value)), target_type));
                 case Type::Kind::Bool:
-                    return InterpreterResult::ok(InterpreterResultValue(static_cast<unsigned long long>(std::any_cast<bool>(result.get_value().value)), target_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Bool>(result.get_value().value)), target_type));
                 default:
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
             }
@@ -224,40 +216,40 @@ namespace scc
         static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
 
 
-        #define CAST_CASE(KIND_TYPE, TARGET_TYPE,ORIGINAL_TYPE) case Type::Kind::KIND_TYPE: \
-            return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::any_cast<ORIGINAL_TYPE>(result.get_value().value))));
+        #define CAST_CASE(KIND_TYPE, TARGET_TYPE) case Type::Kind::KIND_TYPE: \
+            return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::get<Type::Primitive::KIND_TYPE>(result.get_value().value))))
         
         #define CAST_ORIGINAL(TARGET_TYPE) do{ \
             switch(result.get_value().type.kind) \
             { \
-                CAST_CASE(Char, TARGET_TYPE,char); \
-                CAST_CASE(U8, TARGET_TYPE,unsigned char); \
-                CAST_CASE(I8, TARGET_TYPE,signed char); \
-                CAST_CASE(U32, TARGET_TYPE,unsigned int); \
-                CAST_CASE(I32, TARGET_TYPE,int); \
-                CAST_CASE(U64, TARGET_TYPE,unsigned long long); \
-                CAST_CASE(I64, TARGET_TYPE,long long); \
-                CAST_CASE(F32, TARGET_TYPE,float); \
-                CAST_CASE(F64, TARGET_TYPE,double); \
-                CAST_CASE(Bool, TARGET_TYPE,bool); \
+                CAST_CASE(Char, TARGET_TYPE); \
+                CAST_CASE(U8, TARGET_TYPE); \
+                CAST_CASE(I8, TARGET_TYPE); \
+                CAST_CASE(U32, TARGET_TYPE); \
+                CAST_CASE(I32, TARGET_TYPE); \
+                CAST_CASE(U64, TARGET_TYPE); \
+                CAST_CASE(I64, TARGET_TYPE); \
+                CAST_CASE(F32, TARGET_TYPE); \
+                CAST_CASE(F64, TARGET_TYPE); \
+                CAST_CASE(Bool, TARGET_TYPE); \
                 default: \
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
             }}while(0)
 
         switch(target_type.kind)
         {
-            case Type::Kind::Char: CAST_ORIGINAL(char);
-            case Type::Kind::U8: CAST_ORIGINAL(unsigned char);
-            case Type::Kind::I8: CAST_ORIGINAL(signed char);
-            case Type::Kind::U16: CAST_ORIGINAL(unsigned short);
-            case Type::Kind::I16: CAST_ORIGINAL(signed short);
-            case Type::Kind::U32: CAST_ORIGINAL(unsigned int);
-            case Type::Kind::I32: CAST_ORIGINAL(int);
-            case Type::Kind::U64: CAST_ORIGINAL(unsigned long long);
-            case Type::Kind::I64: CAST_ORIGINAL(long long);
-            case Type::Kind::F32: CAST_ORIGINAL(float);
-            case Type::Kind::F64: CAST_ORIGINAL(double);
-            case Type::Kind::Bool: CAST_ORIGINAL(bool);
+            case Type::Kind::Char: CAST_ORIGINAL(Type::Primitive::Char);
+            case Type::Kind::U8: CAST_ORIGINAL(Type::Primitive::U8);
+            case Type::Kind::I8: CAST_ORIGINAL(Type::Primitive::I8);
+            case Type::Kind::U16: CAST_ORIGINAL(Type::Primitive::U16);
+            case Type::Kind::I16: CAST_ORIGINAL(Type::Primitive::I16);
+            case Type::Kind::U32: CAST_ORIGINAL(Type::Primitive::U32);
+            case Type::Kind::I32: CAST_ORIGINAL(Type::Primitive::I32);
+            case Type::Kind::U64: CAST_ORIGINAL(Type::Primitive::U64);
+            case Type::Kind::I64: CAST_ORIGINAL(Type::Primitive::I64);
+            case Type::Kind::F32: CAST_ORIGINAL(Type::Primitive::F32);
+            case Type::Kind::F64: CAST_ORIGINAL(Type::Primitive::F64);
+            case Type::Kind::Bool: CAST_ORIGINAL(Type::Primitive::Bool);
             default:
                 return InterpreterResult::error(InterpreterError::ReachedUnreachableError); 
         }

@@ -1,17 +1,22 @@
 Sorted TODO list:
 
-src/binder.cpp:535:             // TODOOOOOOOOOOOOO: custom types
-src/binder.cpp:586:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
-src/binder.cpp:714:                                     // TODOOOOO: what if its custom type? investigate or @help
-src/include/scc/type.hpp:211:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
-src/binder.cpp:545:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/binder.cpp:289:             // TODOOO: 
-src/binder.cpp:733:                 // TODOOO: investigate other initializers
-src/binder.cpp:521:         // TODOOO: int a, b, c; 
+src/binder.cpp:541:             // TODOOOOOOOOOOOOO: custom types
+src/binder.cpp:305:         // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
+src/binder.cpp:304:         // TODOOOOOOO: might be a macro?
+src/binder.cpp:592:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
+src/binder.cpp:720:                                     // TODOOOOO: what if its custom type? investigate or @help
+src/include/scc/type.hpp:261:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
+src/binder.cpp:551:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:527:         // TODOOO: int a, b, c; 
+src/binder.cpp:739:                 // TODOOO: investigate other initializers
+src/binder.cpp:282:             // TODOOO: 
 src/binder.cpp:101:                 // TODOOO: UNREACHABLE???
-scc_tests/tests.cpp:220:         // TODOO: multiple declarations
-scc_tests/tests.cpp:228:         // TODOO: complex types
-src/binder.cpp:571:                     // TODOO: int x[1][2];  multi dimensional arrays
-scc_tests/tests.cpp:223:         // TODOO: multiple initializers
-src/debug.cpp:182:         // TODOO: convert it into multiple functions for each node type
-scc_tests/tests.cpp:226:         // TODO: 2d arrays 
+src/include/scc/scope.hpp:9: // TODOO: Move implementation to .cpp file
+src/include/scc/scope.hpp:36:         // TODOO: padding?
+scc_tests/tests.cpp:230:         // TODOO: complex types
+src/debug.cpp:177:         // TODOO: convert it into multiple functions for each node type
+scc_tests/tests.cpp:225:         // TODOO: multiple initializers
+scc_tests/tests.cpp:222:         // TODOO: multiple declarations
+src/binder.cpp:577:                     // TODOO: int x[1][2];  multi dimensional arrays
+src/include/scc/interpreter.hpp:14:                      , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
+scc_tests/tests.cpp:228:         // TODO: 2d arrays 

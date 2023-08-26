@@ -4,10 +4,41 @@
 #include <iostream>
 #include <optional>
 #include "operation_result.hpp"
+#include "overloaded.hpp"
 namespace scc
 {
     struct Type
     {
+        struct Primitive
+        {
+            using Char = char;
+            using I8 = signed char;
+            using U8 = unsigned char;
+            using I16 = signed short;
+            using U16 = unsigned short;
+            using I32 = signed int;
+            using U32 = unsigned int;
+            using I64 = signed long long;
+            using U64 = unsigned long long;
+            using F32 = float;
+            using F64 = double;
+            using Bool = bool;
+        };
+
+        using Value = std::variant<
+            Primitive::Char,
+            Primitive::I8,
+            Primitive::U8,
+            Primitive::I16,
+            Primitive::U16,
+            Primitive::I32,
+            Primitive::U32,
+            Primitive::I64,
+            Primitive::U64,
+            Primitive::F32,
+            Primitive::F64,
+            Primitive::Bool>;
+
         enum class Kind
         {
             Char = 0,
@@ -24,6 +55,25 @@ namespace scc
             Bool,
             COUNT
         };
+
+        constexpr static Type from_value(const Value &value)
+        {
+            return std::visit(
+                overloaded{
+                    [](Primitive::Char) { return Type(Kind::Char); },
+                    [](Primitive::I8) { return Type(Kind::I8); },
+                    [](Primitive::U8) { return Type(Kind::U8); },
+                    [](Primitive::I16) { return Type(Kind::I16); },
+                    [](Primitive::U16) { return Type(Kind::U16); },
+                    [](Primitive::I32) { return Type(Kind::I32); },
+                    [](Primitive::U32) { return Type(Kind::U32); },
+                    [](Primitive::I64) { return Type(Kind::I64); },
+                    [](Primitive::U64) { return Type(Kind::U64); },
+                    [](Primitive::F32) { return Type(Kind::F32); },
+                    [](Primitive::F64) { return Type(Kind::F64); },
+                    [](Primitive::Bool) { return Type(Kind::Bool); }},
+                value);
+        }
 
         Kind kind;
         uint32_t pointer_depth; // 0 = not a pointer, 1 = pointer to <kind>, 2 = pointer to pointer to <kind>, etc.

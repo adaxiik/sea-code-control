@@ -4,16 +4,7 @@
 #include "debug.hpp"
 #include "cpp_compiler.hpp"
 #include "operation_result.hpp"
-
-
-
-
-// https://en.cppreference.com/w/cpp/utility/variant/visit
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
+#include "overloaded.hpp"
 
 namespace scc
 {
@@ -81,6 +72,8 @@ namespace scc
                                                            , variable_declaration.type
                                                            , variable_declaration.size_bytes()
                                                            , variable_declaration.is_constant);
+        if (creation_result.is_error())
+            return creation_result;
 
         switch (variable_declaration.variable_declaration_statement_kind())
         {
@@ -118,8 +111,17 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration)
     {
         TRACE();
-        // TODOOOOOOOOOOOOOOOOOOOO:
+        auto result = eval(*variable_value_declaration.initializer);
+        if (result.is_error())
+            return result;
         
+        auto variable = m_scope_stack.get_variable(variable_value_declaration.variable_name);
+        if (!variable)
+            return InterpreterError::VariableDoesntExistError; // probably unreachable
+        
+        if (variable->set_value(m_memory, result.get_value().value))
+            return InterpreterResult::ok(variable->address());
+
         return InterpreterError::RuntimeError;
     }
 
@@ -160,7 +162,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 4, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 5, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
@@ -169,21 +171,19 @@ namespace scc
         {
             // return interpret(ikwid_rc<binding::BoundLiteralExpression>(expression));
             decltype(auto) literal = ikwid_rc<binding::BoundLiteralExpression>(expression);
-            return InterpreterResult::ok(InterpreterResultValue(literal.value, literal.type));
+            return InterpreterResult::ok(literal.value);
         }
         case binding::BoundNodeKind::CastExpression:
             return eval(ikwid_rc<binding::BoundCastExpression>(expression));
         case binding::BoundNodeKind::ParenthesizedExpression:
             return eval(ikwid_rc<binding::BoundParenthesizedExpression>(expression));
+        case binding::BoundNodeKind::IdentifierExpression:
+            return eval(ikwid_rc<binding::BoundIdentifierExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
         }
     }
-    
-    
-
-    
 
     InterpreterResult Interpreter::eval(const binding::BoundParenthesizedExpression &parenthesized_expression)
     {
@@ -200,5 +200,23 @@ namespace scc
 
         // UNREACHABLE
         return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
+    }
+
+    InterpreterResult Interpreter::eval(const binding::BoundIdentifierExpression &identifier_expression)
+    {
+        TRACE();
+        auto variable = m_scope_stack.get_variable(identifier_expression.identifier);
+        if (!variable)
+            return InterpreterError::VariableDoesntExistError;
+
+        if (!variable->is_initialized())
+            return InterpreterError::VariableNotInitializedError;
+        
+        
+        auto value = variable->get_value(m_memory, variable->type());
+        if (!value)
+            return InterpreterError::VariableNotInitializedError; // or memory error??
+
+        return InterpreterResult::ok(InterpreterResultValue(value.value()));
     }
 }

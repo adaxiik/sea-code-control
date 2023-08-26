@@ -1,7 +1,6 @@
 #include "debug.hpp"
 #include <functional>
 #include <variant>
-#include <any>
 #include <iomanip>
 
 #include "binding/bound_block_statement.hpp"
@@ -11,14 +10,10 @@
 #include "binding/bound_cast_expression.hpp"
 #include "binding/bound_parenthesized_expression.hpp"
 #include "binding/bound_variable_declaration_statement.hpp"
+#include "binding/bound_identifier_expression.hpp"
 
 
-// https://en.cppreference.com/w/cpp/utility/variant/visit
-template<class... Ts>
-struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
+#include "overloaded.hpp"
 
 namespace scc
 {
@@ -197,7 +192,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 7, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 8, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -319,6 +314,13 @@ namespace scc
                                                     , i == parenthesized_expression.expressions.size() - 1
                                                     , prefix + (last ? SPACE : DOWN_PIPE));
                     }
+                    break;
+                }
+                case binding::BoundNodeKind::IdentifierExpression:
+                {
+                    auto& identifier_expression = static_cast<const binding::BoundIdentifierExpression&>(node);
+                    ss << "IdentifierExpression (" << identifier_expression.type << ") ==> " << identifier_expression.identifier << std::endl;
+                    ss << std::endl;
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:

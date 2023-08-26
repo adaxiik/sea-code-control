@@ -5,6 +5,8 @@
 #include <optional>
 #include "interpreter_result.hpp"
 
+
+// TODOO: Move implementation to .cpp file
 namespace scc
 {
     class Scope
@@ -16,13 +18,13 @@ namespace scc
     public:
         Scope(Memory::address_t start_address) : m_start_address(start_address), m_current_address(start_address) {}
 
-        std::optional<Variable> get_variable(const std::string &name)
+        Variable* get_variable(const std::string &name)
         {
             auto var = m_variables.find(name);
             if (var != m_variables.end())
-                return var->second;
+                return &var->second;
 
-            return std::nullopt;
+            return nullptr;
         }
 
         std::map<std::string, Variable> &ref_variables() { return m_variables; }
@@ -45,16 +47,16 @@ namespace scc
     public:
         ScopeStack(Memory::address_t start_address) : m_scopes{Scope(start_address)} {}
 
-        std::optional<Variable> get_variable(const std::string &name)
+        Variable* get_variable(const std::string &name)
         {
             for (auto it = m_scopes.rbegin(); it != m_scopes.rend(); it++)
             {
                 auto var = it->get_variable(name);
-                if (var.has_value())
+                if (var != nullptr)
                     return var;
             }
 
-            return std::nullopt;
+            return nullptr;
         }
 
         void push() 
@@ -73,17 +75,18 @@ namespace scc
             if (m_scopes.empty()) // This should be unreachable, but you never know
                 return InterpreterError::RuntimeError;
 
-            std::optional<Variable> var{m_scopes.back().get_variable(name)};
+            Variable* var{m_scopes.back().get_variable(name)};
 
-            if (var.has_value())
+            if (var != nullptr)
                 return InterpreterError::VariableAlreadyExistsError;
             
+            m_scopes.back().shift_current_address(size_bytes);
+
             Memory::address_t current_address = m_scopes.back().current_address();
             m_scopes.back()
                     .ref_variables()
                     .emplace(name,Variable{type, current_address, is_constant});
             
-            m_scopes.back().shift_current_address(size_bytes);
 
             return InterpreterResult::ok(static_cast<unsigned long long>(current_address));
         }

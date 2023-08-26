@@ -3,6 +3,7 @@
 #include <memory>
 #include <map>
 #include <optional>
+#include "type.hpp"
 namespace scc
 {
     // low level memory manager
@@ -15,7 +16,7 @@ namespace scc
         constexpr static auto MEGABYTE = 1024 * KILOBYTE;
         constexpr static auto GIGABYTE = 1024 * MEGABYTE;
 
-        using address_t = uint64_t;
+        using address_t = Type::Primitive::U64;
         constexpr static address_t DEFAULT_ADDRESS_OFFSET = 8 * MEGABYTE;
 
         Memory(address_t offset = DEFAULT_ADDRESS_OFFSET) : m_next_address(offset) {}

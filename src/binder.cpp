@@ -234,29 +234,22 @@ namespace scc
             switch (number_type)
             {
             case NumberType::SIGNED:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stoi(value, nullptr, base_int),
-                                                                         Type::Kind::I32);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I32>(std::stoi(value, nullptr, base_int)));
             case NumberType::LONG:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stoll(value, nullptr, base_int),
-                                                                         Type::Kind::I64);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I64>(std::stoll(value, nullptr, base_int)));
             case NumberType::LONG_LONG:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stoll(value, nullptr, base_int),
-                                                                         Type::Kind::I64);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I64>(std::stoll(value, nullptr, base_int)));
             case NumberType::UNSIGNED:
-                return std::make_unique<binding::BoundLiteralExpression>(static_cast<uint32_t>(std::stoul(value, nullptr, base_int)),
-                                                                         Type::Kind::U32);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U32>(std::stoul(value, nullptr, base_int)));
             case NumberType::UNSIGNED_LONG:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stoull(value, nullptr, base_int),
-                                                                         Type::Kind::U64);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(std::stoull(value, nullptr, base_int)));
             case NumberType::UNSIGNED_LONG_LONG:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stoull(value, nullptr, base_int),
-                                                                         Type::Kind::U64);
-            case NumberType::FLOAT:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stof(value, nullptr),
-                                                                         Type::Kind::F32);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(std::stoull(value, nullptr, base_int)));
+            case NumberType::FLOAT: 
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::F32>(std::stof(value, nullptr)));
             case NumberType::DOUBLE:
-                return std::make_unique<binding::BoundLiteralExpression>(std::stod(value, nullptr),
-                                                                         Type::Kind::F64);
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::F64>(std::stod(value, nullptr)));
+
             default:
                 SCC_UNREACHABLE();
             }
@@ -293,7 +286,7 @@ namespace scc
         }
         else if (node.symbol() == Parser::CHAR_LITERAL_SYMBOL)
         {
-            return std::make_unique<binding::BoundLiteralExpression>(node.value()[1], Type::Kind::Char);
+            return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(node.value()[1]));
         }
 
         
@@ -302,6 +295,17 @@ namespace scc
         SCC_BINDER_RESULT_TYPE(bind_literal_expression);  
         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
       
+    }
+
+    binding::BinderResult<binding::BoundIdentifierExpression> Binder::bind_identifier_expression(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::IDENTIFIER_SYMBOL);
+        SCC_ASSERT_CHILD_COUNT(node, 0);
+        // TODOOOOOOO: might be a macro?
+        // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
+        // its future me problem, sooo.. for now everything is an int c:        
+        Type type = Type::Kind::I32;  
+        return std::make_unique<binding::BoundIdentifierExpression>(node.value(), type);
     }
 
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
@@ -319,6 +323,8 @@ namespace scc
         case Parser::STRING_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
             return bind_literal_expression(node);
+        case Parser::IDENTIFIER_SYMBOL:
+            return bind_identifier_expression(node);
 
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
@@ -436,7 +442,7 @@ namespace scc
 
         type.value().pointer_depth = pointer_depth;
 
-        return std::make_unique<binding::BoundCastExpression>(std::move(bound_expression.release_value()), type.value());
+        return std::make_unique<binding::BoundCastExpression>(bound_expression.release_value(), type.value());
     }
 
     binding::BinderResult<binding::BoundParenthesizedExpression> Binder::bind_parenthesized_expression(const TreeNode &node)
@@ -468,14 +474,14 @@ namespace scc
             {
                 auto expression = bind_expression(current_node.first_named_child());
                 BUBBLE_ERROR(expression);
-                expressions.push_back(std::move(expression.release_value()));
+                expressions.push_back(expression.release_value());
                 current_node = current_node.last_named_child();
             
             } while (current_node.symbol() == Parser::COMMA_EXPRESSION_SYMBOL);
 
             auto last_expression = bind_expression(current_node);
             BUBBLE_ERROR(last_expression);
-            expressions.push_back(std::move(last_expression.release_value()));
+            expressions.push_back(last_expression.release_value());
             
             return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expressions));
         }
@@ -484,7 +490,7 @@ namespace scc
             auto expression = bind_expression(node.first_named_child());
             BUBBLE_ERROR(expression);
 
-            return std::make_unique<binding::BoundParenthesizedExpression>(std::move(expression.release_value()));
+            return std::make_unique<binding::BoundParenthesizedExpression>(expression.release_value());
         }
 
     }
@@ -503,7 +509,7 @@ namespace scc
         auto expression = bind_expression(node.named_child(0));
         BUBBLE_ERROR(expression);
 
-        expression_statement->expression = std::move(expression.release_value());
+        expression_statement->expression = expression.release_value();
         return  binding::BinderResult<ResultType>::ok(std::move(expression_statement));
     }
 
@@ -667,7 +673,7 @@ namespace scc
 
                             auto initializer = bind_expression(initializer_node.named_child(0));
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
+                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
                             return declaration;
                         }
                         case DeclarationKind::Pointer:
@@ -678,7 +684,7 @@ namespace scc
                             
                             auto initializer = bind_expression(initializer_node.named_child(0));
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
+                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
                             return declaration;
                         }
                         case DeclarationKind::StaticArray:
@@ -707,7 +713,7 @@ namespace scc
                                 {
                                     auto initializer = bind_expression(initializer_node.named_child(i));
                                     BUBBLE_ERROR(initializer);
-                                    array_declaration->initializers.push_back(std::move(initializer.release_value()));
+                                    array_declaration->initializers.push_back(initializer.release_value());
                                 }
                                 else
                                 {
@@ -739,14 +745,14 @@ namespace scc
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
+                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
                         return declaration;
                     }
                     case DeclarationKind::Pointer:
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(initializer.release_value());
+                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
                         return declaration;
                     }
                     case DeclarationKind::StaticArray:

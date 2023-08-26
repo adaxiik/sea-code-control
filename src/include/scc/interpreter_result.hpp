@@ -1,5 +1,4 @@
 #pragma once
-#include <any>
 #include <optional>
 #include "type.hpp"
 
@@ -16,22 +15,31 @@ namespace scc
         DivisionByZeroError,
         VariableAlreadyExistsError,
         VariableDoesntExistError,
+        VariableNotInitializedError,
         COUNT
     };
 
     struct InterpreterResultValue
     {
-        std::any value;
+        Type::Value value;
         Type type;
 
-        template <typename T>
-        InterpreterResultValue(T value, Type type)
-            : value(value), type(type) {}
+        constexpr InterpreterResultValue(Type::Value value)
+            : value(value), type(Type::from_value(value)) {}
         
         template <typename T>
-        InterpreterResultValue(T value)
-            : value(value), type(Type::deduce_type<T>()) {}
-      
+        constexpr InterpreterResultValue(T value)
+            : value(Type::Value(value)), type(Type::from_value(value)) {}
+
+        template <typename T>
+        constexpr InterpreterResultValue(T value, Type type)
+            : value(Type::Value(value)), type(type) {}
+
+        
+        constexpr InterpreterResultValue(Type::Value value, Type type)
+            : value(value), type(type) {}
+        
+        
     };
 
     class InterpreterResult

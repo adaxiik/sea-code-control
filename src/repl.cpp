@@ -1,19 +1,12 @@
 #include "repl.hpp"
 #include "debug.hpp"
 #include "3rdparty/linenoise.hpp"
+#include "overloaded.hpp"
 
 constexpr auto RED = "\033[0;31m";
 constexpr auto GREEN = "\033[0;32m";
 constexpr auto RESET = "\033[0m";
 
-// https://en.cppreference.com/w/cpp/utility/variant/visit
-template <class... Ts>
-struct overloaded : Ts...
-{
-    using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
 
 namespace scc
 {
@@ -32,39 +25,24 @@ namespace scc
     {
         if (result.get_value().type.pointer_depth > 0)
         {
-            m_output_stream << std::any_cast<unsigned long long>(result.get_value().value);
+            m_output_stream << "0x" << std::hex << std::get<Memory::address_t>(result.get_value().value) << std::dec; 
             return;
         }
 
-
-        #define VISIT_CASE(KIND, C_TYPE) \
-            case Type::Kind::KIND: \
-                m_output_stream << std::any_cast<C_TYPE>(result.get_value().value) ; \
-                break;
-        static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Edit this code");
-        switch (result.get_value().type.kind)
-        {
-            case Type::Kind::Char:
-                m_output_stream << "'" << std::any_cast<char>(result.get_value().value) << "'" ;
-                break;
-            VISIT_CASE(U8, unsigned char)
-            VISIT_CASE(U16, unsigned short)
-            VISIT_CASE(U32, unsigned int)
-            VISIT_CASE(U64, unsigned long long)
-            VISIT_CASE(I8, signed char)
-            VISIT_CASE(I16, short)
-            VISIT_CASE(I32, int)
-            VISIT_CASE(I64, long long)
-            VISIT_CASE(F32, float)
-            VISIT_CASE(F64, double)
-            case Type::Kind::Bool:
-                m_output_stream << (std::any_cast<bool>(result.get_value().value) ? "true" : "false") ;
-                break;
-            default:
-                m_output_stream << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ ;
-                std::exit(1);
-                break;
-        }
+        std::visit(overloaded{
+            [&](const Type::Primitive::Char& value) { m_output_stream << "'" << value << "'" ; },
+            [&](const Type::Primitive::U8& value) { m_output_stream << value; },
+            [&](const Type::Primitive::I8& value) { m_output_stream << value; },
+            [&](const Type::Primitive::U16& value) { m_output_stream << value; },
+            [&](const Type::Primitive::I16& value) { m_output_stream << value; },
+            [&](const Type::Primitive::U32& value) { m_output_stream << value; },
+            [&](const Type::Primitive::I32& value) { m_output_stream << value; },
+            [&](const Type::Primitive::U64& value) { m_output_stream << value; },
+            [&](const Type::Primitive::I64& value) { m_output_stream << value; },
+            [&](const Type::Primitive::F32& value) { m_output_stream << value; },
+            [&](const Type::Primitive::F64& value) { m_output_stream << value; },
+            [&](const Type::Primitive::Bool& value) { m_output_stream << (value ? "true" : "false") ; }
+        }, result.get_value().value);
     }
 
     void REPL::run()
@@ -136,7 +114,7 @@ namespace scc
             if (result.is_ok())
                 continue;
 
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 9, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 10, "Edit this code");
             switch (result.get_error())
             {
                 case InterpreterError::BindError:
@@ -159,6 +137,9 @@ namespace scc
                     break;
                 case InterpreterError::VariableDoesntExistError:
                     m_output_stream << RED << "Variable doesn't exist error" << RESET << std::endl;
+                    break;
+                case InterpreterError::VariableNotInitializedError:
+                    m_output_stream << RED << "Variable not initialized error" << RESET << std::endl;
                     break;
                 default:
                     m_output_stream << RED << "Unknown error" << RESET << std::endl;

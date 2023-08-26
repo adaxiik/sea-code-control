@@ -5,6 +5,7 @@
 #include <scc/interpreter.hpp>
 #include <scc/binding/binder.hpp>
 #include <scc/memory.hpp>
+#include <scc/type.hpp>
 
 #define SCC_TEST_TYPE(TYPE, VALUE) \
     do \
@@ -43,7 +44,7 @@
         auto result = interpreter.interpret(CODE); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::deduce_type<CTYPE>().kind); \
-        CHECK(std::any_cast<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
+        CHECK(std::get<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
     }while(0)
 
 #define SCC_TEST_BINDER(CODE) \
@@ -352,7 +353,7 @@ TEST_CASE("Memory alloc and free")
 }
 
 #define SCC_GET_PTR_FROM_RESULT(INTERPRETER_RESULT) \
-    std::any_cast<unsigned long long>(INTERPRETER_RESULT.get_value().value)
+    std::get<scc::Type::Primitive::U64>(INTERPRETER_RESULT.get_value().value)
 
 
 TEST_CASE("Scopes")

@@ -10,7 +10,8 @@ namespace scc
     class Interpreter
     {
     public:
-        Interpreter(): m_memory(8 * Memory::MEGABYTE), m_scope_stack(m_memory.allocate(STACK_SIZE)) {}
+        Interpreter(): m_memory(0)
+                     , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);
         InterpreterResult interpret(const std::string &code);
@@ -39,6 +40,8 @@ namespace scc
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);
         InterpreterResult eval(const binding::BoundCastExpression &cast_expression);
         InterpreterResult eval(const binding::BoundParenthesizedExpression &parenthesized_expression);
+        InterpreterResult eval(const binding::BoundIdentifierExpression &identifier_expression);
+        
 
     };
 

@@ -16,6 +16,7 @@ namespace scc
             LiteralExpression,
             CastExpression,
             ParenthesizedExpression,
+            IdentifierExpression,
             COUNT,
         };
 

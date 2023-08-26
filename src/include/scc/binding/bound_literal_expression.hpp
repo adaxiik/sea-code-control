@@ -1,5 +1,4 @@
 #pragma once
-#include <any>
 #include "binding/bound_expression.hpp"
 namespace scc
 {
@@ -7,9 +6,10 @@ namespace scc
     {
         struct BoundLiteralExpression : public BoundExpression
         {
-            std::any value;
-            BoundLiteralExpression(const std::any& value, Type type)                
-                : BoundExpression(type), value(value)
+            Type::Value value;
+            BoundLiteralExpression(const Type::Value& value)                
+                : BoundExpression(Type::from_value(value)) 
+                , value(value)
             {
             }
 
