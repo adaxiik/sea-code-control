@@ -11,6 +11,7 @@
 #include "binding/bound_parenthesized_expression.hpp"
 #include "binding/bound_variable_declaration_statement.hpp"
 #include "binding/bound_identifier_expression.hpp"
+#include "binding/bound_assignment_expression.hpp"
 
 
 #include "overloaded.hpp"
@@ -174,7 +175,7 @@ namespace scc
                 ss << "*";            
         }
 
-        // TODOO: convert it into multiple functions for each node type
+        // TODOOOO: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {  
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
@@ -192,7 +193,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 8, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 9, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -320,7 +321,16 @@ namespace scc
                 {
                     auto& identifier_expression = static_cast<const binding::BoundIdentifierExpression&>(node);
                     ss << "IdentifierExpression (" << identifier_expression.type << ") ==> " << identifier_expression.identifier << std::endl;
-                    ss << std::endl;
+                    break;
+                }
+                case binding::BoundNodeKind::AssignmentExpression:
+                {
+                    auto& assignment_expression = static_cast<const binding::BoundAssignmentExpression&>(node);
+                    ss << "AssignmentExpression (" << assignment_expression.type << ") ==> " << assignment_expression.identifier << std::endl;
+                    bound_ast_as_text_tree_impl(*assignment_expression.expression
+                                                , depth + 1
+                                                , true
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:

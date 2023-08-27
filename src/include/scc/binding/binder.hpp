@@ -12,13 +12,14 @@
 #include "binding/bound_parenthesized_expression.hpp"
 #include "binding/bound_variable_declaration_statement.hpp"
 #include "binding/bound_identifier_expression.hpp"
+#include "binding/bound_assignment_expression.hpp"
 namespace scc
 {
 
     class Binder
     {
         
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 8, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 9, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -27,7 +28,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundParenthesizedExpression>, "ParenthesizedExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundVariableDeclarationStatement>, "VariableDeclaration must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundIdentifierExpression>, "IdentifierExpression must be derived from BoundExpression");
-
+        static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundAssignmentExpression>, "AssignmentExpression must be derived from BoundExpression");
         Binder() = delete;
         ~Binder() = delete;
 
@@ -42,6 +43,7 @@ namespace scc
         static binding::BinderResult<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
         static binding::BinderResult<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
         static binding::BinderResult<binding::BoundIdentifierExpression> bind_identifier_expression(const TreeNode &node);
+        static binding::BinderResult<binding::BoundAssignmentExpression> bind_assignment_expression(const TreeNode &node);
     public:
         static binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
     };  

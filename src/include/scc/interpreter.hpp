@@ -41,6 +41,8 @@ namespace scc
         InterpreterResult eval(const binding::BoundCastExpression &cast_expression);
         InterpreterResult eval(const binding::BoundParenthesizedExpression &parenthesized_expression);
         InterpreterResult eval(const binding::BoundIdentifierExpression &identifier_expression);
+        InterpreterResult eval(const binding::BoundAssignmentExpression &assignment_expression);
+        InterpreterResult eval(const binding::BoundLiteralExpression &literal_expression);
         
 
     };

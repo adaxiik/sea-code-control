@@ -308,6 +308,82 @@ namespace scc
         return std::make_unique<binding::BoundIdentifierExpression>(node.value(), type);
     }
 
+    binding::BinderResult<binding::BoundAssignmentExpression> Binder::bind_assignment_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_assignment_expression);  
+        SCC_ASSERT_NODE_SYMBOL(Parser::ASSIGNMENT_EXPRESSION_SYMBOL);
+        SCC_ASSERT_CHILD_COUNT(node, 3);
+        // assignment_expression ==>       a+=9
+        // ├── identifier ==>      a
+        // ├── += ==>      +=
+        // └── number_literal ==>  9
+        // we will convert everything into a pure assignment expression
+        // a += 9 ==> a = a + 9
+        std::string op_kind = node.child(1).value();
+
+        // TODOOO: int* a;
+        // a = 5; // error .. to pointers I dont want to allow literal assignment
+        // or we can check it in interpreter?
+        
+        // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
+        // its future me problem, sooo.. for now everything is an int c:  .. same as above    
+
+        Type type = Type(Type::Kind::I32);
+        const std::string identifier = node.first_child().value();
+        if (op_kind == "=")
+        {
+            auto expression = bind_expression(node.last_child());
+            BUBBLE_ERROR(expression);
+            return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier), type, expression.release_value());
+        }
+        constexpr auto PLUS_ASSIGNMENT = "+=";
+        constexpr auto MINUS_ASSIGNMENT = "-=";
+        constexpr auto MULTIPLICATION_ASSIGNMENT = "*=";
+        constexpr auto DIVISION_ASSIGNMENT = "/=";
+        constexpr auto MODULO_ASSIGNMENT = "%=";
+        constexpr auto BITWISE_AND_ASSIGNMENT = "&=";
+        constexpr auto BITWISE_OR_ASSIGNMENT = "|=";
+        constexpr auto BITWISE_XOR_ASSIGNMENT = "^=";
+        constexpr auto BITWISE_SHIFT_LEFT_ASSIGNMENT = "<<=";
+        constexpr auto BITWISE_SHIFT_RIGHT_ASSIGNMENT = ">>=";
+
+        binding::BoundBinaryExpression::OperatorKind operator_kind;
+        if (op_kind == PLUS_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::Addition;
+        else if (op_kind == MINUS_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::Subtraction;
+        else if (op_kind == MULTIPLICATION_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::Multiplication;
+        else if (op_kind == DIVISION_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::Division;
+        else if (op_kind == MODULO_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::Modulo;
+        else if (op_kind == BITWISE_AND_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseAnd;
+        else if (op_kind == BITWISE_OR_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseOr;
+        else if (op_kind == BITWISE_XOR_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseXor;
+        else if (op_kind == BITWISE_SHIFT_LEFT_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseShiftLeft;
+        else if (op_kind == BITWISE_SHIFT_RIGHT_ASSIGNMENT)
+            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseShiftRight;
+        else
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+                    
+        auto expression = bind_expression(node.last_child());
+        BUBBLE_ERROR(expression);
+        auto binary_expression = std::make_unique<binding::BoundBinaryExpression>(std::make_unique<binding::BoundIdentifierExpression>(identifier, type)
+                                                                                , expression.release_value()
+                                                                                , type
+                                                                                , operator_kind);
+
+        return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier)
+                                                                  , type
+                                                                  , std::move(binary_expression));
+
+    }
+
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
         // SCC_UNIMPLEMENTED();
@@ -325,7 +401,8 @@ namespace scc
             return bind_literal_expression(node);
         case Parser::IDENTIFIER_SYMBOL:
             return bind_identifier_expression(node);
-
+        case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
+            return bind_assignment_expression(node);
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;

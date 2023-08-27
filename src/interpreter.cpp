@@ -129,6 +129,7 @@ namespace scc
     {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:
+        // initializer must be a identifer expression?
         
         return InterpreterError::RuntimeError;
     }
@@ -159,26 +160,48 @@ namespace scc
         }
     }
 
+    InterpreterResult Interpreter::eval(const binding::BoundLiteralExpression &literal_expression)
+    {
+        TRACE();
+        return InterpreterResult::ok(literal_expression.value);
+    }
+
+    InterpreterResult Interpreter::eval(const binding::BoundAssignmentExpression &assignment_expression)
+    {
+        TRACE();
+        auto result = eval(*assignment_expression.expression);
+        if (result.is_error())
+            return result;
+
+        auto variable = m_scope_stack.get_variable(assignment_expression.identifier);
+        if (!variable)
+            return InterpreterError::VariableDoesntExistError;
+
+        if (variable->set_value(m_memory, result.get_value().value))
+            return result;
+
+        return InterpreterError::RuntimeError;
+    }
+
+
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 5, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 6, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
             return eval(ikwid_rc<binding::BoundBinaryExpression>(expression));
         case binding::BoundNodeKind::LiteralExpression:
-        {
-            // return interpret(ikwid_rc<binding::BoundLiteralExpression>(expression));
-            decltype(auto) literal = ikwid_rc<binding::BoundLiteralExpression>(expression);
-            return InterpreterResult::ok(literal.value);
-        }
+            return eval(ikwid_rc<binding::BoundLiteralExpression>(expression));
         case binding::BoundNodeKind::CastExpression:
             return eval(ikwid_rc<binding::BoundCastExpression>(expression));
         case binding::BoundNodeKind::ParenthesizedExpression:
             return eval(ikwid_rc<binding::BoundParenthesizedExpression>(expression));
         case binding::BoundNodeKind::IdentifierExpression:
             return eval(ikwid_rc<binding::BoundIdentifierExpression>(expression));
+        case binding::BoundNodeKind::AssignmentExpression:
+            return eval(ikwid_rc<binding::BoundAssignmentExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
