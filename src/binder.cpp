@@ -84,12 +84,26 @@ namespace scc
     {
         // SCC_ASSERT_NODE_SYMBOL(Parser::TRANSLATION_UNIT_SYMBOL);
         SCC_BINDER_RESULT_TYPE(bind_block_statement);
-
-        // if (node.symbol() != Parser::TRANSLATION_UNIT_SYMBOL && node.symbol() != Parser::COMPOUND_STATEMENT_SYMBOL)
-        //     return binding::BinderResult<ResultType>::error(binding::BinderError::None());
         SCC_ASSERT(node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL || node.symbol() == Parser::COMPOUND_STATEMENT_SYMBOL);
 
         auto block_statement = std::make_unique<binding::BoundBlockStatement>();
+        if (node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL && node.named_child_count() == 1)
+        {
+            // return bind_impl(node.first_named_child());
+            auto result = bind_impl(node.first_named_child());
+            BUBBLE_ERROR(result);
+            if (!result.get_value()->is_statement())
+            {
+                SCC_UNREACHABLE();
+            }
+
+            auto statement = static_cast<binding::BoundStatement*>(result.release_value().release());
+            block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(statement));
+            return binding::BinderResult<ResultType>::ok(std::move(block_statement));             
+        }
+
+
+        m_scope_stack.push();
         for (uint32_t i = 0; i < node.named_child_count(); i++)
         {
             auto child = node.named_child(i);
@@ -104,6 +118,7 @@ namespace scc
             auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release_value().release());
             block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(bound_statement_ptr));
         }
+        m_scope_stack.pop();
         return binding::BinderResult<ResultType>::ok(std::move(block_statement));
     }
 
@@ -302,10 +317,16 @@ namespace scc
         SCC_ASSERT_NODE_SYMBOL(Parser::IDENTIFIER_SYMBOL);
         SCC_ASSERT_CHILD_COUNT(node, 0);
         // TODOOOOOOO: might be a macro?
-        // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
-        // its future me problem, sooo.. for now everything is an int c:        
-        Type type = Type::Kind::I32;  
-        return std::make_unique<binding::BoundIdentifierExpression>(node.value(), type);
+       
+        Type* type = m_scope_stack.get_from_scopestack(node.value());
+        if (!type)
+        {
+            SCC_BINDER_RESULT_TYPE(bind_identifier_expression);  
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown identifier: " + node.value());
+            return error;
+        }
+        return std::make_unique<binding::BoundIdentifierExpression>(node.value(), *type);
     }
 
     binding::BinderResult<binding::BoundAssignmentExpression> Binder::bind_assignment_expression(const TreeNode &node)
@@ -324,12 +345,17 @@ namespace scc
         // TODOOO: int* a;
         // a = 5; // error .. to pointers I dont want to allow literal assignment
         // or we can check it in interpreter?
-        
-        // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
-        // its future me problem, sooo.. for now everything is an int c:  .. same as above    
 
-        Type type = Type(Type::Kind::I32);
         const std::string identifier = node.first_child().value();
+        Type* type_ptr = m_scope_stack.get_from_scopestack(identifier);
+        if (!type_ptr)
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown identifier: " + identifier);
+            return error;
+        }
+        Type type = *type_ptr;
+
         if (op_kind == "=")
         {
             auto expression = bind_expression(node.last_child());
@@ -629,8 +655,8 @@ namespace scc
 
         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
         // multidimensional arrays and multidimensional initializer..
-
-        auto resolve_declarator = [&type, is_constant](const TreeNode &node, int identifier_index, bool has_initializer = false)
+        auto& type_scope = m_scope_stack;
+        auto resolve_declarator = [&type, is_constant, &type_scope](const TreeNode &node, int identifier_index, bool has_initializer = false)
         ->  binding::BinderResult<binding::BoundVariableDeclarationStatement>
         {
             switch (node.named_child(identifier_index).symbol())
@@ -638,6 +664,9 @@ namespace scc
                 case Parser::IDENTIFIER_SYMBOL:
                 {
                     std::string identifier = node.named_child(identifier_index).value();
+                    if(!type_scope.create_variable(identifier, type.value()))
+                        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
+
                     return static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(
                          std::make_unique<binding::BoundVariableValueDeclarationStatement>(identifier
                     , type.value()
@@ -679,6 +708,10 @@ namespace scc
                     SCC_ASSERT_EQ(node.named_child(identifier_index).first_named_child().symbol(), Parser::IDENTIFIER_SYMBOL);
                     std::string identifier = node.named_child(identifier_index).first_named_child().value();
                     type.value().pointer_depth = 1;
+
+                    if(!type_scope.create_variable(identifier, type.value()))
+                        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
+
                     return static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(std::make_unique<binding::BoundVariableStaticArrayDeclarationStatement>(identifier
                     , type.value()
                     , array_size
@@ -697,6 +730,10 @@ namespace scc
 
                     std::string identifier = current_node.value();
                     type.value().pointer_depth = pointer_depth;
+
+                    if(!type_scope.create_variable(identifier, type.value()))
+                        return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
+
                     return  static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(std::make_unique<binding::BoundVariablePointerDeclarationStatement>(identifier
                     , type.value()
                     , is_constant));

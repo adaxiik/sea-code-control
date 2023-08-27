@@ -19,6 +19,7 @@ namespace scc
                 UnknownSymbolError,
                 EmptyExpressionError,
                 InvalidInitializerError,
+                FailedToCreateVariableError,
 
                 COUNT
             };
@@ -72,12 +73,13 @@ namespace scc
                     else 
                     {
                         if(other.has_value())
-                            throw std::runtime_error("BinderResult: Cannot implicitly upcast to a different type");
+                            throw std::runtime_error("BinderResult: Cannot implicitly upcast to a different type Base: " + std::string(typeid(T).name()) + " Derived: " + std::string(typeid(U).name()));
                         
                         m_value = nullptr;
                     }
                 }
                 
+            BinderResult(BinderResult&& other) = default;
 
             BinderResult(std::unique_ptr<T> value)
                 : m_diagnostics({})

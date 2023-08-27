@@ -52,7 +52,7 @@ namespace scc
         binding::BinderResult<binding::BoundIdentifierExpression> bind_identifier_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundAssignmentExpression> bind_assignment_expression(const TreeNode &node);
     public:
-        Binder() = default;
+        Binder() { m_scope_stack.push();}
         ~Binder() = default;
         binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
     };  

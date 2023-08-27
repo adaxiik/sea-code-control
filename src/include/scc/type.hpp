@@ -85,10 +85,10 @@ namespace scc
 
         constexpr size_t size_bytes() const
         {
-            static_assert(sizeof(void *) == 8, "only 64-bit is supported");
+            static_assert(sizeof(unsigned long long) == 8, "only 64-bit is supported");
 
             if (pointer_depth > 0)
-                return sizeof(void *);
+                return sizeof(unsigned long long);
 
             switch (kind)
             {

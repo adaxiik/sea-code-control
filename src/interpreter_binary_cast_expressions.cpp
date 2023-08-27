@@ -84,7 +84,7 @@ namespace scc
                         return InterpreterResult::error(InterpreterError::DivisionByZeroError); \
                     else \
                     { \
-                        return InterpreterResult::ok(result.value()); \
+                        return InterpreterResult::ok(InterpreterResultValue(result.value())); \
                     } \
                 }\
            } \
