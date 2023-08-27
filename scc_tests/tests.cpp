@@ -51,7 +51,8 @@
     do{ \
         auto parse_result = interpreter.parse(CODE); \
         CHECK(!parse_result.has_error()); \
-        auto binded {scc::Binder::bind(parse_result.root_node())}; \
+        auto binder = scc::Binder(); \
+        auto binded {binder.bind(parse_result.root_node())}; \
         CHECK(binded.is_ok()); \
     }while(0)
 
@@ -59,7 +60,8 @@
     do{ \
         auto parse_result = interpreter.parse(CODE); \
         CHECK(!parse_result.has_error()); \
-        auto binded {scc::Binder::bind(parse_result.root_node())}; \
+        auto binder = scc::Binder(); \
+        auto binded {binder.bind(parse_result.root_node())}; \
         CHECK(binded.is_error()); \
     }while(0)
 

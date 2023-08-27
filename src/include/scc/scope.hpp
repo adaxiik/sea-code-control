@@ -12,9 +12,9 @@ namespace scc
     {
     protected:
         std::map<std::string, T> m_scope;
-        virtual ~Scope() = default;
 
     public:
+        virtual ~Scope() = default;
         using value_type = T;
         std::map<std::string, T> &ref_scopes()
         {

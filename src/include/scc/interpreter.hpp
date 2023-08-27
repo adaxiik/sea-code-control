@@ -26,6 +26,7 @@ namespace scc
         }
 
         Parser m_parser;
+        Binder m_binder;
         Memory m_memory;
         InterpreterScopeStack m_scope_stack;
 

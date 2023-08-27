@@ -24,7 +24,7 @@ namespace scc
         if (parse_result.has_error())
             return InterpreterError::ParseError;
 
-        auto binded {Binder::bind(parse_result.root_node())};
+        auto binded {m_binder.bind(parse_result.root_node())};
         if (binded.is_error())
             return InterpreterError::BindError;
 

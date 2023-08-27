@@ -52,7 +52,7 @@
     } while (0)
 #define SCC_UNREACHABLE() SCC_ASSERT(false)
 
-#define SCC_BINDER_RESULT_TYPE(x) using ResultType = std::result_of_t<decltype(&Binder::x)(const TreeNode &)>::type
+#define SCC_BINDER_RESULT_TYPE(x) using ResultType = decltype(x(std::declval<const TreeNode&>()))::type
 
 constexpr bool TRACE_BINDER = false;
 

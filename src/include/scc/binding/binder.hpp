@@ -1,6 +1,8 @@
 #pragma once
 #include <optional>
 #include "treenode.hpp"
+#include "binding/binder_scope.hpp"
+
 #include "binding/binder_result.hpp"
 #include "binding/bound_node.hpp"
 #include "binding/bound_block_statement.hpp"
@@ -29,22 +31,29 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundVariableDeclarationStatement>, "VariableDeclaration must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundIdentifierExpression>, "IdentifierExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundAssignmentExpression>, "AssignmentExpression must be derived from BoundExpression");
-        Binder() = delete;
-        ~Binder() = delete;
+        
+        Binder(const Binder &) = delete;
+        Binder(Binder &&) = delete;
+        Binder &operator=(const Binder &) = delete;
+        Binder &operator=(Binder &&) = delete;
 
-        static binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
-        static binding::BinderResult<binding::BoundNode> bind_impl(const TreeNode &node);
-        static binding::BinderResult<binding::BoundExpressionStatement> bind_expression_statement(const TreeNode &node);
-        static binding::BinderResult<binding::BoundExpression> bind_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundBinaryExpression> bind_binary_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundCastExpression> bind_cast_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundParenthesizedExpression> bind_parenthesized_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundLiteralExpression> bind_literal_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
-        static binding::BinderResult<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
-        static binding::BinderResult<binding::BoundIdentifierExpression> bind_identifier_expression(const TreeNode &node);
-        static binding::BinderResult<binding::BoundAssignmentExpression> bind_assignment_expression(const TreeNode &node);
+        binding::BinderScopeStack m_scope_stack;
+        
+        binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
+        binding::BinderResult<binding::BoundNode> bind_impl(const TreeNode &node);
+        binding::BinderResult<binding::BoundExpressionStatement> bind_expression_statement(const TreeNode &node);
+        binding::BinderResult<binding::BoundExpression> bind_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundBinaryExpression> bind_binary_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundCastExpression> bind_cast_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundParenthesizedExpression> bind_parenthesized_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundLiteralExpression> bind_literal_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
+        binding::BinderResult<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
+        binding::BinderResult<binding::BoundIdentifierExpression> bind_identifier_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundAssignmentExpression> bind_assignment_expression(const TreeNode &node);
     public:
-        static binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
+        Binder() = default;
+        ~Binder() = default;
+        binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
     };  
 }
