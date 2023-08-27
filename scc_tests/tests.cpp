@@ -35,7 +35,7 @@
 #define SCC_TEST_IS_ERROR(VALUE) \
     do \
     {  \
-        auto result = interpreter.interpret(#VALUE ";"); \
+        auto result = interpreter.interpret(VALUE); \
         CHECK(result.is_error()); \
     }while(0)
 
@@ -45,6 +45,12 @@
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::deduce_type<CTYPE>().kind); \
         CHECK(std::get<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
+    }while(0)
+
+#define SCC_TEST_IS_OK(CODE) \
+    do{ \
+        auto result = interpreter.interpret(CODE); \
+        CHECK(result.is_ok()); \
     }while(0)
 
 #define SCC_TEST_BINDER(CODE) \
@@ -71,7 +77,7 @@ TEST_CASE("Single Expressions")
 
     SUBCASE("Failed to parse")
     {
-        SCC_TEST_IS_ERROR(1 + );
+        SCC_TEST_IS_ERROR("1 + ;");
         CHECK(interpreter.interpret("1").is_error());
     }
 
@@ -126,12 +132,12 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE_AUTO(0777ll);
         SCC_TEST_TYPE_AUTO(0777ull);
         
-        SCC_TEST_IS_ERROR(0x);
-        SCC_TEST_IS_ERROR(0b);
-        SCC_TEST_IS_ERROR(0o);
-        SCC_TEST_IS_ERROR(0b2);
-        SCC_TEST_IS_ERROR(0xg);
-        SCC_TEST_IS_ERROR(0o8);
+        SCC_TEST_IS_ERROR("0x;");
+        SCC_TEST_IS_ERROR("0b;");
+        SCC_TEST_IS_ERROR("0o;");
+        SCC_TEST_IS_ERROR("0b2;");
+        SCC_TEST_IS_ERROR("0xg;");
+        SCC_TEST_IS_ERROR("0o8;");
 
         SCC_TEST_INTERPRET_RESULT(int, 7, "0b111;");
         // this raises an ParseError, but on tree-sitter level
@@ -162,22 +168,22 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE(Bool, 1 != 1);
         SCC_TEST_TYPE(Bool, 1 < 1);
 
-        SCC_TEST_IS_ERROR(1<<1.0);
-        SCC_TEST_IS_ERROR(1>>1.0);
-        SCC_TEST_IS_ERROR(1%1.0);
+        SCC_TEST_IS_ERROR("1<<1.0;");
+        SCC_TEST_IS_ERROR("1>>1.0;");
+        SCC_TEST_IS_ERROR("1%1.0;");
 
-        SCC_TEST_IS_ERROR(1/0);
-        SCC_TEST_IS_ERROR(1%0);
-        SCC_TEST_IS_ERROR(1/0.0);
-        SCC_TEST_IS_ERROR(1%0.0);
-        SCC_TEST_IS_ERROR(1.0/0);
-        SCC_TEST_IS_ERROR(1.0%0);
-        SCC_TEST_IS_ERROR(1.0/0.0);
-        SCC_TEST_IS_ERROR(1.0%0.0);
+        SCC_TEST_IS_ERROR("1/0;");
+        SCC_TEST_IS_ERROR("1%0;");
+        SCC_TEST_IS_ERROR("1/0.0;");
+        SCC_TEST_IS_ERROR("1%0.0;");
+        SCC_TEST_IS_ERROR("1.0/0;");
+        SCC_TEST_IS_ERROR("1.0%0;");
+        SCC_TEST_IS_ERROR("1.0/0.0;");
+        SCC_TEST_IS_ERROR("1.0%0.0;");
         
         SCC_TEST_TYPE_PTR(I32, 1, (int*)1 + 2);
         SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)1);
-        SCC_TEST_IS_ERROR((int*)1 + (int*)1);
+        SCC_TEST_IS_ERROR("(int*)1 + (int*)1;");
 
     }
 
@@ -373,4 +379,28 @@ TEST_CASE("Scopes")
     auto c2 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
     CHECK(c1 == c2);
     CHECK(b == c1 + sizeof(int));
+}
+
+TEST_CASE("Assignments")
+{
+    auto interpreter = scc::Interpreter();
+    SCC_TEST_IS_ERROR("a;"); // undeclared
+    SCC_TEST_IS_OK("int a;");
+    SCC_TEST_IS_ERROR("a;"); // not initialized
+    SCC_TEST_IS_ERROR("a = a;"); // not initialized
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a = 1;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 34, "a = 34;");
+    SCC_TEST_INTERPRET_RESULT(int, 69, "a += 35;");
+    SCC_TEST_IS_OK("double b = 1.5;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5, "b;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b += 1.6;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b;");    
+    SCC_TEST_INTERPRET_RESULT(int, 3, "a = b;"); // implicit cast
+    SCC_TEST_INTERPRET_RESULT(int, 3, "a;"); // implicit cast
+
+    SCC_TEST_IS_OK("int c = a + b;"); // 3 + 3.1 = 6.1 -> 6
+    SCC_TEST_INTERPRET_RESULT(int, 6, "c;");
+
+   
 }
