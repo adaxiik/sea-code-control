@@ -2,7 +2,7 @@
 #include "parser.hpp"
 #include "binding/binder.hpp"
 #include "interpreter_result.hpp"
-#include "scope.hpp"
+#include "interpreter_scope.hpp"
 #include "memory.hpp"
 namespace scc
 {

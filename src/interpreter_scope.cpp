@@ -1,4 +1,4 @@
-#include "scope.hpp"
+#include "interpreter_scope.hpp"
 
 namespace  scc
 {
@@ -7,11 +7,6 @@ namespace  scc
                                      , m_current_address(start_address) {}
 
 
-
-    // const std::map<std::string, Variable> &InterpreterScope::ref_variables() const 
-    // { 
-    //     return m_variables; 
-    // }
 
     Memory::address_t InterpreterScope::start_address() const 
     { 
