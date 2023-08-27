@@ -27,7 +27,7 @@ namespace scc
 
         Parser m_parser;
         Memory m_memory;
-        ScopeStack m_scope_stack;
+        InterpreterScopeStack m_scope_stack;
 
         InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
         InterpreterResult interpret(const binding::BoundStatement &statement);
