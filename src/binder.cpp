@@ -334,7 +334,8 @@ namespace scc
         {
             auto expression = bind_expression(node.last_child());
             BUBBLE_ERROR(expression);
-            return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier), type, expression.release_value());
+            auto casted_expression = std::make_unique<binding::BoundCastExpression>(expression.release_value(), type);
+            return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier), type, std::move(casted_expression));
         }
         constexpr auto PLUS_ASSIGNMENT = "+=";
         constexpr auto MINUS_ASSIGNMENT = "-=";
@@ -377,10 +378,11 @@ namespace scc
                                                                                 , expression.release_value()
                                                                                 , type
                                                                                 , operator_kind);
+        auto casted_expression = std::make_unique<binding::BoundCastExpression>(std::move(binary_expression), type);
 
         return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier)
                                                                   , type
-                                                                  , std::move(binary_expression));
+                                                                  , std::move(casted_expression));
 
     }
 
@@ -748,9 +750,11 @@ namespace scc
                             if (initializer_node.named_child_count() != 1 )
                                 return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
 
-                            auto initializer = bind_expression(initializer_node.named_child(0));
+                            auto initializer = bind_expression(initializer_node.first_named_child());
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
+                            auto casted_initializer = std::make_unique<binding::BoundCastExpression>(initializer.release_value(), type.value());
+
+                            static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(casted_initializer);
                             return declaration;
                         }
                         case DeclarationKind::Pointer:
@@ -759,7 +763,7 @@ namespace scc
                                 return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
 
                             
-                            auto initializer = bind_expression(initializer_node.named_child(0));
+                            auto initializer = bind_expression(initializer_node.first_named_child());
                             BUBBLE_ERROR(initializer);
                             static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
                             return declaration;
@@ -822,7 +826,8 @@ namespace scc
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
+                        auto casted_initializer = std::make_unique<binding::BoundCastExpression>(initializer.release_value(), type.value());
+                        static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = std::move(casted_initializer);
                         return declaration;
                     }
                     case DeclarationKind::Pointer:
