@@ -115,7 +115,7 @@ namespace scc
         if (result.is_error())
             return result;
         
-        auto variable = m_scope_stack.get_variable(variable_value_declaration.variable_name);
+        auto variable = m_scope_stack.get_from_scopestack(variable_value_declaration.variable_name);
         if (!variable)
             return InterpreterError::VariableDoesntExistError; // probably unreachable
         
@@ -173,7 +173,7 @@ namespace scc
         if (result.is_error())
             return result;
 
-        auto variable = m_scope_stack.get_variable(assignment_expression.identifier);
+        auto variable = m_scope_stack.get_from_scopestack(assignment_expression.identifier);
         if (!variable)
             return InterpreterError::VariableDoesntExistError;
 
@@ -228,7 +228,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundIdentifierExpression &identifier_expression)
     {
         TRACE();
-        auto variable = m_scope_stack.get_variable(identifier_expression.identifier);
+        auto variable = m_scope_stack.get_from_scopestack(identifier_expression.identifier);
         if (!variable)
             return InterpreterError::VariableDoesntExistError;
 
