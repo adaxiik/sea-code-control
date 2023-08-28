@@ -10,6 +10,8 @@ namespace scc
             BlockStatement,
             VariableDeclarationStatement,
             IfStatement,
+            WhileStatement,
+            DoStatement,
 
 
             // Expressions .. see is_statement() 

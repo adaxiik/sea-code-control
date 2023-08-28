@@ -13,6 +13,8 @@
 #include "binding/bound_identifier_expression.hpp"
 #include "binding/bound_assignment_expression.hpp"
 #include "binding/bound_if_statement.hpp"
+#include "binding/bound_while_statement.hpp"
+#include "binding/bound_do_statement.hpp"
 
 
 #include "overloaded.hpp"
@@ -194,7 +196,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 10, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 12, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -351,6 +353,40 @@ namespace scc
                                                     , depth + 1
                                                     , true
                                                     , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+                case binding::BoundNodeKind::WhileStatement:
+                {
+                    auto& while_statement = static_cast<const binding::BoundWhileStatement&>(node);
+                    ss << "WhileStatement" << std::endl;
+                    bound_ast_as_text_tree_impl(*while_statement.condition
+                                                , depth + 1
+                                                , !while_statement.body
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    if (while_statement.body)
+                    {
+                        bound_ast_as_text_tree_impl(*while_statement.body
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::DoStatement:
+                {
+                    auto& do_statement = static_cast<const binding::BoundDoStatement&>(node);
+                    ss << "DoStatement" << std::endl;
+                    bound_ast_as_text_tree_impl(*do_statement.condition
+                                                , depth + 1
+                                                , false
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    if (do_statement.body)
+                    {
+                        bound_ast_as_text_tree_impl(*do_statement.body
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:

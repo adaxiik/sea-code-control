@@ -145,7 +145,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 4, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 6, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -156,6 +156,10 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundVariableDeclarationStatement>(statement));
         case binding::BoundNodeKind::IfStatement:
             return interpret(ikwid_rc<binding::BoundIfStatement>(statement));
+        case binding::BoundNodeKind::WhileStatement:
+            return interpret(ikwid_rc<binding::BoundWhileStatement>(statement));
+        case binding::BoundNodeKind::DoStatement:
+            return interpret(ikwid_rc<binding::BoundDoStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
@@ -170,17 +174,63 @@ namespace scc
             return result;
 
         if (std::get<Type::Primitive::Bool>(result.get_value().value))
-        {
             return interpret(*if_statement.then_statement);
-        }
         else if (if_statement.else_statement)
-        {
             return interpret(*if_statement.else_statement);
-        }
         
+        return InterpreterError::None;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundWhileStatement &while_statement)
+    {
+        TRACE();
+        auto result = eval(*while_statement.condition);
+        if (result.is_error())
+            return result;
+        
+        if (!while_statement.body)
+            return InterpreterError::None; // while(0);
+
+        while (std::get<Type::Primitive::Bool>(result.get_value().value))
+        {
+            auto body_result = interpret(*while_statement.body);
+            if (body_result.is_error())
+                return body_result;
+            // TODOO: check if has signal (return, continue..)
+
+            result = eval(*while_statement.condition);
+            if (result.is_error())
+                return result;
+            
+        }
 
         return InterpreterError::None;
     }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundDoStatement &do_statement)
+    {
+        TRACE();
+        auto result = eval(*do_statement.condition);
+        if (result.is_error())
+            return result;
+        
+
+        do
+        {
+            auto body_result = interpret(*do_statement.body);
+            if (body_result.is_error())
+                return body_result;
+            // TODOO: check if has signal (return, continue..)
+
+            result = eval(*do_statement.condition);
+            if (result.is_error())
+                return result;
+            
+        } while (std::get<Type::Primitive::Bool>(result.get_value().value));
+
+        return InterpreterError::None;
+    }
+
 
     InterpreterResult Interpreter::eval(const binding::BoundLiteralExpression &literal_expression)
     {
