@@ -1,23 +1,21 @@
 Sorted TODO list:
 
-src/binder.cpp:620:             // TODOOOOOOOOOOOOO: custom types
-src/binder.cpp:328:         // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
-src/binder.cpp:305:         // TODOOOOOOOOOO: How to get the type of the identifier? well.. AAAAAAAAAAAAAAAA
-src/binder.cpp:304:         // TODOOOOOOO: might be a macro?
-src/binder.cpp:671:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
-src/binder.cpp:801:                                     // TODOOOOO: what if its custom type? investigate or @help
+src/binder.cpp:646:             // TODOOOOOOOOOOOOO: custom types
+src/binder.cpp:319:         // TODOOOOOOO: might be a macro?
+src/binder.cpp:700:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
+src/binder.cpp:838:                                     // TODOOOOO: what if its custom type? investigate or @help
 src/include/scc/type.hpp:261:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
-src/debug.cpp:178:         // TODOOOO: convert it into multiple functions for each node type
-src/binder.cpp:820:                 // TODOOO: investigate other initializers
-src/binder.cpp:606:         // TODOOO: int a, b, c; 
-src/binder.cpp:324:         // TODOOO: int* a;
-src/binder.cpp:630:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/binder.cpp:101:                 // TODOOO: UNREACHABLE???
-src/binder.cpp:282:             // TODOOO: 
-scc_tests/tests.cpp:225:         // TODOO: multiple initializers
-scc_tests/tests.cpp:222:         // TODOO: multiple declarations
+src/debug.cpp:179:         // TODOOOO: convert it into multiple functions for each node type
+src/binder.cpp:656:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:857:                 // TODOOO: investigate other initializers
+src/binder.cpp:632:         // TODOOO: int a, b, c; 
+src/binder.cpp:345:         // TODOOO: int* a;
+src/binder.cpp:297:             // TODOOO: 
+src/binder.cpp:115:                 // TODOOO: UNREACHABLE???
+src/binder.cpp:685:                     // TODOO: int x[1][2];  multi dimensional arrays
 src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
-scc_tests/tests.cpp:230:         // TODOO: complex types
-src/binder.cpp:656:                     // TODOO: int x[1][2];  multi dimensional arrays
-scc_tests/tests.cpp:228:         // TODO: 2d arrays 
+scc_tests/tests.cpp:230:         // TODOO: multiple declarations
+scc_tests/tests.cpp:238:         // TODOO: complex types
+scc_tests/tests.cpp:233:         // TODOO: multiple initializers
+scc_tests/tests.cpp:236:         // TODO: 2d arrays 
 src/include/scc/interpreter.hpp:14:                      , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 

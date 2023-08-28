@@ -36,6 +36,7 @@ namespace scc
         InterpreterResult interpret(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration);
         InterpreterResult interpret(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration);
         InterpreterResult interpret(const binding::BoundVariableStaticArrayDeclarationStatement &variable_reference_declaration);
+        InterpreterResult interpret(const binding::BoundIfStatement &if_statement);
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);

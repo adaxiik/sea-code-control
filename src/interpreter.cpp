@@ -145,7 +145,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 3, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 4, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -154,10 +154,32 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundBlockStatement>(statement));
         case binding::BoundNodeKind::VariableDeclarationStatement:
             return interpret(ikwid_rc<binding::BoundVariableDeclarationStatement>(statement));
+        case binding::BoundNodeKind::IfStatement:
+            return interpret(ikwid_rc<binding::BoundIfStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
         }
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundIfStatement &if_statement)
+    {
+        TRACE();
+        auto result = eval(*if_statement.condition);
+        if (result.is_error())
+            return result;
+
+        if (std::get<Type::Primitive::Bool>(result.get_value().value))
+        {
+            return interpret(*if_statement.then_statement);
+        }
+        else if (if_statement.else_statement)
+        {
+            return interpret(*if_statement.else_statement);
+        }
+        
+
+        return InterpreterError::None;
     }
 
     InterpreterResult Interpreter::eval(const binding::BoundLiteralExpression &literal_expression)

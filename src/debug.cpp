@@ -12,6 +12,7 @@
 #include "binding/bound_variable_declaration_statement.hpp"
 #include "binding/bound_identifier_expression.hpp"
 #include "binding/bound_assignment_expression.hpp"
+#include "binding/bound_if_statement.hpp"
 
 
 #include "overloaded.hpp"
@@ -193,7 +194,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 9, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 10, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -331,6 +332,25 @@ namespace scc
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+                case binding::BoundNodeKind::IfStatement:
+                {
+                    auto& if_statement = static_cast<const binding::BoundIfStatement&>(node);
+                    ss << "IfStatement" << std::endl;
+                    bound_ast_as_text_tree_impl(*if_statement.condition
+                                                , depth + 1
+                                                , false
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    bound_ast_as_text_tree_impl(*if_statement.then_statement
+                                                , depth + 1
+                                                , !if_statement.has_else()
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    if(if_statement.has_else())
+                        bound_ast_as_text_tree_impl(*if_statement.else_statement
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:
