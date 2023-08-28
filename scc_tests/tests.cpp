@@ -7,6 +7,7 @@
 #include <scc/memory.hpp>
 #include <scc/type.hpp>
 
+
 #define SCC_TEST_TYPE(TYPE, VALUE) \
     do \
     {  \
@@ -401,6 +402,57 @@ TEST_CASE("Assignments")
 
     SCC_TEST_IS_OK("int c = a + b;"); // 3 + 3.1 = 6.1 -> 6
     SCC_TEST_INTERPRET_RESULT(int, 6, "c;");
+}
+TEST_CASE("If statement")
+{
+    SUBCASE("Simple")
+    {
+        auto interpreter = scc::Interpreter();
+        SCC_TEST_IS_OK("int a = 0;");
+        SCC_TEST_IS_OK("int b = 0;");
 
-   
+        SCC_TEST_IS_OK("if (0) { b = 1; }");       
+        SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
+
+        SCC_TEST_IS_OK("if (1) { b = 1; }");
+        SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+
+        auto statement = ""
+        "if (a == 0) {"
+        "   b = 10;"
+        "   a = 1;"
+        "}"
+        "else if (a == 1) {"
+        "   b = 20;"
+        "   a = 2;"
+        "}"
+        "else {"
+        "   b = 30;"
+        "   a = 3;"
+        "}";
+
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 10, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 20, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
+    }
+
+    SUBCASE("Shadowing")
+    {
+        auto interpreter = scc::Interpreter();
+        SCC_TEST_IS_OK("int a = 10;");
+        SCC_TEST_IS_OK("if (1) { int a = 20; }");
+        SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
+    }
+
 }
