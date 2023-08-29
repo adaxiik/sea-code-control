@@ -196,7 +196,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 12, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 14, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -387,6 +387,16 @@ namespace scc
                                                     , true
                                                     , prefix + (last ? SPACE : DOWN_PIPE));
                     }
+                    break;
+                }
+                case binding::BoundNodeKind::BreakStatement:
+                {
+                    ss << "BreakStatement" << std::endl;
+                    break;
+                }
+                case binding::BoundNodeKind::ContinueStatement:
+                {
+                    ss << "ContinueStatement" << std::endl;
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:

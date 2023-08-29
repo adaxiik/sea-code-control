@@ -12,6 +12,8 @@ namespace scc
             IfStatement,
             WhileStatement,
             DoStatement,
+            BreakStatement,
+            ContinueStatement,
 
 
             // Expressions .. see is_statement() 

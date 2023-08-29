@@ -454,5 +454,57 @@ TEST_CASE("If statement")
         SCC_TEST_IS_OK("if (1) { int a = 20; }");
         SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
     }
+}
 
+TEST_CASE("While and Do statements")
+{
+    auto interpreter = scc::Interpreter();
+    SCC_TEST_IS_OK("int a = 0;");
+    SCC_TEST_IS_OK("int b = 0;");
+
+    SCC_TEST_IS_OK("while (0) { b = 1; }");       
+    SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
+
+    SCC_TEST_IS_OK("a = 1;");
+    SCC_TEST_IS_OK("while (a+=1) { b = 1; break;}");
+    SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+
+    SCC_TEST_IS_OK("a = 1;");
+    SCC_TEST_IS_OK("b = 0;");
+
+    SCC_TEST_IS_OK("do { b = 1; break;} while (a+=1);");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+
+    SCC_TEST_IS_OK("a = 0;");
+    SCC_TEST_IS_OK("b = 0;");
+    SCC_TEST_IS_OK(""
+    "while (a < 20) {"
+    "   a += 1;"
+    "   if (a == 10) {"
+    "       continue;"
+    "   }"
+    "   b += 1;"
+    "}"
+    );
+
+    SCC_TEST_INTERPRET_RESULT(int, 20, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 19, "b;");
+
+    SCC_TEST_IS_OK("a = 0;");
+    SCC_TEST_IS_OK("b = 0;");
+    SCC_TEST_IS_OK(""
+    "while (a < 20) {"
+    "   a += 1;"
+    "   if (a == 10) {"
+    "       break;"
+    "   }"
+    "   b += 1;"
+    "}"
+    );
+
+    SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 9, "b;");
 }

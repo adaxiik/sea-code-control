@@ -42,12 +42,16 @@ namespace scc
             if (result.is_error())
                 return result;
             
+            if (result.has_signal())
+                return InterpreterError::UnhandeledSignalError;
+            
             bool is_last_statement = i == block_statement.statements.size() - 1;
-            if (is_last_statement)
+            bool is_single_statement = block_statement.statements.size() == 1;
+            if (is_last_statement && is_single_statement)
                 return result;
         }
 
-        return InterpreterError::RuntimeError;
+        return InterpreterError::None;
     }
 
     InterpreterResult Interpreter::interpret(const binding::BoundBlockStatement &block_statement)
@@ -66,6 +70,12 @@ namespace scc
             auto result = interpret(*statement);
             if (result.is_error())
                 return result;
+            
+            if (result.has_signal())
+            {
+                m_scope_stack.pop();
+                return result;
+            }
         }
         m_scope_stack.pop(); 
 
@@ -154,7 +164,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 6, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 8, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -169,6 +179,10 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundWhileStatement>(statement));
         case binding::BoundNodeKind::DoStatement:
             return interpret(ikwid_rc<binding::BoundDoStatement>(statement));
+        case binding::BoundNodeKind::BreakStatement:
+            return interpret(ikwid_rc<binding::BoundBreakStatement>(statement));
+        case binding::BoundNodeKind::ContinueStatement:
+            return interpret(ikwid_rc<binding::BoundContinueStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
@@ -190,6 +204,18 @@ namespace scc
         return InterpreterError::None;
     }
 
+    InterpreterResult Interpreter::interpret(const binding::BoundBreakStatement &)
+    {
+        TRACE();
+        return InterpreterResult(InterpreterSignal::Break);
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundContinueStatement &)
+    {
+        TRACE();
+        return InterpreterResult(InterpreterSignal::Continue);
+    }
+
     InterpreterResult Interpreter::interpret(const binding::BoundWhileStatement &while_statement)
     {
         TRACE();
@@ -205,12 +231,18 @@ namespace scc
             auto body_result = interpret(*while_statement.body);
             if (body_result.is_error())
                 return body_result;
-            // TODOO: check if has signal (return, continue..)
+            
+            
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
+            // TODOO: might be a return in the future
 
+            if(body_result.get_signal() == InterpreterSignal::Break) 
+                break; 
+                
             result = eval(*while_statement.condition);
             if (result.is_error())
                 return result;
-            
+                           
         }
 
         return InterpreterError::None;
@@ -219,17 +251,22 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundDoStatement &do_statement)
     {
         TRACE();
-        auto result = eval(*do_statement.condition);
-        if (result.is_error())
-            return result;
+        InterpreterResult result = InterpreterError::None;
         
-
         do
         {
             auto body_result = interpret(*do_statement.body);
             if (body_result.is_error())
                 return body_result;
-            // TODOO: check if has signal (return, continue..)
+
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
+            if (body_result.has_signal())
+            {
+                if (body_result.get_signal() == InterpreterSignal::Break)
+                    break;
+                else if (body_result.get_signal() == InterpreterSignal::Continue)
+                    continue;
+            }
 
             result = eval(*do_statement.condition);
             if (result.is_error())

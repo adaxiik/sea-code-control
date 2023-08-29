@@ -16,6 +16,7 @@ namespace scc
         VariableAlreadyExistsError,
         VariableDoesntExistError,
         VariableNotInitializedError,
+        UnhandeledSignalError,
         COUNT
     };
 
@@ -24,7 +25,7 @@ namespace scc
         None = 0,
         Break,
         Continue,
-        Return,
+        
         COUNT
     };
 
@@ -32,44 +33,43 @@ namespace scc
     {
         Type::Value value;
         Type type;
-        InterpreterSignal signal;
-
 
         constexpr InterpreterResultValue(Type::Value value)
-            : value(value), type(Type::from_value(value)), signal(InterpreterSignal::None) {}
+            : value(value), type(Type::from_value(value)) {}
         
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
         constexpr InterpreterResultValue(T value)
-            : value(Type::Value(value)), type(Type::from_value(value)), signal(InterpreterSignal::None) {}
+            : value(Type::Value(value)), type(Type::from_value(value)) {}
 
         // fallback error constructor.. should be never actually called
         // its here only for clang typechecking..
         template <typename T, typename = std::enable_if_t<!std::is_arithmetic_v<T>>>
         constexpr InterpreterResultValue(const T&)
-            : type(Type(Type::Kind::I32)), signal(InterpreterSignal::None) {}
+            : type(Type(Type::Kind::I32)) {}
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
         constexpr InterpreterResultValue(T value, Type type)
-            : value(Type::Value(value)), type(type), signal(InterpreterSignal::None) {}
+            : value(Type::Value(value)), type(type) {}
 
         // same story here
         template <typename T, typename = std::enable_if_t<!std::is_arithmetic_v<T>>>
         constexpr InterpreterResultValue(const T& , Type type)
-            : type(type), signal(InterpreterSignal::None) {}
+            : type(type) {}
         
         constexpr InterpreterResultValue(Type::Value value, Type type)
-            : value(value), type(type), signal(InterpreterSignal::None) {}
-        
-        
+            : value(value), type(type) {}
+    
     };
 
     class InterpreterResult
     {
         std::optional<InterpreterResultValue> value;
         InterpreterError interpreter_result;
+        InterpreterSignal signal;
+
 
         InterpreterResult(std::optional<InterpreterResultValue> value, InterpreterError interpreter_result)
-            : value(value), interpreter_result(interpreter_result){}
+            : value(value), interpreter_result(interpreter_result), signal(InterpreterSignal::None) {}
 
     public:
         static InterpreterResult ok(InterpreterResultValue value) { return InterpreterResult(value, InterpreterError::None); }
@@ -77,16 +77,21 @@ namespace scc
 
         // Ill left them implicit
         InterpreterResult(std::optional<InterpreterResultValue> value)
-            : value(value), interpreter_result(InterpreterError::None) {}
+            : value(value), interpreter_result(InterpreterError::None), signal(InterpreterSignal::None) {}
         
         InterpreterResult(InterpreterError interpreter_result)
-            : value(std::nullopt), interpreter_result(interpreter_result) {}
+            : value(std::nullopt), interpreter_result(interpreter_result), signal(InterpreterSignal::None) {}
+        
+        InterpreterResult(InterpreterSignal signal)
+            : value(std::nullopt), interpreter_result(InterpreterError::None), signal(signal) {}
 
         bool is_ok() const { return interpreter_result == InterpreterError::None; }
         bool is_error() const { return !is_ok(); }
         bool has_value() const { return value.has_value(); }
+        bool has_signal() const { return signal != InterpreterSignal::None; }
         bool is_ok_and_has_value() const { return is_ok() && has_value(); }
         InterpreterResultValue get_value() const { return *value; }
+        InterpreterSignal get_signal() const { return signal; }
         InterpreterError get_error() const { return interpreter_result; }
     };
 }

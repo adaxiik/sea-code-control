@@ -994,6 +994,20 @@ namespace scc
         return std::make_unique<binding::BoundDoStatement>(std::move(condition), std::move(body_statement));
     }
 
+    binding::BinderResult<binding::BoundBreakStatement> Binder::bind_break_statement(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::BREAK_STATEMENT_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 0);
+        return std::make_unique<binding::BoundBreakStatement>();
+    }
+
+    binding::BinderResult<binding::BoundContinueStatement> Binder::bind_continue_statement(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::CONTINUE_STATEMENT_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 0);
+        return std::make_unique<binding::BoundContinueStatement>();
+    }
+
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_impl);
@@ -1014,6 +1028,10 @@ namespace scc
             return bind_while_statement(node);
         case Parser::DO_STATEMENT_SYMBOL:
             return bind_do_statement(node);
+        case Parser::BREAK_STATEMENT_SYMBOL:
+            return bind_break_statement(node);
+        case Parser::CONTINUE_STATEMENT_SYMBOL:
+            return bind_continue_statement(node);
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));

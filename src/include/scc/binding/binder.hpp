@@ -18,13 +18,16 @@
 #include "binding/bound_if_statement.hpp"
 #include "binding/bound_while_statement.hpp"
 #include "binding/bound_do_statement.hpp"
+#include "binding/bound_break_statement.hpp"
+#include "binding/bound_continue_statement.hpp"
+
 namespace scc
 {
 
     class Binder
     {
         
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 12, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 14, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -37,6 +40,9 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundIfStatement>, "IfStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundWhileStatement>, "WhileStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundDoStatement>, "DoStatement must be derived from BoundStatement");
+        static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBreakStatement>, "BreakStatement must be derived from BoundStatement");
+        static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundContinueStatement>, "ContinueStatement must be derived from BoundStatement");
+
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -60,6 +66,8 @@ namespace scc
         binding::BinderResult<binding::BoundIfStatement> bind_if_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundWhileStatement> bind_while_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundDoStatement> bind_do_statement(const TreeNode &node);
+        binding::BinderResult<binding::BoundBreakStatement> bind_break_statement(const TreeNode &node);
+        binding::BinderResult<binding::BoundContinueStatement> bind_continue_statement(const TreeNode &node);
     
     public:
         Binder() { m_scope_stack.push();}

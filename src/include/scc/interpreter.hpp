@@ -39,6 +39,8 @@ namespace scc
         InterpreterResult interpret(const binding::BoundIfStatement &if_statement);
         InterpreterResult interpret(const binding::BoundWhileStatement &while_statement);
         InterpreterResult interpret(const binding::BoundDoStatement &do_statement);
+        InterpreterResult interpret(const binding::BoundBreakStatement &break_statement);
+        InterpreterResult interpret(const binding::BoundContinueStatement &continue_statement);
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);

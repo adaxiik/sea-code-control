@@ -114,7 +114,7 @@ namespace scc
             if (result.is_ok())
                 continue;
 
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 10, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 11, "Edit this code");
             switch (result.get_error())
             {
                 case InterpreterError::BindError:
@@ -140,6 +140,9 @@ namespace scc
                     break;
                 case InterpreterError::VariableNotInitializedError:
                     m_output_stream << RED << "Variable not initialized error" << RESET << std::endl;
+                    break;
+                case InterpreterError::UnhandeledSignalError:
+                    m_output_stream << RED << "Unhandeled signal error" << RESET << std::endl;
                     break;
                 default:
                     m_output_stream << RED << "Unknown error" << RESET << std::endl;
