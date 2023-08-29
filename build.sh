@@ -3,7 +3,7 @@
 set -e
 
 
-BUILD_TYPE="Debug"
+BUILD_TYPE="${BUILD_TYPE=Debug}"
 
 PROJECT_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 CMAKE_PATH="$PROJECT_PATH/CMakeLists.txt"

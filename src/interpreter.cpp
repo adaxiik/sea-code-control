@@ -33,12 +33,21 @@ namespace scc
         
         auto& block_statement = ikwid_rc<binding::BoundBlockStatement>(ikwid_rc<binding::BoundStatement>(*binded.get_value()));    
         debug::bound_ast_as_text_tree(std::cout, block_statement);
-   
-        if(block_statement.statements.size() != 1)
-            return InterpreterError::BindError;
 
         TRACE();
-        return interpret(*block_statement.statements[0]);
+
+        for(size_t i = 0; i < block_statement.statements.size(); i++)
+        {
+            auto result = interpret(*block_statement.statements[i]);
+            if (result.is_error())
+                return result;
+            
+            bool is_last_statement = i == block_statement.statements.size() - 1;
+            if (is_last_statement)
+                return result;
+        }
+
+        return InterpreterError::RuntimeError;
     }
 
     InterpreterResult Interpreter::interpret(const binding::BoundBlockStatement &block_statement)
