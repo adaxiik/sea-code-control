@@ -12,29 +12,68 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/ace.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/xterm@5.2.1/css/xterm.min.css" rel="stylesheet">
 </head>
 
-<body>
-    <h1>Check developer console :)</h1>
+<body style="background-color: #181818;">
+    <div id="editor" style="height: 80vh; width: 100%;"></div>
+    <button onclick="run()">Run</button>
+    <div id="terminal"></div>
 
     <script src="scc.js"></script>
     <script>
-        function main() {
+        var stdoutBuffer = []
+        let x = Module({
+            onRuntimeInitialized:async function() {
+                Module = await x;
+            },
+            stdout(code) {
+                if (code === "\n".charCodeAt(0) && stdoutBuffer !== "") {
+                    term.writeln(new TextDecoder("utf-8").decode(new Uint8Array(stdoutBuffer)));
+                    stdoutBuffer = [];
+                } else {
+                    stdoutBuffer.push(code);
+                }
+            }
+        });
+    </script>
+
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/c_cpp");
+        editor.setValue("int a = 10;", 1); //1 = moves cursor to end
+        editor.clearSelection();
+        editor.focus();
+        editor.setOptions({
+            fontSize: "18pt"
+        });
+    </script>
+
+    <script>
+        var term = new Terminal({
+            cursorBlink: true
+        });
+        term.open(document.getElementById('terminal'));
+    </script>
+
+    <script>
+        function run() {
             try {
                 var interpreter = new Module.Interpreter();
+                var output = interpreter.interpret_string(editor.getValue());
+
             } catch (e) {
                 console.log(e);
-
             } finally {
                 interpreter.delete();
+                output.delete();
             }
         }
 
-        Module()
-            .then(function (module) {
-                Module = module;
-                main();
-            });
+       
 
         // let x = Module({
         //     onRuntimeInitialized:async function() {

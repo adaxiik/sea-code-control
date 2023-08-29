@@ -67,7 +67,8 @@ build_wasm() {
     fi
 
     cd "$BUILD_WASM_FOLDER"
-    make -j$BUILD_THREADS 
+    make -j$BUILD_THREADS
+    cp $PROJECT_PATH/src/wasm/* $BUILD_WASM_FOLDER 
     cd "$PROJECT_PATH"
 }
 
