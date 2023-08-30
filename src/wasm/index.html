@@ -13,6 +13,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="index.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/ace.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/ext-language_tools.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/keybinding-vscode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/mode-c_cpp.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/xterm@5.2.1/css/xterm.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
@@ -62,7 +65,7 @@
     <script src="scc.js"></script>
 
     <script>
-        var stdoutBuffer = []
+        var stdoutBuffer = [];
         let x = Module({
             onRuntimeInitialized:async function() {
                 Module = await x;
