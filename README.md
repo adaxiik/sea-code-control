@@ -2,12 +2,18 @@
 
 
 # Used libraries
+### For interpreter itself
 - [Tree sitter](https://github.com/tree-sitter/tree-sitter/)
 - [Tree sitter C](https://github.com/tree-sitter/tree-sitter-c)
 - [Linenoise](https://github.com/yhirose/cpp-linenoise)
 - [Doctest](https://github.com/doctest/doctest)
+
+### For web interface
 - [Xtermjs](https://xtermjs.org/)
 - [Ace](https://ace.c9.io/)
+- [Golden layout](https://golden-layout.com/)
+- [Jquery](https://jquery.com/)
+- [Konva](https://konvajs.org/)
 
 # Used tools
 - bash (for build script, but can be done manually)

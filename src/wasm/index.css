@@ -1,0 +1,30 @@
+/* body color to #181818 */
+body,html{
+    background-color: #181818;
+    margin: 0;
+    margin: 0; 
+    height: 100%; 
+    overflow: hidden;
+}
+
+#window {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#controls {
+    flex: 0 0 2.5%; 
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+#layout {
+    flex: 1; 
+}
+
+.xterm-viewport {
+    overflow-y: hidden !important;
+}

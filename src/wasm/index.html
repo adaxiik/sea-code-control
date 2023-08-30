@@ -11,18 +11,56 @@
     <title>SCC - test</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="index.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.24.1/ace.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/xterm@5.2.1/css/xterm.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="https://golden-layout.com/files/latest/js/goldenlayout.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css" />
+    <link type="text/css" rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css" />
+    <script src="https://unpkg.com/konva@9.2.0/konva.min.js"></script>
 </head>
 
-<body style="background-color: #181818;">
-    <div id="editor" style="height: 80vh; width: 100%;"></div>
-    <button onclick="run()">Run</button>
-    <div id="terminal"></div>
+<body>
+    <div id="window">
+        <div id="controls">
+            <button onclick="run()">Run</button>
+            <button onclick="term.clear()">Clear</button>
+        </div>
+        <div id="layout"></div>
+    </div>
 
+    <script src="layout.js"></script>
+    <script src="editor.js"></script>
+    <script src="terminal.js"></script>
+    <script src="visualizer.js"></script>
+    <script>
+        let layout = init_layout("layout");
+        var editor = null;
+        var term = null;
+        var visualizer = null;
+        layout.on('initialised', function() {
+            editor = init_editor("editor");
+            term = init_terminal("terminal");
+            visualizer = new Visualizer("visualizer");
+        });
+        layout.on('stateChanged', function() {
+            if (term) {
+                term.fit();
+            }
+            if (visualizer) {
+                visualizer.fit();
+            }
+        } );
+
+        window.addEventListener('resize', function() {
+            layout.updateSize();
+        });
+    </script>
     <script src="scc.js"></script>
+
     <script>
         var stdoutBuffer = []
         let x = Module({
@@ -40,24 +78,7 @@
         });
     </script>
 
-    <script>
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/monokai");
-        editor.session.setMode("ace/mode/c_cpp");
-        editor.setValue("int a = 10;", 1); //1 = moves cursor to end
-        editor.clearSelection();
-        editor.focus();
-        editor.setOptions({
-            fontSize: "18pt"
-        });
-    </script>
 
-    <script>
-        var term = new Terminal({
-            cursorBlink: true
-        });
-        term.open(document.getElementById('terminal'));
-    </script>
 
     <script>
         function run() {
