@@ -68,7 +68,12 @@ build_wasm() {
 
     cd "$BUILD_WASM_FOLDER"
     make -j$BUILD_THREADS
-    cp $PROJECT_PATH/src/wasm/* $BUILD_WASM_FOLDER 
+
+    if [ ! -d "$BUILD_WASM_FOLDER/web" ]; then
+        mkdir -p "$BUILD_WASM_FOLDER/web"
+    fi
+
+    cp $PROJECT_PATH/src/wasm/* $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
 }
 

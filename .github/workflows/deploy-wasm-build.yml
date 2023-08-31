@@ -1,25 +1,53 @@
-name: build
+name: Build and deploy wasm build to gh pages
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
-env:
-  BUILD_TYPE: Release
-  BUILD_THREADS: 16
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      BUILD_TYPE: Release
+      BUILD_THREADS: 16
+      
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Setup Emscripten toolchain
       uses: mymindstorm/setup-emsdk@v12
 
     - name: Build wasm
       run: ./build.sh wasm
       shell: bash
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './build/wasm/web'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
