@@ -1,0 +1,25 @@
+name: build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+  BUILD_THREADS: 16
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Emscripten toolchain
+      uses: mymindstorm/setup-emsdk@v12
+
+    - name: Build wasm
+      run: ./build.sh wasm
+      shell: bash
