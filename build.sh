@@ -15,7 +15,7 @@ BUILD_NATIVE_FOLDER="$BUILD_FOLDER/native"
 EXECUTABLE_NAME="scc"
 WASM_DRIVER_NAME="wasm_driver"
 WASM_SERVER_PORT="6969"
-SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM_FOLDER"
+SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM_FOLDER/web"
 
 BUILD_THREADS="${BUILD_THREADS=1}"
 
@@ -72,8 +72,9 @@ build_wasm() {
     if [ ! -d "$BUILD_WASM_FOLDER/web" ]; then
         mkdir -p "$BUILD_WASM_FOLDER/web"
     fi
-
+    print_green "Copying files to web folder"
     cp $PROJECT_PATH/src/wasm/* $BUILD_WASM_FOLDER/web
+    cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
 }
 
