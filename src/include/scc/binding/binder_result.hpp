@@ -20,7 +20,7 @@ namespace scc
                 EmptyExpressionError,
                 InvalidInitializerError,
                 FailedToCreateVariableError,
-
+                // TODOO: Variable already exists / Variable does not exist
                 COUNT
             };
 

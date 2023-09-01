@@ -144,7 +144,7 @@ namespace scc
         return InterpreterError::RuntimeError;
     }
 
-    InterpreterResult Interpreter::interpret(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration)
+    InterpreterResult Interpreter::interpret(const binding::BoundVariablePointerDeclarationStatement & /* variable_pointer_declaration */ )
     {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:
@@ -153,7 +153,7 @@ namespace scc
         return InterpreterError::RuntimeError;
     }
 
-    InterpreterResult Interpreter::interpret(const binding::BoundVariableStaticArrayDeclarationStatement &variable_reference_declaration)
+    InterpreterResult Interpreter::interpret(const binding::BoundVariableStaticArrayDeclarationStatement & /* variable_reference_declaration */ )
     {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:

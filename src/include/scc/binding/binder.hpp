@@ -20,7 +20,7 @@
 #include "binding/bound_do_statement.hpp"
 #include "binding/bound_break_statement.hpp"
 #include "binding/bound_continue_statement.hpp"
-
+#include "binding/bound_function.hpp"
 namespace scc
 {
 
@@ -42,7 +42,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundDoStatement>, "DoStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBreakStatement>, "BreakStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundContinueStatement>, "ContinueStatement must be derived from BoundStatement");
-
+        static_assert(std::is_base_of_v<binding::BoundNode, binding::BoundFunction>, "Function must be derived from BoundStatement");
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -68,7 +68,8 @@ namespace scc
         binding::BinderResult<binding::BoundDoStatement> bind_do_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundBreakStatement> bind_break_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundContinueStatement> bind_continue_statement(const TreeNode &node);
-    
+        binding::BinderResult<binding::BoundNode> bind_declaration(const TreeNode &node);
+        binding::BinderResult<binding::BoundFunction> bind_function(const TreeNode &node);
     public:
         Binder() { m_scope_stack.push();}
         ~Binder() = default;
