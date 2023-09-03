@@ -39,10 +39,16 @@ namespace scc
             return InterpreterResult::error(InterpreterError::InvalidOperationError);
         }
 
+        if (left_result.get_value().type.kind == Type::Kind::Void
+             || right_result.get_value().type.kind == Type::Kind::Void)
+        {
+            return InterpreterResult::error(InterpreterError::InvalidOperationError);
+        }
+
         using Operator = binding::BoundBinaryExpression::OperatorKind;
       
         static_assert(static_cast<int>(Operator::COUNT) == 18, "Update this code");
-        static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+        static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
 
         // I'm so sorry
         
@@ -208,12 +214,14 @@ namespace scc
                     return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F64>(result.get_value().value)), target_type));
                 case Type::Kind::Bool:
                     return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Bool>(result.get_value().value)), target_type));
+                case Type::Kind::Void:
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(0), target_type));
                 default:
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
             }
         }
 
-        static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+        static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
 
 
         #define CAST_CASE(KIND_TYPE, TARGET_TYPE) case Type::Kind::KIND_TYPE: \
@@ -250,6 +258,8 @@ namespace scc
             case Type::Kind::F32: CAST_ORIGINAL(Type::Primitive::F32);
             case Type::Kind::F64: CAST_ORIGINAL(Type::Primitive::F64);
             case Type::Kind::Bool: CAST_ORIGINAL(Type::Primitive::Bool);
+            case Type::Kind::Void: 
+                return InterpreterResult::error(InterpreterError::InvalidOperationError);
             default:
                 return InterpreterResult::error(InterpreterError::ReachedUnreachableError); 
         }

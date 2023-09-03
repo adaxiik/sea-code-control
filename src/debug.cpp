@@ -15,7 +15,7 @@
 #include "binding/bound_if_statement.hpp"
 #include "binding/bound_while_statement.hpp"
 #include "binding/bound_do_statement.hpp"
-
+#include "binding/bound_function_statement.hpp"
 
 #include "overloaded.hpp"
 
@@ -157,7 +157,7 @@ namespace scc
 
         void type_as_text(std::ostream &ss, const Type &type)
         {
-            static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+            static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
             switch (type.kind)
             {
                 case Type::Kind::Char: ss << "char";           break;
@@ -172,6 +172,7 @@ namespace scc
                 case Type::Kind::F32:  ss << "float";          break;
                 case Type::Kind::F64:  ss << "double";         break;
                 case Type::Kind::Bool: ss << "bool";           break;
+                case Type::Kind::Void: ss << "void";           break;
                 default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
             }
             for (size_t i = 0; i < type.pointer_depth; i++)
@@ -196,7 +197,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 14, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 15, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -397,6 +398,27 @@ namespace scc
                 case binding::BoundNodeKind::ContinueStatement:
                 {
                     ss << "ContinueStatement" << std::endl;
+                    break;
+                }
+                case binding::BoundNodeKind::FunctionStatement:
+                {
+                    auto& function = static_cast<const binding::BoundFunctionStatement&>(node);
+                    ss << "FunctionStatement (" << function.return_type << ") ==> " << function.function_name << "(";
+                    for (size_t i = 0; i < function.parameters.size(); i++)
+                    {
+                        ss << function.parameters[i].get()->type << " " << function.parameters[i].get()->variable_name;
+                        if (i != function.parameters.size() - 1)
+                            ss << ", ";
+                    } 
+                    ss << ")" << std::endl;
+
+                    if (function.body)
+                    {
+                        bound_ast_as_text_tree_impl(*function.body
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:

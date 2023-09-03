@@ -38,7 +38,9 @@ namespace scc
 
         for(size_t i = 0; i < block_statement.statements.size(); i++)
         {
-            auto result = interpret(*block_statement.statements[i]);
+            auto& current_statement = block_statement.statements[i];
+            InterpreterResult result = interpret(*current_statement);
+
             if (result.is_error())
                 return result;
             
@@ -164,7 +166,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 8, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 9, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -183,6 +185,8 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundBreakStatement>(statement));
         case binding::BoundNodeKind::ContinueStatement:
             return interpret(ikwid_rc<binding::BoundContinueStatement>(statement));
+        case binding::BoundNodeKind::FunctionStatement:
+            return interpret(ikwid_rc<binding::BoundFunctionStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
@@ -275,6 +279,14 @@ namespace scc
         } while (std::get<Type::Primitive::Bool>(result.get_value().value));
 
         return InterpreterError::None;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundFunctionStatement &function)
+    {
+        TRACE();
+        // TODOOOO:
+
+        return InterpreterError::RuntimeError;
     }
 
 

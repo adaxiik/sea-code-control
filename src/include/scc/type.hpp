@@ -23,6 +23,7 @@ namespace scc
             using F32 = float;
             using F64 = double;
             using Bool = bool;
+            using Void = void;
         };
 
         using Value = std::variant<
@@ -53,6 +54,7 @@ namespace scc
             F32,
             F64,
             Bool,
+            Void,
             COUNT
         };
 
@@ -116,6 +118,8 @@ namespace scc
                 return sizeof(double);
             case Kind::Bool:
                 return sizeof(bool);
+            case Kind::Void:
+                return 0; // well its error most likely, but // TODOO:
             default:
                 std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::exit(1);
@@ -126,7 +130,7 @@ namespace scc
         friend std::ostream &operator<<(std::ostream &os, const Type &type)
         {
 
-            static_assert(static_cast<size_t>(Kind::COUNT) == 12, "Update this code");
+            static_assert(static_cast<size_t>(Kind::COUNT) == 13, "Update this code");
             switch (type.kind)
             {
             case Kind::Char:
@@ -164,6 +168,9 @@ namespace scc
                 break;
             case Kind::Bool:
                 os << "bool";
+                break;
+            case Kind::Void:
+                os << "void";
                 break;
             default:
                 std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
@@ -217,6 +224,8 @@ namespace scc
                 return Type(Kind::F64);
             else if constexpr (std::is_same_v<T, bool>)
                 return Type(Kind::Bool);
+            else if constexpr (std::is_same_v<T, void>)
+                return Type(Kind::Void);
             else if constexpr (std::is_same_v<T, OperationResult::InvalidOperation>)
             {
                 std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
@@ -271,6 +280,8 @@ namespace scc
                 return Type(Kind::U32);
             else if (str == "signed")
                 return Type(Kind::I32);
+            else if (str == "void")
+                return Type(Kind::Void);
             else
                 return std::nullopt;
         }
