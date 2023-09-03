@@ -17,6 +17,8 @@ namespace scc
         VariableDoesntExistError,
         VariableNotInitializedError,
         UnhandeledSignalError,
+        MissingMainFunctionError,
+        FunctionAlreadyDefinedError,
         COUNT
     };
 

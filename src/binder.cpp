@@ -1096,6 +1096,7 @@ namespace scc
             SCC_ASSERT(parameter_list.named_child(i).symbol() == Parser::PARAMETER_DECLARATION_SYMBOL);
             auto parameter_declaration = parameter_list.named_child(i);
 
+            // TODOOO: It doesnt have to have a name, but idc for now
             auto bound_declaration = bind_variable_declaration(parameter_declaration);
             BUBBLE_ERROR(bound_declaration);
             

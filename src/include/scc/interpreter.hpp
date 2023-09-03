@@ -7,6 +7,7 @@
 namespace scc
 {
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
+    constexpr auto MAIN_FUNCTION_NAME = "main";
     class Interpreter
     {
     public:
@@ -29,6 +30,9 @@ namespace scc
         Binder m_binder;
         Memory m_memory;
         InterpreterScopeStack m_scope_stack;
+        std::map<std::string, std::unique_ptr<binding::BoundFunctionStatement>> m_functions;
+
+        InterpreterResult register_functions(binding::BoundBlockStatement &block_statement);
 
         InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
         InterpreterResult interpret(const binding::BoundStatement &statement);
