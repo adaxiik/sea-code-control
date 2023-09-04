@@ -23,14 +23,6 @@ namespace scc
     {
         TRACE();
 
-        bool has_main = std::any_of(block_statement.statements.begin(), block_statement.statements.end(), [](const auto& statement)
-        {
-            return statement->bound_node_kind() == binding::BoundNodeKind::FunctionStatement
-                && static_cast<binding::BoundFunctionStatement*>(statement.get())->function_name == MAIN_FUNCTION_NAME;
-        });
-
-        if (!has_main)
-            return InterpreterError::MissingMainFunctionError;
         
         size_t index = 0;
         while (index < block_statement.statements.size())
@@ -45,6 +37,12 @@ namespace scc
             block_statement.statements.erase(block_statement.statements.begin() + index);
 
             bool already_exists = m_functions.find(function_statement->function_name) != m_functions.end();
+            if (!already_exists)
+            {
+                m_functions[function_statement->function_name] = std::move(function_statement);
+                continue;
+            }
+
             if (already_exists)
             {
                 if (!function_statement->body)
@@ -57,7 +55,6 @@ namespace scc
                 existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
             }            
 
-            m_functions[function_statement->function_name] = std::move(function_statement);
         }
 
         return InterpreterError::None;
@@ -84,16 +81,26 @@ namespace scc
             return statement->bound_node_kind() == binding::BoundNodeKind::FunctionStatement;
         });
 
+
         if (has_functions)
         {
             auto result = register_functions(block_statement);
             if (result.is_error())
                 return result;
-            
+        }
+        
+        bool has_main = m_functions.find(MAIN_FUNCTION_NAME) != m_functions.end();
+
+        if (has_main)
+        {
             auto main_function = m_functions.find(MAIN_FUNCTION_NAME);
-            if (main_function == m_functions.end())
-                return InterpreterError::MissingMainFunctionError;  // unreachable
-            
+            if (!main_function->second->body
+              || main_function->second->return_type.kind != Type::Kind::I32
+              || main_function->second->return_type.pointer_depth != 0)
+            {
+                return InterpreterError::MissingMainFunctionError; 
+            }   
+                
             InterpreterResult main_result = interpret(*main_function->second->body);
 
             if (main_result.has_signal())
@@ -101,7 +108,6 @@ namespace scc
             
             return main_result;
         }
-        
 
 
         for(size_t i = 0; i < block_statement.statements.size(); i++)
