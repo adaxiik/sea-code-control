@@ -113,51 +113,9 @@ namespace scc
 
             if (result.is_ok())
                 continue;
-
-            // TOOOOO: Move to debug
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 14, "Edit this code");
-            switch (result.get_error())
-            {
-                case InterpreterError::BindError:
-                    m_output_stream << RED << "Bind error" << RESET << std::endl;
-                    break;
-                case InterpreterError::RuntimeError:
-                    m_output_stream << RED << "Runtime error" << RESET << std::endl;
-                    break;
-                case InterpreterError::InvalidOperationError:
-                    m_output_stream << RED << "Invalid operation error" << RESET << std::endl;
-                    break;
-                case InterpreterError::ReachedUnreachableError:
-                    m_output_stream << RED << "Reached unreachable error" << RESET << std::endl;
-                    break;
-                case InterpreterError::DivisionByZeroError:
-                    m_output_stream << RED << "Division by zero error" << RESET << std::endl;
-                    break;
-                case InterpreterError::VariableAlreadyExistsError:
-                    m_output_stream << RED << "Variable already exists error" << RESET << std::endl;
-                    break;
-                case InterpreterError::VariableDoesntExistError:
-                    m_output_stream << RED << "Variable doesn't exist error" << RESET << std::endl;
-                    break;
-                case InterpreterError::VariableNotInitializedError:
-                    m_output_stream << RED << "Variable not initialized error" << RESET << std::endl;
-                    break;
-                case InterpreterError::UnhandeledSignalError:
-                    m_output_stream << RED << "Unhandeled signal error" << RESET << std::endl;
-                    break;
-                case InterpreterError::MissingMainFunctionError:
-                    m_output_stream << RED << "Missing main function error" << RESET << std::endl;
-                    break;
-                case InterpreterError::FunctionAlreadyDefinedError:
-                    m_output_stream << RED << "Function already defined error" << RESET << std::endl;
-                    break;
-                case InterpreterError::IncosistentFunctionSignatureError:
-                    m_output_stream << RED << "Incosistent function signature error" << RESET << std::endl;
-                    break;
-                default:
-                    m_output_stream << RED << "Unknown error" << RESET << std::endl;
-                    break;
-            }
+            m_output_stream << RED;
+            debug::interpreter_error_as_text(m_output_stream, result.get_error());
+            m_output_stream << RESET << std::endl;
             debug::ast_as_text_tree(m_output_stream, parse_result);
 
         } while (true);

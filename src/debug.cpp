@@ -534,5 +534,51 @@ namespace scc
                 ss << "Chunk " << address << " [" << address << ", " << memory.get_chunk_end(address).value() << "] (" << memory.get_chunk_size(address).value() << ") " << std::endl;
         }
 
+        void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
+        {
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 14, "Edit this code");
+            switch (error)
+            {
+                case InterpreterError::BindError:
+                    ss << "Bind error";
+                    break;
+                case InterpreterError::RuntimeError:
+                    ss << "Runtime error";
+                    break;
+                case InterpreterError::InvalidOperationError:
+                    ss << "Invalid operation error";
+                    break;
+                case InterpreterError::ReachedUnreachableError:
+                    ss << "Reached unreachable error";
+                    break;
+                case InterpreterError::DivisionByZeroError:
+                    ss << "Division by zero error";
+                    break;
+                case InterpreterError::VariableAlreadyExistsError:
+                    ss << "Variable already exists error";
+                    break;
+                case InterpreterError::VariableDoesntExistError:
+                    ss << "Variable doesn't exist error";
+                    break;
+                case InterpreterError::VariableNotInitializedError:
+                    ss << "Variable not initialized error";
+                    break;
+                case InterpreterError::UnhandeledSignalError:
+                    ss << "Unhandeled signal error";
+                    break;
+                case InterpreterError::MissingMainFunctionError:
+                    ss << "Missing main function error";
+                    break;
+                case InterpreterError::FunctionAlreadyDefinedError:
+                    ss << "Function already defined error";
+                    break;
+                case InterpreterError::IncosistentFunctionSignatureError:
+                    ss << "Incosistent function signature error";
+                    break;
+                default:
+                    ss << "Unknown error";
+                    break;
+            }
+        }
     }
 }
