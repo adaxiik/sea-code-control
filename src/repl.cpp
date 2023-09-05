@@ -115,7 +115,7 @@ namespace scc
                 continue;
 
             // TOOOOO: Move to debug
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 13, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 14, "Edit this code");
             switch (result.get_error())
             {
                 case InterpreterError::BindError:
@@ -150,6 +150,9 @@ namespace scc
                     break;
                 case InterpreterError::FunctionAlreadyDefinedError:
                     m_output_stream << RED << "Function already defined error" << RESET << std::endl;
+                    break;
+                case InterpreterError::IncosistentFunctionSignatureError:
+                    m_output_stream << RED << "Incosistent function signature error" << RESET << std::endl;
                     break;
                 default:
                     m_output_stream << RED << "Unknown error" << RESET << std::endl;

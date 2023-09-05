@@ -23,7 +23,6 @@ namespace scc
     {
         TRACE();
 
-        
         size_t index = 0;
         while (index < block_statement.statements.size())
         {
@@ -43,17 +42,19 @@ namespace scc
                 continue;
             }
 
-            if (already_exists)
-            {
-                if (!function_statement->body)
+            auto& existing_function = m_functions[function_statement->function_name];
+
+            if (*function_statement != *existing_function)
+                return InterpreterError::IncosistentFunctionSignatureError;
+
+            if (!function_statement->body)
                     continue;
                 
-                auto& existing_function = m_functions[function_statement->function_name];
-                if (existing_function->body)
-                    return InterpreterError::FunctionAlreadyDefinedError;
+            if (existing_function->body)
+                return InterpreterError::FunctionAlreadyDefinedError;
                 
-                existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
-            }            
+            existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
+                      
 
         }
 

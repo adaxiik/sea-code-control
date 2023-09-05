@@ -19,6 +19,7 @@ namespace scc
         UnhandeledSignalError,
         MissingMainFunctionError,
         FunctionAlreadyDefinedError,
+        IncosistentFunctionSignatureError,
         COUNT
     };
 

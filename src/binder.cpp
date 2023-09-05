@@ -627,7 +627,8 @@ namespace scc
         //     ├── primitive_type ==>      int
         //     └── identifier ==>  a
 
-        SCC_ASSERT_NODE_SYMBOL(Parser::DECLARATION_SYMBOL);
+        SCC_ASSERT(node.symbol() == Parser::DECLARATION_SYMBOL 
+                || node.symbol() == Parser::PARAMETER_DECLARATION_SYMBOL);
         // 3 if have qualifier (eg.: `const`)
         // TODOOO: int a, b, c; 
         SCC_ASSERT(node.named_child_count() == 2 || node.named_child_count() == 3);

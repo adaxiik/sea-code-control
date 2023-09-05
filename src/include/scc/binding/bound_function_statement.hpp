@@ -64,6 +64,11 @@ namespace scc
 
                 return true;
             }
+
+            bool operator!=(const BoundFunctionStatement &other) const
+            {
+                return !(*this == other);
+            }
             
         };
     }

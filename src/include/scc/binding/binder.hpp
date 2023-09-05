@@ -49,6 +49,8 @@ namespace scc
         Binder &operator=(Binder &&) = delete;
 
         binding::BinderScopeStack m_scope_stack;
+        using ReturnType = Type;
+        std::map<std::string, ReturnType> m_functions;
         
         binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundNode> bind_impl(const TreeNode &node);
