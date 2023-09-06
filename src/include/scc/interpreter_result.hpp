@@ -28,6 +28,7 @@ namespace scc
         None = 0,
         Break,
         Continue,
+        Return,
         
         COUNT
     };
@@ -93,6 +94,8 @@ namespace scc
         bool has_value() const { return value.has_value(); }
         bool has_signal() const { return signal != InterpreterSignal::None; }
         bool is_ok_and_has_value() const { return is_ok() && has_value(); }
+        InterpreterResult& set_signal(InterpreterSignal signal) { this->signal = signal; return *this; }
+        InterpreterResult& clear_signal() { signal = InterpreterSignal::None; return *this; }
         InterpreterResultValue get_value() const { return *value; }
         InterpreterSignal get_signal() const { return signal; }
         InterpreterError get_error() const { return interpreter_result; }

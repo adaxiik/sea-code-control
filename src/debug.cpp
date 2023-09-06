@@ -16,6 +16,7 @@
 #include "binding/bound_while_statement.hpp"
 #include "binding/bound_do_statement.hpp"
 #include "binding/bound_function_statement.hpp"
+#include "binding/bound_return_statement.hpp"
 
 #include "overloaded.hpp"
 
@@ -197,7 +198,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 15, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 16, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -415,6 +416,19 @@ namespace scc
                     if (function.body)
                     {
                         bound_ast_as_text_tree_impl(*function.body
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::ReturnStatement:
+                {
+                    auto& return_statement = static_cast<const binding::BoundReturnStatement&>(node);
+                    ss << "ReturnStatement" << std::endl;
+                    if (return_statement.has_return_expression())
+                    {
+                        bound_ast_as_text_tree_impl(*return_statement.return_expression
                                                     , depth + 1
                                                     , true
                                                     , prefix + (last ? SPACE : DOWN_PIPE));

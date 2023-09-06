@@ -244,7 +244,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 9, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 10, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -265,6 +265,8 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundContinueStatement>(statement));
         case binding::BoundNodeKind::FunctionStatement:
             return interpret(ikwid_rc<binding::BoundFunctionStatement>(statement));
+        case binding::BoundNodeKind::ReturnStatement:
+            return interpret(ikwid_rc<binding::BoundReturnStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
@@ -298,6 +300,19 @@ namespace scc
         return InterpreterResult(InterpreterSignal::Continue);
     }
 
+    InterpreterResult Interpreter::interpret(const binding::BoundReturnStatement &return_statement)
+    {
+        TRACE();
+        if (!return_statement.has_return_expression())
+            return InterpreterResult(InterpreterSignal::Return);
+        
+        auto result = eval(*return_statement.return_expression);
+        if (result.is_error())
+            return result;
+        
+        return result.set_signal(InterpreterSignal::Return);
+    }
+
     InterpreterResult Interpreter::interpret(const binding::BoundWhileStatement &while_statement)
     {
         TRACE();
@@ -315,10 +330,10 @@ namespace scc
                 return body_result;
             
             
-            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
-            // TODOO: might be a return in the future
-
-            if(body_result.get_signal() == InterpreterSignal::Break) 
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 4, "Update this code");
+            if (body_result.get_signal() == InterpreterSignal::Return)
+                return body_result.clear_signal();
+            else if (body_result.get_signal() == InterpreterSignal::Break) 
                 break; 
                 
             result = eval(*while_statement.condition);
@@ -341,13 +356,15 @@ namespace scc
             if (body_result.is_error())
                 return body_result;
 
-            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 4, "Update this code");
             if (body_result.has_signal())
             {
                 if (body_result.get_signal() == InterpreterSignal::Break)
                     break;
                 else if (body_result.get_signal() == InterpreterSignal::Continue)
                     continue;
+                else if (body_result.get_signal() == InterpreterSignal::Return)
+                    return body_result.clear_signal();
             }
 
             result = eval(*do_statement.condition);

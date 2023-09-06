@@ -1083,15 +1083,10 @@ namespace scc
 
         std::string function_name = declarator.first_named_child().value();
         TreeNode parameter_list = declarator.named_child(1);
-        std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
-        if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
-        {
-            auto body_result = bind_impl(node.last_named_child());
-            BUBBLE_ERROR(body_result);
-            body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
-        }
+        
         
         std::vector<std::unique_ptr<binding::BoundVariableDeclarationStatement>> parameters;
+        m_scope_stack.push();
         for (size_t i = 0; i < parameter_list.named_child_count(); i++)
         {
             SCC_ASSERT(parameter_list.named_child(i).symbol() == Parser::PARAMETER_DECLARATION_SYMBOL);
@@ -1100,9 +1095,18 @@ namespace scc
             // TODOOO: It doesnt have to have a name, but idc for now
             auto bound_declaration = bind_variable_declaration(parameter_declaration);
             BUBBLE_ERROR(bound_declaration);
-            
+            m_scope_stack.create_variable(bound_declaration.get_value()->variable_name, bound_declaration.get_value()->type);
             parameters.emplace_back(bound_declaration.release_value());
         }
+
+        std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
+        if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
+        {
+            auto body_result = bind_impl(node.last_named_child());
+            BUBBLE_ERROR(body_result);
+            body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
+        }
+        m_scope_stack.pop();
 
        return std::make_unique<binding::BoundFunctionStatement>(std::move(return_type), std::move(function_name), std::move(parameters), std::move(body));
     }
@@ -1115,6 +1119,18 @@ namespace scc
             return bind_function(node);
         
         return bind_variable_declaration(node);
+    }
+
+    binding::BinderResult<binding::BoundReturnStatement> Binder::bind_return_statement(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::RETURN_STATEMENT_SYMBOL);
+        if (node.named_child_count() == 1)
+        {
+            auto expression = bind_expression(node.first_named_child());
+            BUBBLE_ERROR(expression);
+            return std::make_unique<binding::BoundReturnStatement>(expression.release_value());
+        }
+        return std::make_unique<binding::BoundReturnStatement>();
     }
 
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
@@ -1143,6 +1159,8 @@ namespace scc
             return bind_continue_statement(node);
         case Parser::FUNCTION_DEFINITION_SYMBOL:
             return bind_function(node);
+        case Parser::RETURN_STATEMENT_SYMBOL:
+            return bind_return_statement(node);
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
