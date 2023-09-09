@@ -55,6 +55,7 @@ namespace scc
         InterpreterResult eval(const binding::BoundIdentifierExpression &identifier_expression);
         InterpreterResult eval(const binding::BoundAssignmentExpression &assignment_expression);
         InterpreterResult eval(const binding::BoundLiteralExpression &literal_expression);
+        InterpreterResult eval(const binding::BoundCallExpression &call_expression);
         
 
     };

@@ -20,6 +20,9 @@ namespace scc
                 EmptyExpressionError,
                 InvalidInitializerError,
                 FailedToCreateVariableError,
+                FunctionArgumentCountMismatchError,
+                FunctionSignatureMismatchError,
+                ReturnStatementOutsideFunctionError,
                 // TODOO: Variable already exists / Variable does not exist
                 COUNT
             };

@@ -19,7 +19,12 @@ namespace scc
         UnhandeledSignalError,
         MissingMainFunctionError,
         FunctionAlreadyDefinedError,
+        FunctionNotDefinedError,
+        FunctionNotDeclaredError,
+        FunctionArgumentCountMismatchError,
         IncosistentFunctionSignatureError,
+        MissingReturnStatementError,
+        MissingReturnValueError,
         COUNT
     };
 

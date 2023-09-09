@@ -25,6 +25,7 @@ namespace scc
             ParenthesizedExpression,
             IdentifierExpression,
             AssignmentExpression,
+            CallExpression,
 
 
 

@@ -101,13 +101,14 @@ namespace scc
             {
                 return InterpreterError::MissingMainFunctionError; 
             }   
-                
-            InterpreterResult main_result = interpret(*main_function->second->body);
 
-            if (main_result.has_signal())
-                return InterpreterError::UnhandeledSignalError;
+            // TODOOOOOOOOOOOOOO: implement this as function call..     
+            // InterpreterResult main_result = interpret(*main_function->second->body);
+
+            // if (main_result.has_signal())
+            //     return InterpreterError::UnhandeledSignalError;
             
-            return main_result;
+            // return main_result;
         }
 
 
@@ -376,11 +377,11 @@ namespace scc
         return InterpreterError::None;
     }
 
-    InterpreterResult Interpreter::interpret(const binding::BoundFunctionStatement &function)
+    InterpreterResult Interpreter::interpret(const binding::BoundFunctionStatement &)
     {
         TRACE();
         // This function is NOT called by function call, but by declaration
-        // only exists for tracing purposes, consistency and don't have to bother with skipping it in the interpreter
+        // only exists for tracing purposes, consistency 
         return InterpreterError::None;
     }
 
@@ -412,7 +413,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 6, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 7, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
@@ -427,6 +428,8 @@ namespace scc
             return eval(ikwid_rc<binding::BoundIdentifierExpression>(expression));
         case binding::BoundNodeKind::AssignmentExpression:
             return eval(ikwid_rc<binding::BoundAssignmentExpression>(expression));
+        case binding::BoundNodeKind::CallExpression:
+            return eval(ikwid_rc<binding::BoundCallExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
@@ -466,5 +469,71 @@ namespace scc
             return InterpreterError::VariableNotInitializedError; // or memory error??
 
         return InterpreterResult::ok(InterpreterResultValue(value.value()));
+    }
+
+    InterpreterResult Interpreter::eval(const binding::BoundCallExpression &call_expression)
+    {
+        TRACE();
+        auto function = m_functions.find(call_expression.function_name);
+        if (function == m_functions.end())
+            return InterpreterError::FunctionNotDeclaredError;
+
+        if (!function->second->body)
+            return InterpreterError::FunctionNotDefinedError;
+
+        if (function->second->parameters.size() != call_expression.arguments.size())
+            return InterpreterError::FunctionArgumentCountMismatchError;
+
+        auto& called_function = *function->second;
+
+        m_scope_stack.push();
+        for (int64_t i = call_expression.arguments.size() - 1; i >= 0; i--)
+        {
+            auto arg_result = eval(*call_expression.arguments[i]);
+            if (arg_result.is_error())
+                return arg_result;
+            
+            auto var_creation_result = m_scope_stack.create_variable(called_function.parameters[i]->variable_name,
+                                                                     called_function.parameters[i]->type,
+                                                                     called_function.parameters[i]->size_bytes(),
+                                                                     called_function.parameters[i]->is_constant);
+            if (var_creation_result.is_error())
+                return var_creation_result;
+
+            auto variable = m_scope_stack.get_from_scopestack(called_function.parameters[i]->variable_name);
+            if (!variable)
+                return InterpreterError::VariableDoesntExistError; // probably unreachable
+
+            if (!variable->set_value(m_memory, arg_result.get_value().value))
+                return InterpreterError::RuntimeError;
+        }
+
+        for (const auto& statement : called_function.body->statements)
+        {
+            auto result = interpret(*statement);
+            if (result.is_error())
+                return result;
+            
+            if (result.get_signal() == InterpreterSignal::Return)
+            {
+                if (called_function.return_type.kind != Type::Kind::Void 
+                    && !result.has_value())
+                {
+                    return InterpreterError::MissingReturnValueError;
+                }
+
+                m_scope_stack.pop();
+                return result.clear_signal();
+            }
+
+            if (result.has_signal())
+                return InterpreterError::UnhandeledSignalError;
+            
+        }
+        m_scope_stack.pop();
+        if (function->second->return_type.kind != Type::Kind::Void)
+            return InterpreterError::MissingReturnStatementError;
+
+        return InterpreterError::None;
     }
 }

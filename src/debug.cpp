@@ -17,6 +17,7 @@
 #include "binding/bound_do_statement.hpp"
 #include "binding/bound_function_statement.hpp"
 #include "binding/bound_return_statement.hpp"
+#include "binding/bound_call_expression.hpp"
 
 #include "overloaded.hpp"
 
@@ -198,7 +199,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 16, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -435,6 +436,19 @@ namespace scc
                     }
                     break;
                 }
+                case binding::BoundNodeKind::CallExpression:
+                {
+                    auto& call_expression = static_cast<const binding::BoundCallExpression&>(node);
+                    ss << "CallExpression (" << call_expression.type << ") ==> " << call_expression.function_name << std::endl;
+                    for (size_t i = 0; i < call_expression.arguments.size(); i++)
+                    {
+                        bound_ast_as_text_tree_impl(*call_expression.arguments[i]
+                                                    , depth + 1
+                                                    , i == call_expression.arguments.size() - 1
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
                 case binding::BoundNodeKind::VariableDeclarationStatement:
                 {
                     auto& variable_declaration_statement = static_cast<const binding::BoundVariableDeclarationStatement&>(node);
@@ -550,9 +564,15 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 14, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 19, "Edit this code");
             switch (error)
             {
+                case InterpreterError::None:
+                    ss << "None";
+                    break;
+                case InterpreterError::ParseError:
+                    ss << "Parse error";
+                    break;
                 case InterpreterError::BindError:
                     ss << "Bind error";
                     break;
@@ -588,6 +608,21 @@ namespace scc
                     break;
                 case InterpreterError::IncosistentFunctionSignatureError:
                     ss << "Incosistent function signature error";
+                    break;
+                case InterpreterError::FunctionArgumentCountMismatchError:
+                    ss << "Function argument count mismatch error";
+                    break;
+                case InterpreterError::FunctionNotDeclaredError:
+                    ss << "Function not declared error";
+                    break;
+                case InterpreterError::FunctionNotDefinedError:
+                    ss << "Function not defined error";
+                    break;
+                case InterpreterError::MissingReturnStatementError:
+                    ss << "Missing return statement error";
+                    break;
+                case InterpreterError::MissingReturnValueError:
+                    ss << "Missing return value error";
                     break;
                 default:
                     ss << "Unknown error";
