@@ -431,6 +431,8 @@ namespace scc
             return bind_identifier_expression(node);
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
             return bind_assignment_expression(node);
+        case Parser::CALL_EXPRESSION_SYMBOL:
+            return bind_call_expression(node);
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
@@ -627,7 +629,8 @@ namespace scc
         //     ├── primitive_type ==>      int
         //     └── identifier ==>  a
 
-        SCC_ASSERT_NODE_SYMBOL(Parser::DECLARATION_SYMBOL);
+        SCC_ASSERT(node.symbol() == Parser::DECLARATION_SYMBOL 
+                || node.symbol() == Parser::PARAMETER_DECLARATION_SYMBOL);
         // 3 if have qualifier (eg.: `const`)
         // TODOOO: int a, b, c; 
         SCC_ASSERT(node.named_child_count() == 2 || node.named_child_count() == 3);
@@ -1008,6 +1011,196 @@ namespace scc
         return std::make_unique<binding::BoundContinueStatement>();
     }
 
+    binding::BinderResult<binding::BoundFunctionStatement> Binder::bind_function(const TreeNode &node)
+    {
+        SCC_ASSERT(node.symbol() == Parser::FUNCTION_DEFINITION_SYMBOL ||
+                   node.symbol() == Parser::DECLARATION_SYMBOL);
+        SCC_BINDER_RESULT_TYPE(bind_function);
+
+        // int fn(int a, int b) {}
+
+        // function_definition ==>     int fn(int...
+        // ├── primitive_type ==>      int
+        // ├── function_declarator ==> fn(int a, ...
+        // │   ├── identifier ==>      fn
+        // │   └── parameter_list ==>  (int a, in...
+        // │       ├── parameter_declaration ==>       int a
+        // │       │   ├── primitive_type ==>  int
+        // │       │   └── identifier ==>      a
+        // │       └── parameter_declaration ==>       int b
+        // │           ├── primitive_type ==>  int
+        // │           └── identifier ==>      b
+        // └── compound_statement ==>  {}
+
+        // int fn(int a, int b);
+        // declaration ==>     int fn(int...
+        // ├── primitive_type ==>      int
+        // └── function_declarator ==> fn(int a, ...
+        //     ├── identifier ==>      fn
+        //     └── parameter_list ==>  (int a, in...
+        //         ├── parameter_declaration ==>       int a
+        //         │   ├── primitive_type ==>  int
+        //         │   └── identifier ==>      a
+        //         └── parameter_declaration ==>       int b
+        //             ├── primitive_type ==>  int
+        //             └── identifier ==>      b
+
+        // int** a();
+        // declaration ==>     int** a();
+        // ├── primitive_type ==>      int
+        // └── pointer_declarator ==>  ** a()
+        //     └── pointer_declarator ==>      * a()
+        //         └── function_declarator ==> a()
+        //             ├── identifier ==>      a
+        //             └── parameter_list ==>  ()
+
+        int type_index = node.first_named_child().symbol() == Parser::STORAGE_CLASS_SPECIFIER_SYMBOL; // eg.: `static`
+        
+        // TODOO: custom types
+        std::optional<Type> return_type_opt = Type::from_string(node.named_child(type_index).value());
+        if (!return_type_opt.has_value())
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown type: " + node.named_child(type_index).value());
+            return error;
+        }
+
+        int declarator_index = type_index + 1;
+
+        uint32_t pointer_depth = 0;
+        if (node.named_child(declarator_index).symbol() == Parser::POINTER_DECLARATOR_SYMBOL)
+        {
+            auto current_node = node.named_child(declarator_index);
+            while (current_node.symbol() == Parser::POINTER_DECLARATOR_SYMBOL)
+            {
+                pointer_depth++;
+                current_node = current_node.first_named_child();
+            }
+        }
+
+        auto return_type = return_type_opt.value();
+        return_type.pointer_depth = pointer_depth;
+
+        TreeNode declarator = node.named_child_with_symbol_BFS(Parser::FUNCTION_DECLARATOR_SYMBOL).value();
+
+        std::string function_name = declarator.first_named_child().value();
+        TreeNode parameter_list = declarator.named_child(1);
+        
+        
+        std::vector<std::unique_ptr<binding::BoundVariableDeclarationStatement>> parameters;
+        FunctionDeclaration fn_declaration = {return_type, std::vector<Type>()};
+        
+        m_scope_stack.push();
+        for (size_t i = 0; i < parameter_list.named_child_count(); i++)
+        {
+            SCC_ASSERT(parameter_list.named_child(i).symbol() == Parser::PARAMETER_DECLARATION_SYMBOL);
+            auto parameter_declaration = parameter_list.named_child(i);
+
+            // TODOOO: It doesnt have to have a name, but idc for now
+            auto bound_declaration = bind_variable_declaration(parameter_declaration);
+            BUBBLE_ERROR(bound_declaration);
+            m_scope_stack.create_variable(bound_declaration.get_value()->variable_name, bound_declaration.get_value()->type);
+            fn_declaration.parameters.push_back(bound_declaration.get_value()->type);
+            parameters.emplace_back(bound_declaration.release_value());
+        }
+        
+        m_current_function = fn_declaration;
+        if (m_functions.find(function_name) != m_functions.end())
+        {
+            auto& existing_fn_declaration = m_functions.at(function_name);
+            if (existing_fn_declaration != fn_declaration)
+            {
+                auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::FunctionSignatureMismatchError, node));
+                error.add_diagnostic("Function signature mismatch: " + function_name);
+                return error;
+            }
+        }
+        else
+        {
+            m_functions.insert({function_name, fn_declaration});
+        }
+
+        std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
+        if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
+        {
+            auto body_result = bind_impl(node.last_named_child());
+            BUBBLE_ERROR(body_result);
+            body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
+        }
+        m_scope_stack.pop();
+        
+       return std::make_unique<binding::BoundFunctionStatement>(return_type, std::move(function_name), std::move(parameters), std::move(body));
+    }
+
+    binding::BinderResult<binding::BoundNode> Binder::bind_declaration(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::DECLARATION_SYMBOL);
+
+        if (node.has_named_child_with_symbol(Parser::FUNCTION_DECLARATOR_SYMBOL))
+            return bind_function(node);
+        
+        return bind_variable_declaration(node);
+    }
+
+    binding::BinderResult<binding::BoundReturnStatement> Binder::bind_return_statement(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::RETURN_STATEMENT_SYMBOL);
+        SCC_BINDER_RESULT_TYPE(bind_return_statement);
+        if (!m_current_function.has_value())
+            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReturnStatementOutsideFunctionError, node));
+
+        if (node.named_child_count() == 1)
+        {
+            auto expression = bind_expression(node.first_named_child());
+            BUBBLE_ERROR(expression);
+
+            return std::make_unique<binding::BoundReturnStatement>(std::make_unique<binding::BoundCastExpression>(expression.release_value()
+                                                                , m_current_function.value().get().return_type));
+        }
+        return std::make_unique<binding::BoundReturnStatement>();
+    }
+
+    binding::BinderResult<binding::BoundCallExpression> Binder::bind_call_expression(const TreeNode &node)
+    {
+        // call_expression ==>     fn(1,2,3)
+        // ├── identifier ==>      fn
+        // └── argument_list ==>   (1,2,3)
+        //     ├── number_literal ==>      1
+        //     ├── number_literal ==>      2
+        //     └── number_literal ==>      3
+
+        SCC_ASSERT_NODE_SYMBOL(Parser::CALL_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 2);
+        SCC_ASSERT_EQ(node.first_named_child().symbol(), Parser::IDENTIFIER_SYMBOL);
+        SCC_BINDER_RESULT_TYPE(bind_call_expression);
+        std::string function_name = node.first_named_child().value();
+        if (m_functions.find(function_name) == m_functions.end())
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown function: " + function_name);
+            return error;
+        }
+
+        FunctionDeclaration& fn_declaration = m_functions.at(function_name);
+        if (fn_declaration.parameters.size() != node.named_child(1).named_child_count())
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::FunctionArgumentCountMismatchError, node));
+            error.add_diagnostic("Invalid argument count for function: " + function_name);
+            return error;
+        }
+
+        std::vector<std::unique_ptr<binding::BoundExpression>> arguments;
+        for (size_t i = 0; i < node.named_child(1).named_child_count(); i++)
+        {
+            auto argument = bind_expression(node.named_child(1).named_child(i));
+            BUBBLE_ERROR(argument);
+
+            arguments.push_back(std::make_unique<binding::BoundCastExpression>(argument.release_value(), fn_declaration.parameters[i]));
+        }
+
+        return std::make_unique<binding::BoundCallExpression>(fn_declaration.return_type, std::move(function_name), std::move(arguments));
+    }
+
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_impl);
@@ -1021,7 +1214,7 @@ namespace scc
         case Parser::COMPOUND_STATEMENT_SYMBOL:
             return bind_block_statement(node);
         case Parser::DECLARATION_SYMBOL:
-            return bind_variable_declaration(node);
+            return bind_declaration(node);
         case Parser::IF_STATEMENT_SYMBOL:
             return bind_if_statement(node);
         case Parser::WHILE_STATEMENT_SYMBOL:
@@ -1032,6 +1225,10 @@ namespace scc
             return bind_break_statement(node);
         case Parser::CONTINUE_STATEMENT_SYMBOL:
             return bind_continue_statement(node);
+        case Parser::FUNCTION_DEFINITION_SYMBOL:
+            return bind_function(node);
+        case Parser::RETURN_STATEMENT_SYMBOL:
+            return bind_return_statement(node);
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));

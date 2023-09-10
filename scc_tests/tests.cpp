@@ -508,3 +508,46 @@ TEST_CASE("While and Do statements")
     SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
     SCC_TEST_INTERPRET_RESULT(int, 9, "b;");
 }
+
+TEST_CASE("Functions")
+{
+    auto interpreter = scc::Interpreter();
+    SCC_TEST_IS_OK("int fn_a();");
+    SCC_TEST_IS_ERROR("fn_a();");
+    SCC_TEST_IS_OK("int fn_a() { return 1; }");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "fn_a();");
+
+    SCC_TEST_IS_OK("int fn_b(int a) { return a; }");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "fn_b(1);");
+    SCC_TEST_INTERPRET_RESULT(int, 2, "fn_b(2);");
+    SCC_TEST_INTERPRET_RESULT(int, 3, "fn_b(3);");
+    SCC_TEST_IS_OK("int a = 0;");
+    SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "fn_b(1);");
+    SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+    SCC_TEST_IS_OK("a = fn_b(1);");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+
+    SCC_TEST_IS_OK("int fn_c(double a, double b) { return a + b; }");
+    SCC_TEST_INTERPRET_RESULT(int, 4, "fn_c(1.6, 2.6);");
+
+    SCC_TEST_IS_OK("int fn_d(int a, int b) { return fn_c(a, b); }");
+    SCC_TEST_INTERPRET_RESULT(int, 4, "fn_d(1, 3);");
+
+    SCC_TEST_IS_OK("int factorial(int n) { if (n <= 0) { return 1; } return n * factorial(n - 1); }");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "factorial(0);");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "factorial(1);");
+    SCC_TEST_INTERPRET_RESULT(int, 2, "factorial(2);");
+    SCC_TEST_INTERPRET_RESULT(int, 6, "factorial(3);");
+    SCC_TEST_INTERPRET_RESULT(int, 24, "factorial(4);");
+    // SCC_TEST_INTERPRET_RESULT(int, 120, "factorial(5);"); // TODOO: fix stack overflow
+
+    SCC_TEST_IS_OK("int var = 420;");
+    SCC_TEST_IS_OK("int fn_e() { int var = 1; return var; }");
+    SCC_TEST_INTERPRET_RESULT(int, 420, "var;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "fn_e();");
+    SCC_TEST_INTERPRET_RESULT(int, 420, "var;");
+
+    SCC_TEST_IS_OK("int fn_f() { return var; }");
+    SCC_TEST_INTERPRET_RESULT(int, 420, "fn_f();");
+}

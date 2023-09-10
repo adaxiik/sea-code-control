@@ -13,6 +13,7 @@
 #include "binding/bound_node.hpp"
 #include "type.hpp"
 #include "memory.hpp"
+#include "interpreter_result.hpp"
 
 namespace scc
 {
@@ -32,6 +33,8 @@ namespace scc
         void memory_chunks_as_json(std::ostream &ss, const Memory& memory);
         void memory_chunks_as_puml(std::ostream &ss, const Memory& memory);
         void memory_chunks_as_text(std::ostream &ss, const Memory& memory);
+
+        void interpreter_error_as_text(std::ostream &ss, InterpreterError error);
 
     } 
 } 

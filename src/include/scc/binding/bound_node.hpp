@@ -14,6 +14,8 @@ namespace scc
             DoStatement,
             BreakStatement,
             ContinueStatement,
+            FunctionStatement,
+            ReturnStatement,
 
 
             // Expressions .. see is_statement() 
@@ -23,6 +25,10 @@ namespace scc
             ParenthesizedExpression,
             IdentifierExpression,
             AssignmentExpression,
+            CallExpression,
+
+
+
             COUNT,
         };
 
@@ -34,6 +40,7 @@ namespace scc
             // BoundNodeKind bound_node_kind;
             virtual ~BoundNode() = default;
             virtual BoundNodeKind bound_node_kind() const = 0;
+
 
             bool is_statement() const
             {

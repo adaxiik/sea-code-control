@@ -1,5 +1,8 @@
 #include "treenode.hpp"
 #include "parser.hpp"
+
+#include <queue>
+
 namespace scc
 {
     std::string TreeNode::value() const
@@ -69,4 +72,37 @@ namespace scc
         TSPoint start_point = ts_node_start_point(m_node);
         return Location{start_point.row, start_point.column};
     }
+
+    std::optional<TreeNode> TreeNode::named_child_with_symbol_BFS(TSSymbol symbol, SearchDepth max_depth) const
+    {
+        // BFS, depth 0 is infinite
+        std::queue<TreeNode> queue;
+        queue.push(*this);
+        uint32_t depth = 0;
+
+        while (!queue.empty())
+        {
+            TreeNode node = queue.front();
+            queue.pop();
+
+            if (node.symbol() == symbol)
+                return node;
+
+            if (max_depth != SearchDepth::infinite && depth >= max_depth)
+                continue;
+
+            for (uint32_t i = 0; i < node.named_child_count(); i++)
+                queue.push(node.named_child(i));
+
+            depth++;
+        }
+
+        return std::nullopt;
+    }
+
+    bool TreeNode::has_named_child_with_symbol(TSSymbol symbol, SearchDepth max_depth) const
+    {
+        return named_child_with_symbol_BFS(symbol, max_depth).has_value();
+    }
+
 }

@@ -7,6 +7,7 @@
 namespace scc
 {
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
+    constexpr auto MAIN_FUNCTION_NAME = "main";
     class Interpreter
     {
     public:
@@ -29,6 +30,9 @@ namespace scc
         Binder m_binder;
         Memory m_memory;
         InterpreterScopeStack m_scope_stack;
+        std::map<std::string, std::unique_ptr<binding::BoundFunctionStatement>> m_functions;
+
+        InterpreterResult register_functions(binding::BoundBlockStatement &block_statement);
 
         InterpreterResult interpret(const binding::BoundBlockStatement &block_statement);
         InterpreterResult interpret(const binding::BoundStatement &statement);
@@ -41,6 +45,8 @@ namespace scc
         InterpreterResult interpret(const binding::BoundDoStatement &do_statement);
         InterpreterResult interpret(const binding::BoundBreakStatement &break_statement);
         InterpreterResult interpret(const binding::BoundContinueStatement &continue_statement);
+        InterpreterResult interpret(const binding::BoundFunctionStatement &function);
+        InterpreterResult interpret(const binding::BoundReturnStatement &return_statement);
 
         InterpreterResult eval(const binding::BoundExpression &expression);
         InterpreterResult eval(const binding::BoundBinaryExpression &binary_expression);
@@ -49,6 +55,7 @@ namespace scc
         InterpreterResult eval(const binding::BoundIdentifierExpression &identifier_expression);
         InterpreterResult eval(const binding::BoundAssignmentExpression &assignment_expression);
         InterpreterResult eval(const binding::BoundLiteralExpression &literal_expression);
+        InterpreterResult eval(const binding::BoundCallExpression &call_expression);
         
 
     };

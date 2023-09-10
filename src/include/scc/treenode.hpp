@@ -53,5 +53,24 @@ namespace scc
         TreeNode last_child() const;
         TreeNode last_named_child() const;
         Location location() const;
+
+        enum SearchDepth
+        {
+            infinite = 0,
+            one = 1
+        };
+
+        /**
+         * @brief Returns the first child with the given symbol.
+         * 
+         * BFS is used to search for the child.
+         * Depth can be limited by the max_depth parameter. (default: infinite)
+         * 
+         * @param symbol 
+         * @param max_depth 
+         * @return std::optional<TreeNode> 
+         */
+        std::optional<TreeNode> named_child_with_symbol_BFS(TSSymbol symbol, SearchDepth max_depth = SearchDepth::infinite) const;
+        bool has_named_child_with_symbol(TSSymbol symbol, SearchDepth max_depth = SearchDepth::infinite) const;
     };
 }

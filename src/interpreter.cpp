@@ -19,8 +19,51 @@ namespace scc
         return interpret(parse_result);
     }
 
+    InterpreterResult Interpreter::register_functions(binding::BoundBlockStatement &block_statement)
+    {
+        TRACE();
+
+        size_t index = 0;
+        while (index < block_statement.statements.size())
+        {
+            std::unique_ptr<binding::BoundStatement>& current_statement = block_statement.statements[index];
+            if (current_statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
+            {
+                index++;
+                continue;
+            }
+            std::unique_ptr<binding::BoundFunctionStatement> function_statement {std::unique_ptr<binding::BoundFunctionStatement>(static_cast<binding::BoundFunctionStatement*>(current_statement.release()))} ;
+            block_statement.statements.erase(block_statement.statements.begin() + index);
+
+            bool already_exists = m_functions.find(function_statement->function_name) != m_functions.end();
+            if (!already_exists)
+            {
+                m_functions[function_statement->function_name] = std::move(function_statement);
+                continue;
+            }
+
+            auto& existing_function = m_functions[function_statement->function_name];
+
+            if (*function_statement != *existing_function)
+                return InterpreterError::IncosistentFunctionSignatureError;
+
+            if (!function_statement->body)
+                    continue;
+                
+            if (existing_function->body)
+                return InterpreterError::FunctionAlreadyDefinedError;
+                
+            existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
+                      
+
+        }
+
+        return InterpreterError::None;
+    }
+
     InterpreterResult Interpreter::interpret(const ParserResult &parse_result)
     {
+        TRACE();
         if (parse_result.has_error())
             return InterpreterError::ParseError;
 
@@ -31,22 +74,60 @@ namespace scc
         if (binded.get_value()->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
             return InterpreterError::BindError;
         
-        auto& block_statement = ikwid_rc<binding::BoundBlockStatement>(ikwid_rc<binding::BoundStatement>(*binded.get_value()));    
-        debug::bound_ast_as_text_tree(std::cout, block_statement);
+        binding::BoundBlockStatement& block_statement = *static_cast<binding::BoundBlockStatement*>(binded.get_value());
+        debug::bound_ast_as_text_tree(std::cout, block_statement); // TODOO: move it somewhere else
 
-        TRACE();
+        bool has_functions = std::any_of(block_statement.statements.begin(), block_statement.statements.end(), [](const auto& statement)
+        {
+            return statement->bound_node_kind() == binding::BoundNodeKind::FunctionStatement;
+        });
+
+
+        if (has_functions)
+        {
+            auto result = register_functions(block_statement);
+            if (result.is_error())
+                return result;
+        }
+        
+        bool has_main = m_functions.find(MAIN_FUNCTION_NAME) != m_functions.end();
+
+        if (has_main)
+        {
+            auto main_function = m_functions.find(MAIN_FUNCTION_NAME);
+            if (!main_function->second->body
+              || main_function->second->return_type.kind != Type::Kind::I32
+              || main_function->second->return_type.pointer_depth != 0)
+            {
+                return InterpreterError::MissingMainFunctionError; 
+            }   
+
+            // TODOOOOOOOOOOOOOO: implement this as function call..     
+            // InterpreterResult main_result = interpret(*main_function->second->body);
+
+            // if (main_result.has_signal())
+            //     return InterpreterError::UnhandeledSignalError;
+            
+            // return main_result;
+        }
+
 
         for(size_t i = 0; i < block_statement.statements.size(); i++)
         {
-            auto result = interpret(*block_statement.statements[i]);
+            auto& current_statement = block_statement.statements[i];
+            if (current_statement->bound_node_kind() == binding::BoundNodeKind::FunctionStatement)
+                continue;
+
+            InterpreterResult result = interpret(*current_statement);
+
             if (result.is_error())
                 return result;
             
             if (result.has_signal())
                 return InterpreterError::UnhandeledSignalError;
             
-            bool is_last_statement = i == block_statement.statements.size() - 1;
-            bool is_single_statement = block_statement.statements.size() == 1;
+            const bool is_last_statement = i == block_statement.statements.size() - 1;
+            const bool is_single_statement = block_statement.statements.size() == 1;
             if (is_last_statement && is_single_statement)
                 return result;
         }
@@ -144,7 +225,7 @@ namespace scc
         return InterpreterError::RuntimeError;
     }
 
-    InterpreterResult Interpreter::interpret(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration)
+    InterpreterResult Interpreter::interpret(const binding::BoundVariablePointerDeclarationStatement & /* variable_pointer_declaration */ )
     {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:
@@ -153,7 +234,7 @@ namespace scc
         return InterpreterError::RuntimeError;
     }
 
-    InterpreterResult Interpreter::interpret(const binding::BoundVariableStaticArrayDeclarationStatement &variable_reference_declaration)
+    InterpreterResult Interpreter::interpret(const binding::BoundVariableStaticArrayDeclarationStatement & /* variable_reference_declaration */ )
     {
         TRACE();
         // TODOOOOOOOOOOOOOOOOOOOO:
@@ -164,7 +245,7 @@ namespace scc
     InterpreterResult Interpreter::interpret(const binding::BoundStatement &statement)
     {
         TRACE();
-        static_assert(binding::STATEMENT_COUNT == 8, "Update this code");
+        static_assert(binding::STATEMENT_COUNT == 10, "Update this code");
         switch (statement.bound_node_kind())
         {
         case binding::BoundNodeKind::ExpressionStatement:
@@ -183,6 +264,10 @@ namespace scc
             return interpret(ikwid_rc<binding::BoundBreakStatement>(statement));
         case binding::BoundNodeKind::ContinueStatement:
             return interpret(ikwid_rc<binding::BoundContinueStatement>(statement));
+        case binding::BoundNodeKind::FunctionStatement:
+            return interpret(ikwid_rc<binding::BoundFunctionStatement>(statement));
+        case binding::BoundNodeKind::ReturnStatement:
+            return interpret(ikwid_rc<binding::BoundReturnStatement>(statement));
         default:
             // UNREACHABLE
             return InterpreterError::BindError;
@@ -216,6 +301,19 @@ namespace scc
         return InterpreterResult(InterpreterSignal::Continue);
     }
 
+    InterpreterResult Interpreter::interpret(const binding::BoundReturnStatement &return_statement)
+    {
+        TRACE();
+        if (!return_statement.has_return_expression())
+            return InterpreterResult(InterpreterSignal::Return);
+        
+        auto result = eval(*return_statement.return_expression);
+        if (result.is_error())
+            return result;
+        
+        return result.set_signal(InterpreterSignal::Return);
+    }
+
     InterpreterResult Interpreter::interpret(const binding::BoundWhileStatement &while_statement)
     {
         TRACE();
@@ -233,10 +331,10 @@ namespace scc
                 return body_result;
             
             
-            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
-            // TODOO: might be a return in the future
-
-            if(body_result.get_signal() == InterpreterSignal::Break) 
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 4, "Update this code");
+            if (body_result.get_signal() == InterpreterSignal::Return)
+                return body_result.clear_signal();
+            else if (body_result.get_signal() == InterpreterSignal::Break) 
                 break; 
                 
             result = eval(*while_statement.condition);
@@ -259,13 +357,15 @@ namespace scc
             if (body_result.is_error())
                 return body_result;
 
-            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 3, "Update this code");
+            static_assert(static_cast<int>(InterpreterSignal::COUNT) == 4, "Update this code");
             if (body_result.has_signal())
             {
                 if (body_result.get_signal() == InterpreterSignal::Break)
                     break;
                 else if (body_result.get_signal() == InterpreterSignal::Continue)
                     continue;
+                else if (body_result.get_signal() == InterpreterSignal::Return)
+                    return body_result.clear_signal();
             }
 
             result = eval(*do_statement.condition);
@@ -274,6 +374,14 @@ namespace scc
             
         } while (std::get<Type::Primitive::Bool>(result.get_value().value));
 
+        return InterpreterError::None;
+    }
+
+    InterpreterResult Interpreter::interpret(const binding::BoundFunctionStatement &)
+    {
+        TRACE();
+        // This function is NOT called by function call, but by declaration
+        // only exists for tracing purposes, consistency 
         return InterpreterError::None;
     }
 
@@ -305,7 +413,7 @@ namespace scc
     InterpreterResult Interpreter::eval(const binding::BoundExpression& expression)
     {
         TRACE();
-        static_assert(binding::EXPRESSION_COUNT == 6, "Update this code");
+        static_assert(binding::EXPRESSION_COUNT == 7, "Update this code");
         switch (expression.bound_node_kind())
         {
         case binding::BoundNodeKind::BinaryExpression:
@@ -320,6 +428,8 @@ namespace scc
             return eval(ikwid_rc<binding::BoundIdentifierExpression>(expression));
         case binding::BoundNodeKind::AssignmentExpression:
             return eval(ikwid_rc<binding::BoundAssignmentExpression>(expression));
+        case binding::BoundNodeKind::CallExpression:
+            return eval(ikwid_rc<binding::BoundCallExpression>(expression));
         default:
             // UNREACHABLE
             return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
@@ -359,5 +469,71 @@ namespace scc
             return InterpreterError::VariableNotInitializedError; // or memory error??
 
         return InterpreterResult::ok(InterpreterResultValue(value.value()));
+    }
+
+    InterpreterResult Interpreter::eval(const binding::BoundCallExpression &call_expression)
+    {
+        TRACE();
+        auto function = m_functions.find(call_expression.function_name);
+        if (function == m_functions.end())
+            return InterpreterError::FunctionNotDeclaredError;
+
+        if (!function->second->body)
+            return InterpreterError::FunctionNotDefinedError;
+
+        if (function->second->parameters.size() != call_expression.arguments.size())
+            return InterpreterError::FunctionArgumentCountMismatchError;
+
+        auto& called_function = *function->second;
+
+        m_scope_stack.push();
+        for (int64_t i = call_expression.arguments.size() - 1; i >= 0; i--)
+        {
+            auto arg_result = eval(*call_expression.arguments[i]);
+            if (arg_result.is_error())
+                return arg_result;
+            
+            auto var_creation_result = m_scope_stack.create_variable(called_function.parameters[i]->variable_name,
+                                                                     called_function.parameters[i]->type,
+                                                                     called_function.parameters[i]->size_bytes(),
+                                                                     called_function.parameters[i]->is_constant);
+            if (var_creation_result.is_error())
+                return var_creation_result;
+
+            auto variable = m_scope_stack.get_from_scopestack(called_function.parameters[i]->variable_name);
+            if (!variable)
+                return InterpreterError::VariableDoesntExistError; // probably unreachable
+
+            if (!variable->set_value(m_memory, arg_result.get_value().value))
+                return InterpreterError::RuntimeError;
+        }
+
+        for (const auto& statement : called_function.body->statements)
+        {
+            auto result = interpret(*statement);
+            if (result.is_error())
+                return result;
+            
+            if (result.get_signal() == InterpreterSignal::Return)
+            {
+                if (called_function.return_type.kind != Type::Kind::Void 
+                    && !result.has_value())
+                {
+                    return InterpreterError::MissingReturnValueError;
+                }
+
+                m_scope_stack.pop();
+                return result.clear_signal();
+            }
+
+            if (result.has_signal())
+                return InterpreterError::UnhandeledSignalError;
+            
+        }
+        m_scope_stack.pop();
+        if (function->second->return_type.kind != Type::Kind::Void)
+            return InterpreterError::MissingReturnStatementError;
+
+        return InterpreterError::None;
     }
 }

@@ -1,22 +1,28 @@
 Sorted TODO list:
 
-src/binder.cpp:646:             // TODOOOOOOOOOOOOO: custom types
+src/interpreter.cpp:105:             // TODOOOOOOOOOOOOOO: implement this as function call..     
+src/binder.cpp:649:             // TODOOOOOOOOOOOOO: custom types
+src/binder.cpp:703:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
 src/binder.cpp:319:         // TODOOOOOOO: might be a macro?
-src/binder.cpp:700:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
-src/binder.cpp:838:                                     // TODOOOOO: what if its custom type? investigate or @help
-src/debug.cpp:181:         // TODOOOO: convert it into multiple functions for each node type
-src/include/scc/type.hpp:261:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
-src/binder.cpp:857:                 // TODOOO: investigate other initializers
-src/binder.cpp:632:         // TODOOO: int a, b, c; 
+src/binder.cpp:841:                                     // TODOOOOO: what if its custom type? investigate or @help
+src/interpreter.cpp:56:             existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
+src/include/scc/type.hpp:270:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
+src/debug.cpp:184:         // TODOOOO: convert it into multiple functions for each node type
+src/binder.cpp:860:                 // TODOOO: investigate other initializers
+src/binder.cpp:659:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:1099:             // TODOOO: It doesnt have to have a name, but idc for now
+src/binder.cpp:635:         // TODOOO: int a, b, c; 
+src/binder.cpp:345:         // TODOOO: int* a;
 src/binder.cpp:115:                 // TODOOO: UNREACHABLE???
 src/binder.cpp:297:             // TODOOO: 
-src/binder.cpp:656:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/binder.cpp:345:         // TODOOO: int* a;
-src/binder.cpp:685:                     // TODOO: int x[1][2];  multi dimensional arrays
+src/binder.cpp:1059:         // TODOO: custom types
+src/include/scc/binding/binder_result.hpp:26:                 // TODOO: Variable already exists / Variable does not exist
+src/interpreter.cpp:78:         debug::bound_ast_as_text_tree(std::cout, block_statement); // TODOO: move it somewhere else
+scc_tests/tests.cpp:543:     // SCC_TEST_INTERPRET_RESULT(int, 120, "factorial(5);"); // TODOO: fix stack overflow
 scc_tests/tests.cpp:239:         // TODOO: complex types
+src/binder.cpp:688:                     // TODOO: int x[1][2];  multi dimensional arrays
 src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
-scc_tests/tests.cpp:231:         // TODOO: multiple declarations
-src/interpreter.cpp:237:             // TODOO: might be a return in the future
 scc_tests/tests.cpp:234:         // TODOO: multiple initializers
+scc_tests/tests.cpp:231:         // TODOO: multiple declarations
+src/include/scc/interpreter.hpp:15:                      , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
 scc_tests/tests.cpp:237:         // TODO: 2d arrays 
-src/include/scc/interpreter.hpp:14:                      , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 

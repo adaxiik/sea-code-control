@@ -15,7 +15,9 @@
 #include "binding/bound_if_statement.hpp"
 #include "binding/bound_while_statement.hpp"
 #include "binding/bound_do_statement.hpp"
-
+#include "binding/bound_function_statement.hpp"
+#include "binding/bound_return_statement.hpp"
+#include "binding/bound_call_expression.hpp"
 
 #include "overloaded.hpp"
 
@@ -157,7 +159,7 @@ namespace scc
 
         void type_as_text(std::ostream &ss, const Type &type)
         {
-            static_assert(static_cast<int>(Type::Kind::COUNT) == 12, "Update this code");
+            static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
             switch (type.kind)
             {
                 case Type::Kind::Char: ss << "char";           break;
@@ -172,6 +174,7 @@ namespace scc
                 case Type::Kind::F32:  ss << "float";          break;
                 case Type::Kind::F64:  ss << "double";         break;
                 case Type::Kind::Bool: ss << "bool";           break;
+                case Type::Kind::Void: ss << "void";           break;
                 default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
             }
             for (size_t i = 0; i < type.pointer_depth; i++)
@@ -196,7 +199,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 14, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -399,6 +402,53 @@ namespace scc
                     ss << "ContinueStatement" << std::endl;
                     break;
                 }
+                case binding::BoundNodeKind::FunctionStatement:
+                {
+                    auto& function = static_cast<const binding::BoundFunctionStatement&>(node);
+                    ss << "FunctionStatement (" << function.return_type << ") ==> " << function.function_name << "(";
+                    for (size_t i = 0; i < function.parameters.size(); i++)
+                    {
+                        ss << function.parameters[i].get()->type << " " << function.parameters[i].get()->variable_name;
+                        if (i != function.parameters.size() - 1)
+                            ss << ", ";
+                    } 
+                    ss << ")" << std::endl;
+
+                    if (function.body)
+                    {
+                        bound_ast_as_text_tree_impl(*function.body
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::ReturnStatement:
+                {
+                    auto& return_statement = static_cast<const binding::BoundReturnStatement&>(node);
+                    ss << "ReturnStatement" << std::endl;
+                    if (return_statement.has_return_expression())
+                    {
+                        bound_ast_as_text_tree_impl(*return_statement.return_expression
+                                                    , depth + 1
+                                                    , true
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::CallExpression:
+                {
+                    auto& call_expression = static_cast<const binding::BoundCallExpression&>(node);
+                    ss << "CallExpression (" << call_expression.type << ") ==> " << call_expression.function_name << std::endl;
+                    for (size_t i = 0; i < call_expression.arguments.size(); i++)
+                    {
+                        bound_ast_as_text_tree_impl(*call_expression.arguments[i]
+                                                    , depth + 1
+                                                    , i == call_expression.arguments.size() - 1
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
                 case binding::BoundNodeKind::VariableDeclarationStatement:
                 {
                     auto& variable_declaration_statement = static_cast<const binding::BoundVariableDeclarationStatement&>(node);
@@ -512,5 +562,72 @@ namespace scc
                 ss << "Chunk " << address << " [" << address << ", " << memory.get_chunk_end(address).value() << "] (" << memory.get_chunk_size(address).value() << ") " << std::endl;
         }
 
+        void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
+        {
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 19, "Edit this code");
+            switch (error)
+            {
+                case InterpreterError::None:
+                    ss << "None";
+                    break;
+                case InterpreterError::ParseError:
+                    ss << "Parse error";
+                    break;
+                case InterpreterError::BindError:
+                    ss << "Bind error";
+                    break;
+                case InterpreterError::RuntimeError:
+                    ss << "Runtime error";
+                    break;
+                case InterpreterError::InvalidOperationError:
+                    ss << "Invalid operation error";
+                    break;
+                case InterpreterError::ReachedUnreachableError:
+                    ss << "Reached unreachable error";
+                    break;
+                case InterpreterError::DivisionByZeroError:
+                    ss << "Division by zero error";
+                    break;
+                case InterpreterError::VariableAlreadyExistsError:
+                    ss << "Variable already exists error";
+                    break;
+                case InterpreterError::VariableDoesntExistError:
+                    ss << "Variable doesn't exist error";
+                    break;
+                case InterpreterError::VariableNotInitializedError:
+                    ss << "Variable not initialized error";
+                    break;
+                case InterpreterError::UnhandeledSignalError:
+                    ss << "Unhandeled signal error";
+                    break;
+                case InterpreterError::MissingMainFunctionError:
+                    ss << "Missing main function error";
+                    break;
+                case InterpreterError::FunctionAlreadyDefinedError:
+                    ss << "Function already defined error";
+                    break;
+                case InterpreterError::IncosistentFunctionSignatureError:
+                    ss << "Incosistent function signature error";
+                    break;
+                case InterpreterError::FunctionArgumentCountMismatchError:
+                    ss << "Function argument count mismatch error";
+                    break;
+                case InterpreterError::FunctionNotDeclaredError:
+                    ss << "Function not declared error";
+                    break;
+                case InterpreterError::FunctionNotDefinedError:
+                    ss << "Function not defined error";
+                    break;
+                case InterpreterError::MissingReturnStatementError:
+                    ss << "Missing return statement error";
+                    break;
+                case InterpreterError::MissingReturnValueError:
+                    ss << "Missing return value error";
+                    break;
+                default:
+                    ss << "Unknown error";
+                    break;
+            }
+        }
     }
 }

@@ -79,11 +79,13 @@ target_include_directories(scc PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE
 
 set(SCC_TEST_FILES ${CMAKE_CURRENT_SOURCE_DIR}/scc_tests/tests.cpp)
 
-include(CTest)
-add_executable(tests ${SCC_TEST_FILES})
-target_link_libraries(tests scc-lib)
-target_include_directories(tests PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE_DIRS})
+if(NOT BUILDING_WASM)
+    include(CTest)
+    add_executable(tests ${SCC_TEST_FILES})
+    target_link_libraries(tests scc-lib)
+    target_include_directories(tests PUBLIC ${SCC_INCLUDE_DIRS_PREFIXED} ${SCC_INCLUDE_DIRS})
 
 
-enable_testing()
-add_test(NAME tests COMMAND tests)
+    enable_testing()
+    add_test(NAME tests COMMAND tests)
+endif()
