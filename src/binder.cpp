@@ -1105,16 +1105,6 @@ namespace scc
         }
         
         m_current_function = fn_declaration;
-
-        std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
-        if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
-        {
-            auto body_result = bind_impl(node.last_named_child());
-            BUBBLE_ERROR(body_result);
-            body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
-        }
-        m_scope_stack.pop();
-
         if (m_functions.find(function_name) != m_functions.end())
         {
             auto& existing_fn_declaration = m_functions.at(function_name);
@@ -1129,6 +1119,15 @@ namespace scc
         {
             m_functions.insert({function_name, fn_declaration});
         }
+
+        std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
+        if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
+        {
+            auto body_result = bind_impl(node.last_named_child());
+            BUBBLE_ERROR(body_result);
+            body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
+        }
+        m_scope_stack.pop();
         
        return std::make_unique<binding::BoundFunctionStatement>(return_type, std::move(function_name), std::move(parameters), std::move(body));
     }
