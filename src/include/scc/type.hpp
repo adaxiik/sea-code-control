@@ -173,6 +173,7 @@ namespace scc
                 os << "void";
                 break;
             default:
+                std::cerr << "Unknown type kind: " << static_cast<uint32_t>(type.kind) << std::endl;
                 std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::exit(1);
             };
