@@ -27,7 +27,7 @@ namespace scc
 {
     class Lowerer
     {
-        std::stack<binding::BoundNode *> m_to_lower;
+        std::stack<const binding::BoundNode *> m_to_lower;
         std::vector<std::unique_ptr<lowering::Instruction>> m_result;
 
         static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
@@ -52,6 +52,6 @@ namespace scc
         void lower(const binding::BoundCallExpression &call_expression);
 
     public:
-        std::vector<std::unique_ptr<lowering::Instruction>> lower(const std::unique_ptr<binding::BoundNode> &root);
+        std::vector<std::unique_ptr<lowering::Instruction>> lower(const binding::BoundNode *root);
     };
 }

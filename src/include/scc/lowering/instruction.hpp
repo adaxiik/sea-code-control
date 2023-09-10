@@ -9,8 +9,10 @@ namespace scc
         {
             CreateVariable,
             BinaryOp,
-            Literal,
+            PushLiteral,
             Cast,
+            PushScope,
+            PopScope,
             COUNT
         };
 

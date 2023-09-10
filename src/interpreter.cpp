@@ -23,40 +23,40 @@ namespace scc
     {
         TRACE();
 
-        size_t index = 0;
-        while (index < block_statement.statements.size())
-        {
-            std::unique_ptr<binding::BoundStatement>& current_statement = block_statement.statements[index];
-            if (current_statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
-            {
-                index++;
-                continue;
-            }
-            std::unique_ptr<binding::BoundFunctionStatement> function_statement {std::unique_ptr<binding::BoundFunctionStatement>(static_cast<binding::BoundFunctionStatement*>(current_statement.release()))} ;
-            block_statement.statements.erase(block_statement.statements.begin() + index);
+        // size_t index = 0;
+        // while (index < block_statement.statements.size())
+        // {
+        //     std::unique_ptr<binding::BoundStatement>& current_statement = block_statement.statements[index];
+        //     if (current_statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
+        //     {
+        //         index++;
+        //         continue;
+        //     }
+        //     std::unique_ptr<binding::BoundFunctionStatement> function_statement {std::unique_ptr<binding::BoundFunctionStatement>(static_cast<binding::BoundFunctionStatement*>(current_statement.release()))} ;
+        //     block_statement.statements.erase(block_statement.statements.begin() + index);
 
-            bool already_exists = m_functions.find(function_statement->function_name) != m_functions.end();
-            if (!already_exists)
-            {
-                m_functions[function_statement->function_name] = std::move(function_statement);
-                continue;
-            }
+        //     bool already_exists = m_functions.find(function_statement->function_name) != m_functions.end();
+        //     if (!already_exists)
+        //     {
+        //         m_functions[function_statement->function_name] = std::move(function_statement);
+        //         continue;
+        //     }
 
-            auto& existing_function = m_functions[function_statement->function_name];
+        //     auto& existing_function = m_functions[function_statement->function_name];
 
-            if (*function_statement != *existing_function)
-                return InterpreterError::IncosistentFunctionSignatureError;
+        //     if (*function_statement != *existing_function)
+        //         return InterpreterError::IncosistentFunctionSignatureError;
 
-            if (!function_statement->body)
-                    continue;
+        //     if (!function_statement->body)
+        //             continue;
                 
-            if (existing_function->body)
-                return InterpreterError::FunctionAlreadyDefinedError;
+        //     if (existing_function->body)
+        //         return InterpreterError::FunctionAlreadyDefinedError;
                 
-            existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
+        //     existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
                       
 
-        }
+        // }
 
         return InterpreterError::None;
     }
@@ -70,6 +70,21 @@ namespace scc
         auto binded {m_binder.bind(parse_result.root_node())};
         if (binded.is_error())
             return InterpreterError::BindError;
+
+        auto lowered = m_lowerer.lower(binded.get_value());
+        for (size_t i = 0; i < lowered.size(); i++)
+        {
+            auto& instruction = lowered[i];
+            auto result = instruction->execute(m_state);
+            if (result.is_error())
+                return result;
+            
+            // TODOO: push to value stack? 
+
+            if (i == lowered.size() - 1)
+                return result;
+        }
+        
 
         // if (binded.get_value()->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
         //     return InterpreterError::BindError;

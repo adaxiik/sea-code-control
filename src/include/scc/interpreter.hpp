@@ -1,10 +1,9 @@
 #pragma once
 #include "parser.hpp"
 #include "binding/binder.hpp"
-#include "memory.hpp"
 #include "lowering/lowerer.hpp"
 #include "interpreter_result.hpp"
-#include "interpreter_scope.hpp"
+#include "interpreter_state.hpp"
 namespace scc
 {
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
@@ -12,8 +11,10 @@ namespace scc
     class Interpreter
     {
     public:
-        Interpreter(): m_memory(0)
-                     , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
+        // Interpreter(): m_memory(0)
+        //              , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
+
+        Interpreter(): m_state({ Memory(0), InterpreterScopeStack(Memory(0).allocate(STACK_SIZE) + STACK_SIZE) }) {} 
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);
         InterpreterResult interpret(const std::string &code);
@@ -24,9 +25,8 @@ namespace scc
         Parser m_parser;
         Binder m_binder;
         Lowerer m_lowerer;
-        Memory m_memory;
-        InterpreterScopeStack m_scope_stack;
-        std::map<std::string, std::unique_ptr<binding::BoundFunctionStatement>> m_functions;
+        InterpreterState m_state;
+        
 
         InterpreterResult register_functions(binding::BoundBlockStatement &block_statement);
 
