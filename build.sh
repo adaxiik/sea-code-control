@@ -63,10 +63,10 @@ build_wasm() {
     if [ ! -d "$BUILD_WASM_FOLDER" ]; then
         mkdir -p "$BUILD_WASM_FOLDER"
         cd "$BUILD_WASM_FOLDER"
-        emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILDING_WASM=ON $PROJECT_PATH
     fi
 
     cd "$BUILD_WASM_FOLDER"
+    emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILDING_WASM=ON $PROJECT_PATH
     make -j$BUILD_THREADS
 
     if [ ! -d "$BUILD_WASM_FOLDER/web" ]; then
@@ -84,10 +84,10 @@ build_native() {
     if [ ! -d "$BUILD_NATIVE_FOLDER" ]; then
         mkdir -p "$BUILD_NATIVE_FOLDER"
         cd "$BUILD_NATIVE_FOLDER"
-        cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE $PROJECT_PATH
     fi
 
     cd "$BUILD_NATIVE_FOLDER"
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE $PROJECT_PATH
     make -j$BUILD_THREADS 
     cd "$PROJECT_PATH"
 }

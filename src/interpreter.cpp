@@ -72,6 +72,8 @@ namespace scc
             return InterpreterError::BindError;
 
         auto lowered = m_lowerer.lower(binded.get_value());
+        debug::instructions_as_text(std::cout, lowered);
+
         for (size_t i = 0; i < lowered.size(); i++)
         {
             auto& instruction = lowered[i];
@@ -80,9 +82,14 @@ namespace scc
                 return result;
             
             // TODOO: push to value stack? 
+            if (result.has_value())
+                m_state.result_stack.push(result);
 
             if (i == lowered.size() - 1)
-                return result;
+            {
+                if (!m_state.result_stack.empty())
+                    return m_state.result_stack.top();
+            }
         }
         
 

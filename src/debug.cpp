@@ -19,6 +19,10 @@
 #include "binding/bound_return_statement.hpp"
 #include "binding/bound_call_expression.hpp"
 
+#include "lowering/binary_operation_instruction.hpp"
+#include "lowering/cast_instruction.hpp"
+#include "lowering/drop_instruction.hpp"
+
 #include "overloaded.hpp"
 
 namespace scc
@@ -627,6 +631,100 @@ namespace scc
                 default:
                     ss << "Unknown error";
                     break;
+            }
+        }
+    
+        void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
+        {
+            // PushLiteral,
+            // PushScope,
+            // PopScope,
+            // BinaryOperation,
+            // Cast,
+            // Drop,
+            using InstructionKind = lowering::InstructionKind;
+            static_assert(static_cast<int>(InstructionKind::COUNT) == 6, "Update this switch statement");
+            switch (instruction.instruction_kind())
+            {
+            case InstructionKind::PushLiteral:
+            {
+                ss << "PushLiteral"; // TODOO: Get value
+                break;
+            }
+            case InstructionKind::PushScope:
+            {
+                ss << "PushScope";
+                break;
+            }
+            case InstructionKind::PopScope:
+            {
+                ss << "PopScope";
+                break;
+            }
+            case InstructionKind::BinaryOperation:
+            {
+                auto& binary_operation = static_cast<const lowering::BinaryOperationInstruction&>(instruction);
+                ss << "BinaryOperation ==>";
+                #define CASE_OP_KIND(KIND, OP) \
+                    case binding::BoundBinaryExpression::OperatorKind::KIND: \
+                        ss << std::quoted(OP); \
+                        break;
+
+                    static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 18, "Update this switch statement");
+
+                    switch(binary_operation.operator_kind)
+                    {
+                        CASE_OP_KIND(Addition, "+")
+                        CASE_OP_KIND(Subtraction, "-")
+                        CASE_OP_KIND(Multiplication, "*")
+                        CASE_OP_KIND(Division, "/")
+                        CASE_OP_KIND(Modulo, "%")
+                        CASE_OP_KIND(BitwiseAnd, "&")
+                        CASE_OP_KIND(BitwiseOr, "|")
+                        CASE_OP_KIND(BitwiseXor, "^")
+                        CASE_OP_KIND(BitwiseShiftLeft, "<<")
+                        CASE_OP_KIND(BitwiseShiftRight, ">>")
+                        CASE_OP_KIND(LogicalAnd, "&&")
+                        CASE_OP_KIND(LogicalOr, "||")
+                        CASE_OP_KIND(Equals, "==")
+                        CASE_OP_KIND(NotEquals, "!=")
+                        CASE_OP_KIND(LessThan, "<")
+                        CASE_OP_KIND(GreaterThan, ">")
+                        CASE_OP_KIND(LessThanOrEqual, "<=")
+                        CASE_OP_KIND(GreaterThanOrEqual, ">=")
+                        default:
+                            ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                            break;
+                    }
+
+                    #undef CASE_OP_KIND
+                break;
+            }
+            case InstructionKind::Cast:
+            {
+                auto& cast = static_cast<const lowering::CastInstruction&>(instruction);
+                ss << "Cast ==> " << cast.type;
+                break;
+            }
+            case InstructionKind::Drop:
+            {
+                auto& drop = static_cast<const lowering::DropInstruction&>(instruction);
+                ss << "Drop ==> " << drop.count;
+                break;
+            }
+            default:
+                ss << "Unreachable " << __FILE__ << ":" << __LINE__;
+                break;
+            }
+        }
+
+        void instructions_as_text(std::ostream &ss, const std::vector<std::unique_ptr<lowering::Instruction>>& instructions)
+        {
+            for (size_t i = 0; i < instructions.size(); i++)
+            {
+                ss << i << ": ";
+                instruction_as_text(ss, *instructions[i]);
+                ss << std::endl;
             }
         }
     }

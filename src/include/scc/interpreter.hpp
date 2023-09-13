@@ -14,7 +14,12 @@ namespace scc
         // Interpreter(): m_memory(0)
         //              , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
 
-        Interpreter(): m_state({ Memory(0), InterpreterScopeStack(Memory(0).allocate(STACK_SIZE) + STACK_SIZE) }) {} 
+        Interpreter()
+        : m_state({ 
+            Memory(0),
+            InterpreterScopeStack(Memory(0).allocate(STACK_SIZE) + STACK_SIZE),
+            {}
+        }) {} 
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);
         InterpreterResult interpret(const std::string &code);

@@ -7,12 +7,12 @@ namespace scc
     {
         enum class InstructionKind
         {
-            CreateVariable,
-            BinaryOp,
             PushLiteral,
-            Cast,
             PushScope,
             PopScope,
+            BinaryOperation,
+            Cast,
+            Drop,
             COUNT
         };
 

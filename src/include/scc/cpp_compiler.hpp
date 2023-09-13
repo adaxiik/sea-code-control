@@ -70,7 +70,7 @@
     #define TRACE()
 #endif
 
-
+#include <type_traits>
 template <typename T, typename U>
 const T& ikwid_rc (const U& u) // I know what I'm doing reference cast (used for downcasting)
 {

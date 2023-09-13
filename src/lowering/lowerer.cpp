@@ -4,6 +4,9 @@
 #include "lowering/push_literal_instruction.hpp"
 #include "lowering/pop_scope_instruction.hpp"
 #include "lowering/push_scope_instruction.hpp"
+#include "lowering/binary_operation_instruction.hpp"
+#include "lowering/cast_instruction.hpp"
+#include "lowering/drop_instruction.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -20,6 +23,7 @@
 
 namespace scc
 {
+    
     void Lowerer::lower(const binding::BoundExpressionStatement &expression_statement)
     {
         m_to_lower.push(expression_statement.expression.get());
@@ -27,12 +31,12 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBlockStatement &block_statement)
     {
-        m_result.push_back(std::make_unique<lowering::PushScopeInstruction>());
+        m_to_lower.push(std::make_unique<lowering::PopScopeInstruction>());
 
         for (auto &statement : block_statement.statements)
             m_to_lower.push(statement.get());
 
-        m_result.push_back(std::make_unique<lowering::PopScopeInstruction>());
+        m_to_lower.push(std::make_unique<lowering::PushScopeInstruction>());
     }
 
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)
@@ -77,22 +81,29 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBinaryExpression &binary_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundBinaryExpression");
+        m_to_lower.push(std::make_unique<lowering::BinaryOperationInstruction>(binary_expression.op_kind));
+        m_to_lower.push(binary_expression.left.get());
+        m_to_lower.push(binary_expression.right.get());
     }
 
     void Lowerer::lower(const binding::BoundLiteralExpression &literal_expression)
     {
-        m_result.push_back(std::make_unique<lowering::PushLiteralInstruction>(literal_expression));
+        m_to_lower.push(std::make_unique<lowering::PushLiteralInstruction>(literal_expression));
     }
 
     void Lowerer::lower(const binding::BoundCastExpression &cast_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundCastExpression");
+        m_to_lower.push(std::make_unique<lowering::CastInstruction>(cast_expression.type));
+        m_to_lower.push(cast_expression.expression.get());
     }
 
     void Lowerer::lower(const binding::BoundParenthesizedExpression &parenthesized_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundParenthesizedExpression");
+        m_to_lower.push(std::make_unique<lowering::DropInstruction>(parenthesized_expression.expressions.size() - 1));
+        
+        // c++20 ranges would be really nice here :(( 
+        for (auto it = parenthesized_expression.expressions.rbegin(); it != parenthesized_expression.expressions.rend(); ++it)
+            m_to_lower.push(it->get());
     }
 
     void Lowerer::lower(const binding::BoundIdentifierExpression &identifier_expression)
@@ -113,14 +124,24 @@ namespace scc
 
     std::vector<std::unique_ptr<lowering::Instruction>> Lowerer::lower(const binding::BoundNode *root)
     {
-        m_result.clear();
+        std::vector<std::unique_ptr<lowering::Instruction>> result;
         m_to_lower.push(root);
 
         while (!m_to_lower.empty())
         {
-            auto current_node = m_to_lower.top();
-            m_to_lower.pop();
+            auto& current_node_or_instruction = m_to_lower.top();
+            if (std::holds_alternative<InstructionType>(current_node_or_instruction))
+            {
+                result.push_back(std::move(std::get<InstructionType>(current_node_or_instruction)));
+                m_to_lower.pop();
+                continue;
+            }
+
             static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
+
+            const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
+            m_to_lower.pop();
+
             switch (current_node->bound_node_kind())
             {
             case binding::BoundNodeKind::ExpressionStatement:
@@ -179,10 +200,6 @@ namespace scc
             }
         }
 
-        std::vector<std::unique_ptr<lowering::Instruction>> result;
-        for (auto &instruction : m_result)
-            result.push_back(std::move(instruction));
-        m_result.clear();
         return result;
     }
 }
