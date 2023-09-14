@@ -17,7 +17,7 @@ namespace scc
         Interpreter()
         : m_state({ 
             Memory(0),
-            InterpreterScopeStack(Memory(0).allocate(STACK_SIZE) + STACK_SIZE),
+            InterpreterScopeStack(m_state.memory.allocate(STACK_SIZE) + STACK_SIZE),
             {}
         }) {} 
         ~Interpreter() = default;

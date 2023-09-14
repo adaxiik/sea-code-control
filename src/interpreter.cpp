@@ -89,7 +89,11 @@ namespace scc
             if (i == lowered.size() - 1)
             {
                 if (!m_state.result_stack.empty())
-                    return m_state.result_stack.top();
+                {
+                    auto top = m_state.result_stack.top();
+                    m_state.result_stack.pop();
+                    return top;
+                }
             }
         }
         

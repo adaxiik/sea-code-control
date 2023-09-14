@@ -7,6 +7,7 @@
 #include "lowering/binary_operation_instruction.hpp"
 #include "lowering/cast_instruction.hpp"
 #include "lowering/drop_instruction.hpp"
+#include "lowering/identifier_instruction.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -129,7 +130,7 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundIdentifierExpression &identifier_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundIdentifierExpression");
+        m_to_lower.push(lowering::IdentifierInstruction(identifier_expression.identifier, identifier_expression.type));
     }
 
     void Lowerer::lower(const binding::BoundAssignmentExpression &assignment_expression)
@@ -145,8 +146,20 @@ namespace scc
 
     std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundNode *root)
     {
+        if (root->bound_node_kind() == binding::BoundNodeKind::BlockStatement)
+        {
+            auto& statements = static_cast<const binding::BoundBlockStatement*>(root)->statements;
+            for (auto it = statements.rbegin(); it != statements.rend(); it++)
+            {
+                m_to_lower.push(it->get());
+            }
+        }
+        else
+        {
+            m_to_lower.push(root);
+        }
+
         std::vector<lowering::Instruction> result;
-        m_to_lower.push(root);
 
         while (!m_to_lower.empty())
         {
