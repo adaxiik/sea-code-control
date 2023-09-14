@@ -382,27 +382,27 @@ TEST_CASE("Scopes")
     CHECK(b == c1 + sizeof(int));
 }
 
-// TEST_CASE("Assignments")
-// {
-//     auto interpreter = scc::Interpreter();
-//     SCC_TEST_IS_ERROR("a;"); // undeclared
-//     SCC_TEST_IS_OK("int a;");
-//     SCC_TEST_IS_ERROR("a;"); // not initialized
-//     SCC_TEST_IS_ERROR("a = a;"); // not initialized
-//     SCC_TEST_INTERPRET_RESULT(int, 1, "a = 1;");
-//     SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 34, "a = 34;");
-//     SCC_TEST_INTERPRET_RESULT(int, 69, "a += 35;");
-//     SCC_TEST_IS_OK("double b = 1.5;");
-//     SCC_TEST_INTERPRET_RESULT(double, 1.5, "b;");
-//     SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b += 1.6;");
-//     SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b;");    
-//     SCC_TEST_INTERPRET_RESULT(int, 3, "a = b;"); // implicit cast
-//     SCC_TEST_INTERPRET_RESULT(int, 3, "a;"); // implicit cast
+TEST_CASE("Assignments")
+{
+    auto interpreter = scc::Interpreter();
+    SCC_TEST_IS_ERROR("a;"); // undeclared
+    SCC_TEST_IS_OK("int a;");
+    SCC_TEST_IS_ERROR("a;"); // not initialized
+    SCC_TEST_IS_ERROR("a = a;"); // not initialized
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a = 1;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 34, "a = 34;");
+    SCC_TEST_INTERPRET_RESULT(int, 69, "a += 35;");
+    SCC_TEST_IS_OK("double b = 1.5;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5, "b;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b += 1.6;");
+    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b;");    
+    SCC_TEST_INTERPRET_RESULT(int, 3, "a = b;"); // implicit cast
+    SCC_TEST_INTERPRET_RESULT(int, 3, "a;"); // implicit cast
 
-//     SCC_TEST_IS_OK("int c = a + b;"); // 3 + 3.1 = 6.1 -> 6
-//     SCC_TEST_INTERPRET_RESULT(int, 6, "c;");
-// }
+    SCC_TEST_IS_OK("int c = a + b;"); // 3 + 3.1 = 6.1 -> 6
+    SCC_TEST_INTERPRET_RESULT(int, 6, "c;");
+}
 // TEST_CASE("If statement")
 // {
 //     SUBCASE("Simple")

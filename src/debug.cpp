@@ -643,7 +643,7 @@ namespace scc
             // Cast,
             // Drop,
             // using InstructionKind = lowering::InstructionKind;
-            static_assert(lowering::InstructionCount == 8, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 9, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==>";
@@ -702,6 +702,9 @@ namespace scc
                 },
                 [&](lowering::IdentifierInstruction identifer) {
                     ss << "Identifer ==> " << identifer.type << " " << identifer.identifier;
+                },
+                [&](lowering::AssignmentInstruction assignment) {
+                    ss << "Assignment ==> " << assignment.variable_name;
                 },
             }, instruction);
         }

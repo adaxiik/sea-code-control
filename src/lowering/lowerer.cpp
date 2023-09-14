@@ -131,7 +131,8 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundParenthesizedExpression &parenthesized_expression)
     {
-        m_to_lower.push(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1));
+        if (parenthesized_expression.expressions.size() > 1)
+            m_to_lower.push(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1));
         
         for (const auto& expression: parenthesized_expression.expressions)
             m_to_lower.push(expression.get());
@@ -144,7 +145,8 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundAssignmentExpression &assignment_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundAssignmentExpression");
+        m_to_lower.push(lowering::AssignmentInstruction(assignment_expression.identifier));
+        m_to_lower.push(assignment_expression.expression.get());
     }
 
     void Lowerer::lower(const binding::BoundCallExpression &call_expression)
