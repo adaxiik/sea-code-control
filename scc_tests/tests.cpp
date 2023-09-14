@@ -224,26 +224,26 @@ TEST_CASE("Single Expressions")
         SCC_TEST_INTERPRET_RESULT(short, 100, "(1,2,3,(short)100);");
     }
 
-    // SUBCASE("Declaration")
-    // {
-    //     SCC_TEST_BINDER("int a;");
-    //     SCC_TEST_BINDER("int* a;");
-    //     // TODOO: multiple declarations
-    //     // SCC_TEST_BINDER("int a, b;"); 
-    //     SCC_TEST_BINDER("int a = 1;");
-    //     // TODOO: multiple initializers
-    //     // SCC_TEST_BINDER("int a = 1, b = 2;"); 
-    //     SCC_TEST_BINDER("int a[1];");
-    //     // TODO: 2d arrays 
-    //     // SCC_TEST_BINDER("int a[1][2];");
-    //     // TODOO: complex types
-    //     // SCC_TEST_BINDER("int **a[2][2];");
-    //     SCC_TEST_BINDER("int a[1] = {1};");
-    //     SCC_TEST_BINDER_ERROR("int a[1] = {1, 2};"); 
-    //     SCC_TEST_BINDER("int a = {1};");
-    //     SCC_TEST_BINDER_ERROR("int a = {1, 2};"); 
+    SUBCASE("Declaration")
+    {
+        SCC_TEST_BINDER("int a;");
+        SCC_TEST_BINDER("int* a;");
+        // TODOO: multiple declarations
+        // SCC_TEST_BINDER("int a, b;"); 
+        SCC_TEST_BINDER("int a = 1;");
+        // TODOO: multiple initializers
+        // SCC_TEST_BINDER("int a = 1, b = 2;"); 
+        SCC_TEST_BINDER("int a[1];");
+        // TODO: 2d arrays 
+        // SCC_TEST_BINDER("int a[1][2];");
+        // TODOO: complex types
+        // SCC_TEST_BINDER("int **a[2][2];");
+        SCC_TEST_BINDER("int a[1] = {1};");
+        SCC_TEST_BINDER_ERROR("int a[1] = {1, 2};"); 
+        SCC_TEST_BINDER("int a = {1};");
+        SCC_TEST_BINDER_ERROR("int a = {1, 2};"); 
 
-    // }
+    }
 }
 
 // #define SCC_TEST_MEMORY_CHUNK(CHUNK_ID, BEGIN, END, SIZE, IS_FREE) do { \
@@ -253,134 +253,134 @@ TEST_CASE("Single Expressions")
 //     CHECK(memory.is_chunk_free(CHUNK_ID) == IS_FREE); \
 // } while(0)
 
-// #define SCC_TEST_MEMORY_CHUNK(ADDRESS, ADDRESS_START, ADDRESS_END, SIZE) do { \
-//     CHECK(ADDRESS_START == ADDRESS); \
-//     CHECK(memory.get_chunk_end(ADDRESS_START).value() == ADDRESS_END); \
-//     CHECK(memory.get_chunk_size(ADDRESS_START).value() == SIZE); \
-// } while(0)
+#define SCC_TEST_MEMORY_CHUNK(ADDRESS, ADDRESS_START, ADDRESS_END, SIZE) do { \
+    CHECK(ADDRESS_START == ADDRESS); \
+    CHECK(memory.get_chunk_end(ADDRESS_START).value() == ADDRESS_END); \
+    CHECK(memory.get_chunk_size(ADDRESS_START).value() == SIZE); \
+} while(0)
 
-// #define SCC_TEST_MEMORY_FREE(ADDRESS, SUCCESS) CHECK(memory.free(ADDRESS) == SUCCESS)
+#define SCC_TEST_MEMORY_FREE(ADDRESS, SUCCESS) CHECK(memory.free(ADDRESS) == SUCCESS)
 
-// #define SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(COUNT) CHECK(memory.allocated_chunk_count() == COUNT)
+#define SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(COUNT) CHECK(memory.allocated_chunk_count() == COUNT)
 
-// #define SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(SIZE) CHECK(memory.allocated_memory_size_bytes() == SIZE)
+#define SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(SIZE) CHECK(memory.allocated_memory_size_bytes() == SIZE)
 
-// #define SCC_TEST_MEMORY_EXPECT_VALUE(ADDRESS, VALUE, TYPE) do { \
-//     auto value = memory.read<TYPE>(ADDRESS); \
-//     CHECK(value.has_value()); \
-//     CHECK(value.value() == VALUE); \
-// } while(0)
+#define SCC_TEST_MEMORY_EXPECT_VALUE(ADDRESS, VALUE, TYPE) do { \
+    auto value = memory.read<TYPE>(ADDRESS); \
+    CHECK(value.has_value()); \
+    CHECK(value.value() == VALUE); \
+} while(0)
 
-// TEST_CASE("Memory alloc and free")
-// {
-//     scc::Memory memory(0);
-//     // Chunk 0 [0, 9] (10)  used
-//     // Chunk 1 [10, 19] (10)  used
-//     // Chunk 2 [20, 29] (10)  used
-//     // Chunk 3 [30, 39] (10)  used
-//     // Chunk 4 [40, 49] (10)  used
+TEST_CASE("Memory alloc and free")
+{
+    scc::Memory memory(0);
+    // Chunk 0 [0, 9] (10)  used
+    // Chunk 1 [10, 19] (10)  used
+    // Chunk 2 [20, 29] (10)  used
+    // Chunk 3 [30, 39] (10)  used
+    // Chunk 4 [40, 49] (10)  used
 
-//     scc::Memory::address_t chunk0 = memory.allocate(10);
-//     scc::Memory::address_t chunk1 = memory.allocate(10);
-//     scc::Memory::address_t chunk2 = memory.allocate(10);
-//     scc::Memory::address_t chunk3 = memory.allocate(10);
-//     scc::Memory::address_t chunk4 = memory.allocate(10);
-//     SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
-//     SCC_TEST_MEMORY_CHUNK(chunk1, 10, 19, 10);
-//     SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
-//     SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10);
-//     SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(5);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(50);
+    scc::Memory::address_t chunk0 = memory.allocate(10);
+    scc::Memory::address_t chunk1 = memory.allocate(10);
+    scc::Memory::address_t chunk2 = memory.allocate(10);
+    scc::Memory::address_t chunk3 = memory.allocate(10);
+    scc::Memory::address_t chunk4 = memory.allocate(10);
+    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk1, 10, 19, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk3, 30, 39, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(5);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(50);
 
-//     // Chunk 0 [0, 9] (10)  used
-//     // Chunk 2 [20, 29] (10)  used
-//     // Chunk 4 [40, 49] (10)  used
+    // Chunk 0 [0, 9] (10)  used
+    // Chunk 2 [20, 29] (10)  used
+    // Chunk 4 [40, 49] (10)  used
 
-//     SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
-//     SCC_TEST_MEMORY_FREE(chunk1, true);
-//     SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
-//     SCC_TEST_MEMORY_FREE(chunk3, true);
-//     SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(3);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(30);
+    SCC_TEST_MEMORY_CHUNK(chunk0, 0, 9, 10);
+    SCC_TEST_MEMORY_FREE(chunk1, true);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_FREE(chunk3, true);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(3);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(30);
     
-//     // Chunk 2 [20, 29] (10)  used
-//     // Chunk 4 [40, 49] (10)  used
-//     SCC_TEST_MEMORY_FREE(chunk0, true);
-//     SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
-//     SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(20);
+    // Chunk 2 [20, 29] (10)  used
+    // Chunk 4 [40, 49] (10)  used
+    SCC_TEST_MEMORY_FREE(chunk0, true);
+    SCC_TEST_MEMORY_CHUNK(chunk2, 20, 29, 10);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(20);
 
 
-//     // Chunk 4 [40, 49] (10)  used
-//     SCC_TEST_MEMORY_FREE(chunk2, true);
-//     SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
+    // Chunk 4 [40, 49] (10)  used
+    SCC_TEST_MEMORY_FREE(chunk2, true);
+    SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
 
-//     // Chunk 4 [40, 49] (10)  used
-//     // Chunk 5 [50, 149] (100)  used
-//     scc::Memory::address_t chunk5 = memory.allocate(100);
-//     SCC_TEST_MEMORY_CHUNK(chunk5, 50, 149, 100);
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(110);
+    // Chunk 4 [40, 49] (10)  used
+    // Chunk 5 [50, 149] (100)  used
+    scc::Memory::address_t chunk5 = memory.allocate(100);
+    SCC_TEST_MEMORY_CHUNK(chunk5, 50, 149, 100);
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(2);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(110);
 
-//     // Chunk 4 [40, 49] (10)  used
-//     SCC_TEST_MEMORY_FREE(chunk5, true);
-//     SCC_TEST_MEMORY_FREE(chunk5, false); // double free
-//     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
-//     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
+    // Chunk 4 [40, 49] (10)  used
+    SCC_TEST_MEMORY_FREE(chunk5, true);
+    SCC_TEST_MEMORY_FREE(chunk5, false); // double free
+    SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(1);
+    SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(10);
 
-//     // Chunk 4 [40, 49] (10)  used
-//     CHECK(memory.write<uint64_t>(chunk4, 0xffeeddccbbaa9988));
+    // Chunk 4 [40, 49] (10)  used
+    CHECK(memory.write<uint64_t>(chunk4, 0xffeeddccbbaa9988));
     
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4, 0xffeeddccbbaa9988, uint64_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 0, 0x88, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 1, 0x99, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 2, 0xaa, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 3, 0xbb, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 4, 0xcc, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 5, 0xdd, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xee, uint8_t);
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 7, 0xff, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4, 0xffeeddccbbaa9988, uint64_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 0, 0x88, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 1, 0x99, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 2, 0xaa, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 3, 0xbb, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 4, 0xcc, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 5, 0xdd, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xee, uint8_t);
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 7, 0xff, uint8_t);
 
-//     // out of bounds
-//     // ... | 5 | 6 | 7 | 8 | 9 | - | - | - | ...
-//     //                   ^   ^   ^   ^
+    // out of bounds
+    // ... | 5 | 6 | 7 | 8 | 9 | - | - | - | ...
+    //                   ^   ^   ^   ^
 
-//     CHECK(!memory.read<int32_t>(chunk4 + 8).has_value());
-//     CHECK(!memory.read<int32_t>(chunk4 + 7).has_value());
-//     CHECK( memory.read<int32_t>(chunk4 + 6).has_value());
-//     CHECK( memory.read<int32_t>(chunk4 + 5).has_value());
+    CHECK(!memory.read<int32_t>(chunk4 + 8).has_value());
+    CHECK(!memory.read<int32_t>(chunk4 + 7).has_value());
+    CHECK( memory.read<int32_t>(chunk4 + 6).has_value());
+    CHECK( memory.read<int32_t>(chunk4 + 5).has_value());
 
-//     CHECK(!memory.write<int32_t>(chunk4 + 8, 0xdeadbeef));
-//     CHECK(!memory.write<int32_t>(chunk4 + 7, 0xdeadbeef));
-//     CHECK( memory.write<int32_t>(chunk4 + 6, 0xdeadbeef));
-//     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xdeadbeef, int32_t);
-// }
+    CHECK(!memory.write<int32_t>(chunk4 + 8, 0xdeadbeef));
+    CHECK(!memory.write<int32_t>(chunk4 + 7, 0xdeadbeef));
+    CHECK( memory.write<int32_t>(chunk4 + 6, 0xdeadbeef));
+    SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 6, 0xdeadbeef, int32_t);
+}
 
-// #define SCC_GET_PTR_FROM_RESULT(INTERPRETER_RESULT) \
-//     std::get<scc::Type::Primitive::U64>(INTERPRETER_RESULT.get_value().value)
+#define SCC_GET_PTR_FROM_RESULT(INTERPRETER_RESULT) \
+    std::get<scc::Type::Primitive::U64>(INTERPRETER_RESULT.get_value().value)
 
 
-// TEST_CASE("Scopes")
-// {
-//     auto interpreter = scc::Interpreter();
-//     auto a = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int a;"));
-//     auto b = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int b;"));
+TEST_CASE("Scopes")
+{
+    auto interpreter = scc::Interpreter();
+    auto a = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int a;"));
+    auto b = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int b;"));
 
-//     CHECK(a != b);
-//     CHECK(a == b + sizeof(int));
-//     CHECK(interpreter.interpret("int a;").is_error());
-//     CHECK(interpreter.interpret("int b;").is_error());
+    CHECK(a != b);
+    CHECK(a == b + sizeof(int));
+    CHECK(interpreter.interpret("int a;").is_error());
+    CHECK(interpreter.interpret("int b;").is_error());
 
-//     auto c1 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
-//     auto c2 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
-//     CHECK(c1 == c2);
-//     CHECK(b == c1 + sizeof(int));
-// }
+    auto c1 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
+    auto c2 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
+    CHECK(c1 == c2);
+    CHECK(b == c1 + sizeof(int));
+}
 
 // TEST_CASE("Assignments")
 // {

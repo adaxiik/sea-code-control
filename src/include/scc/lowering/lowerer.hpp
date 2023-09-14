@@ -33,6 +33,8 @@ namespace scc
 
         std::stack<BoundNodeOrInstruction> m_to_lower;
 
+        bool should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement);
+
         static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
 
         void lower(const binding::BoundExpressionStatement &expression_statement);

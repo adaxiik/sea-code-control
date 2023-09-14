@@ -35,7 +35,16 @@ namespace scc
         m_to_lower.push(lowering::PopScopeInstruction());
 
         for (auto &statement : block_statement.statements)
+        {
+            auto node = statement.get();
+            if (block_statement.statements.size() > 1 &&
+                node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
+                should_drop_after_statement(*static_cast<const binding::BoundExpressionStatement*>(node)))
+            {
+                m_to_lower.push(lowering::DropInstruction());
+            }
             m_to_lower.push(statement.get());
+        }
 
         m_to_lower.push(lowering::PushScopeInstruction());
     }
@@ -143,6 +152,21 @@ namespace scc
         SCC_NOT_IMPLEMENTED("BoundCallExpression");
     }
 
+    bool Lowerer::should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement)
+    {
+        auto node = expression_statement.expression.get();
+        if (node->bound_node_kind() == binding::BoundNodeKind::CallExpression)
+        {
+            auto call_expresion = static_cast<const binding::BoundCallExpression*>(node);
+            if (call_expresion->type.kind == Type::Kind::Void && 
+                !call_expresion->type.is_pointer())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundNode *root)
     {
@@ -151,7 +175,15 @@ namespace scc
             auto& statements = static_cast<const binding::BoundBlockStatement*>(root)->statements;
             for (auto it = statements.rbegin(); it != statements.rend(); it++)
             {
-                m_to_lower.push(it->get());
+                auto node = it->get();
+                if (statements.size() > 1 &&
+                    node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
+                    should_drop_after_statement(*static_cast<const binding::BoundExpressionStatement*>(node)))
+                {
+                    m_to_lower.push(lowering::DropInstruction());
+                }
+               
+                m_to_lower.push(node);
             }
         }
         else
@@ -163,7 +195,7 @@ namespace scc
 
         while (!m_to_lower.empty())
         {
-            auto& current_node_or_instruction = m_to_lower.top();
+            const auto& current_node_or_instruction = m_to_lower.top();
             if (std::holds_alternative<InstructionType>(current_node_or_instruction))
             {
                 result.push_back(std::move(std::get<InstructionType>(current_node_or_instruction)));
