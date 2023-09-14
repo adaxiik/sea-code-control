@@ -102,8 +102,8 @@ namespace scc
         m_to_lower.push(std::make_unique<lowering::DropInstruction>(parenthesized_expression.expressions.size() - 1));
         
         // c++20 ranges would be really nice here :(( 
-        for (auto it = parenthesized_expression.expressions.rbegin(); it != parenthesized_expression.expressions.rend(); ++it)
-            m_to_lower.push(it->get());
+        for (const auto& expression: parenthesized_expression.expressions)
+            m_to_lower.push(expression.get());
     }
 
     void Lowerer::lower(const binding::BoundIdentifierExpression &identifier_expression)

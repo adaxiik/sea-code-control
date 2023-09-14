@@ -216,13 +216,13 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE_PTR(I32, 2, (int**)2);
     }
 
-    // SUBCASE("Parenthesized Expression")
-    // {
-    //     SCC_TEST_INTERPRET_RESULT(int, 69 , "(1,2,3,69);");
-    //     SCC_TEST_INTERPRET_RESULT(int, 420 , "2 * (105 + 105);");
-    //     SCC_TEST_INTERPRET_RESULT(char, 'E' , "(char)(65 + (1 + (1 + (1 + 1))));");
-    //     SCC_TEST_INTERPRET_RESULT(short, 100, "(1,2,3,(short)100);");
-    // }
+    SUBCASE("Parenthesized Expression")
+    {
+        SCC_TEST_INTERPRET_RESULT(int, 69 , "(1,2,3,69);");
+        SCC_TEST_INTERPRET_RESULT(int, 420 , "2 * (105 + 105);");
+        SCC_TEST_INTERPRET_RESULT(char, 'E' , "(char)(65 + (1 + (1 + (1 + 1))));");
+        SCC_TEST_INTERPRET_RESULT(short, 100, "(1,2,3,(short)100);");
+    }
 
     // SUBCASE("Declaration")
     // {
