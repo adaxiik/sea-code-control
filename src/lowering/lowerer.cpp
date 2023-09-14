@@ -101,7 +101,6 @@ namespace scc
     {
         m_to_lower.push(std::make_unique<lowering::DropInstruction>(parenthesized_expression.expressions.size() - 1));
         
-        // c++20 ranges would be really nice here :(( 
         for (const auto& expression: parenthesized_expression.expressions)
             m_to_lower.push(expression.get());
     }
