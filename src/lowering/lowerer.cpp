@@ -39,9 +39,31 @@ namespace scc
         m_to_lower.push(lowering::PushScopeInstruction());
     }
 
+    void Lowerer::lower(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration_statement)
+    {
+        m_to_lower.push(lowering::CreateValueVariableInstruction(
+            variable_value_declaration_statement.variable_name,
+            variable_value_declaration_statement.type,
+            variable_value_declaration_statement.initializer != nullptr,
+            variable_value_declaration_statement.is_constant
+        ));
+        
+        if (variable_value_declaration_statement.initializer)
+            m_to_lower.push(variable_value_declaration_statement.initializer.get());
+    }
+
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundVariableDeclarationStatement");
+        switch (variable_declaration_statement.variable_declaration_statement_kind())
+        {
+            using DeclarationType = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
+        case DeclarationType::Value:
+            lower(*static_cast<const binding::BoundVariableValueDeclarationStatement*>(&variable_declaration_statement));
+            break;
+        default:
+            SCC_NOT_IMPLEMENTED("BoundVariableDeclarationStatement");
+            break;
+        }
     }
 
     void Lowerer::lower(const binding::BoundIfStatement &if_statement)

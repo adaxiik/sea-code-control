@@ -38,6 +38,7 @@ namespace scc
         void lower(const binding::BoundExpressionStatement &expression_statement);
         void lower(const binding::BoundBlockStatement &block_statement);
         void lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement);
+        void lower(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration_statement);
         void lower(const binding::BoundIfStatement &if_statement);
         void lower(const binding::BoundWhileStatement &while_statement);
         void lower(const binding::BoundDoStatement &do_statement);

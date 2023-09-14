@@ -8,6 +8,7 @@
 #include "lowering/pop_scope_instruction.hpp"
 #include "lowering/push_literal_instruction.hpp"
 #include "lowering/push_scope_instruction.hpp"
+#include "lowering/create_value_variable_instruction.hpp"
 
 namespace scc
 {
@@ -19,7 +20,8 @@ namespace scc
             DropInstruction,
             PopScopeInstruction,
             PushLiteralInstruction,
-            PushScopeInstruction>;
+            PushScopeInstruction,
+            CreateValueVariableInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

@@ -643,7 +643,7 @@ namespace scc
             // Cast,
             // Drop,
             // using InstructionKind = lowering::InstructionKind;
-            static_assert(lowering::InstructionCount == 6, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 7, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==>";
@@ -695,6 +695,10 @@ namespace scc
                 },
                 [&](lowering::PushScopeInstruction) {
                     ss << "PushScope";
+                },
+                [&](lowering::CreateValueVariableInstruction create_value_variable) {
+                    ss << "CreateValueVariable ==> "<< (create_value_variable.is_const ? "const " : "") << create_value_variable.variable_type \
+                    << " " << create_value_variable.variable_name;
                 }
             }, instruction);
         }
