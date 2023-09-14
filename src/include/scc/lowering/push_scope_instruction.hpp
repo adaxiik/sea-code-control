@@ -1,17 +1,14 @@
 #pragma once
-#include "lowering/instruction.hpp"
+#include "interpreter_state.hpp"
 
 namespace scc
 {
     namespace lowering
     {
-        class PushScopeInstruction : public Instruction
+        struct PushScopeInstruction
         {
-        public:
             PushScopeInstruction() = default;
-            ~PushScopeInstruction() = default;
-            virtual InterpreterResult execute(InterpreterState &state) override;
-            virtual InstructionKind instruction_kind() const override;
+            InterpreterResult execute(InterpreterState &state) const;
         };
     }
 } 

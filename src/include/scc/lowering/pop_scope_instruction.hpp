@@ -1,17 +1,16 @@
 #pragma once
-#include "lowering/instruction.hpp"
+#include "interpreter_result.hpp"
+#include "interpreter_state.hpp"
+
 
 namespace scc
 {
     namespace lowering
     {
-        class PopScopeInstruction : public Instruction
+        struct PopScopeInstruction
         {
-        public:
             PopScopeInstruction() = default;
-            ~PopScopeInstruction() = default;
-            virtual InterpreterResult execute(InterpreterState &state) override;
-            virtual InstructionKind instruction_kind() const override;
+            InterpreterResult execute(InterpreterState &state) const;
         };
     }
 } 

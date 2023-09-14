@@ -31,12 +31,12 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBlockStatement &block_statement)
     {
-        m_to_lower.push(std::make_unique<lowering::PopScopeInstruction>());
+        m_to_lower.push(lowering::PopScopeInstruction());
 
         for (auto &statement : block_statement.statements)
             m_to_lower.push(statement.get());
 
-        m_to_lower.push(std::make_unique<lowering::PushScopeInstruction>());
+        m_to_lower.push(lowering::PushScopeInstruction());
     }
 
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)
@@ -81,25 +81,25 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBinaryExpression &binary_expression)
     {
-        m_to_lower.push(std::make_unique<lowering::BinaryOperationInstruction>(binary_expression.op_kind));
+        m_to_lower.push(lowering::BinaryOperationInstruction(binary_expression.op_kind));
         m_to_lower.push(binary_expression.left.get());
         m_to_lower.push(binary_expression.right.get());
     }
 
     void Lowerer::lower(const binding::BoundLiteralExpression &literal_expression)
     {
-        m_to_lower.push(std::make_unique<lowering::PushLiteralInstruction>(literal_expression));
+        m_to_lower.push(lowering::PushLiteralInstruction(literal_expression));
     }
 
     void Lowerer::lower(const binding::BoundCastExpression &cast_expression)
     {
-        m_to_lower.push(std::make_unique<lowering::CastInstruction>(cast_expression.type));
+        m_to_lower.push(lowering::CastInstruction(cast_expression.type));
         m_to_lower.push(cast_expression.expression.get());
     }
 
     void Lowerer::lower(const binding::BoundParenthesizedExpression &parenthesized_expression)
     {
-        m_to_lower.push(std::make_unique<lowering::DropInstruction>(parenthesized_expression.expressions.size() - 1));
+        m_to_lower.push(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1));
         
         for (const auto& expression: parenthesized_expression.expressions)
             m_to_lower.push(expression.get());
@@ -121,9 +121,9 @@ namespace scc
     }
 
 
-    std::vector<std::unique_ptr<lowering::Instruction>> Lowerer::lower(const binding::BoundNode *root)
+    std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundNode *root)
     {
-        std::vector<std::unique_ptr<lowering::Instruction>> result;
+        std::vector<lowering::Instruction> result;
         m_to_lower.push(root);
 
         while (!m_to_lower.empty())

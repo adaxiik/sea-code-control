@@ -1,10 +1,9 @@
 #include "lowering/cast_instruction.hpp"
-
 namespace scc
 {
     namespace lowering
     {
-        InterpreterResult CastInstruction::execute(InterpreterState &state)
+        InterpreterResult CastInstruction::execute(InterpreterState &state) const
         {
             InterpreterResult result{state.result_stack.top()};
             state.result_stack.pop();
@@ -97,11 +96,6 @@ namespace scc
             }
             #undef CAST_CASE
             #undef CAST_ORIGINAL
-        }
-
-        InstructionKind CastInstruction::instruction_kind() const
-        {
-            return InstructionKind::Cast;
         }
     }
 }

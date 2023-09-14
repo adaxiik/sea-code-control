@@ -5,6 +5,7 @@
 #include "cpp_compiler.hpp"
 #include "operation_result.hpp"
 #include "overloaded.hpp"
+#include "lowering/instruction.hpp"
 
 namespace scc
 {
@@ -77,7 +78,7 @@ namespace scc
         for (size_t i = 0; i < lowered.size(); i++)
         {
             auto& instruction = lowered[i];
-            auto result = instruction->execute(m_state);
+            auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
                 return result;
             

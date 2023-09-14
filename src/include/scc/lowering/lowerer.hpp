@@ -28,7 +28,7 @@ namespace scc
     class Lowerer
     {   
         using BoundNodeType = const binding::BoundNode *;
-        using InstructionType = std::unique_ptr<lowering::Instruction>;
+        using InstructionType = lowering::Instruction;
         using BoundNodeOrInstruction = std::variant<BoundNodeType, InstructionType>;
 
         std::stack<BoundNodeOrInstruction> m_to_lower;
@@ -55,6 +55,6 @@ namespace scc
         void lower(const binding::BoundCallExpression &call_expression);
 
     public:
-        std::vector<std::unique_ptr<lowering::Instruction>> lower(const binding::BoundNode *root);
+        std::vector<lowering::Instruction> lower(const binding::BoundNode *root);
     };
 }

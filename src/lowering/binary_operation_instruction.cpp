@@ -1,11 +1,11 @@
 #include "cpp_compiler.hpp"
 #include "lowering/binary_operation_instruction.hpp"
-
+#include "interpreter_state.hpp"
 namespace scc
 {
     namespace lowering
     {
-        InterpreterResult BinaryOperationInstruction::execute(InterpreterState &state)
+        InterpreterResult BinaryOperationInstruction::execute(InterpreterState &state) const
         {
             SCC_SUPPRESS_WARNING_PUSH_SIGN_COMPARISON
 
@@ -155,11 +155,6 @@ namespace scc
 
             SCC_SUPPRESS_WARNING_POP
             return InterpreterError::ReachedUnreachableError;
-        }
-
-        InstructionKind BinaryOperationInstruction::instruction_kind() const
-        {
-            return InstructionKind::BinaryOperation;
         }
     }
 }

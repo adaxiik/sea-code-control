@@ -4,15 +4,10 @@ namespace scc
 {
     namespace lowering
     {
-        InterpreterResult PushScopeInstruction::execute(InterpreterState &state)
+        InterpreterResult PushScopeInstruction::execute(InterpreterState &state) const
         {
             state.scope_stack.push();
             return InterpreterError::None;
-        }
-
-        InstructionKind PushScopeInstruction::instruction_kind() const
-        {
-            return InstructionKind::PushScope;
         }
     }
 }

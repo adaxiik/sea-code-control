@@ -1,18 +1,17 @@
 #pragma once
-#include "lowering/instruction.hpp"
+#include "interpreter_result.hpp"
+#include "interpreter_state.hpp"
 #include "binding/bound_literal_expression.hpp"
 
 namespace scc
 {
     namespace lowering
     {
-        struct PushLiteralInstruction : public Instruction
+        struct PushLiteralInstruction
         {
             const binding::BoundLiteralExpression& bound_literal_expression;
-            PushLiteralInstruction(const binding::BoundLiteralExpression& bound_literal_expression);
-            ~PushLiteralInstruction() = default;
-            virtual InterpreterResult execute(InterpreterState &state) override;
-            virtual InstructionKind instruction_kind() const override;
+            PushLiteralInstruction(const binding::BoundLiteralExpression& bound_literal_expression) : bound_literal_expression(bound_literal_expression){}
+            InterpreterResult execute(InterpreterState &state) const;
         };
     }
 } 

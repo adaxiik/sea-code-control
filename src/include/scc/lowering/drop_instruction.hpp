@@ -1,17 +1,17 @@
 #pragma once
-#include "lowering/instruction.hpp"
+#include "interpreter_result.hpp"
+#include "interpreter_state.hpp"
+
 
 namespace scc
 {
     namespace lowering
     {
-        struct DropInstruction : public Instruction
+        struct DropInstruction
         {
             const size_t count;
             DropInstruction(size_t count = 1) : count(count) {}
-            ~DropInstruction() = default;
-            virtual InterpreterResult execute(InterpreterState &state) override;
-            virtual InstructionKind instruction_kind() const override;
+            InterpreterResult execute(InterpreterState &state) const;
         };
     }
 } 

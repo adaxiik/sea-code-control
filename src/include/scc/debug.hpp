@@ -38,6 +38,6 @@ namespace scc
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error);
 
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction);
-        void instructions_as_text(std::ostream &ss, const std::vector<std::unique_ptr<lowering::Instruction>>& instructions);
+        void instructions_as_text(std::ostream &ss, const std::vector<lowering::Instruction>& instructions);
     } 
 } 
