@@ -636,14 +636,7 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            // PushLiteral,
-            // PushScope,
-            // PopScope,
-            // BinaryOperation,
-            // Cast,
-            // Drop,
-            // using InstructionKind = lowering::InstructionKind;
-            static_assert(lowering::InstructionCount == 9, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 13, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==>";
@@ -705,6 +698,17 @@ namespace scc
                 },
                 [&](lowering::AssignmentInstruction assignment) {
                     ss << "Assignment ==> " << assignment.variable_name;
+                },
+                [&](lowering::LabelInstruction label) {
+                    ss << "Label ==> " << label.label;
+                },
+                [&](lowering::GotoTrueInstruction goto_true) {
+                    ss << "GotoTrue ==> " << goto_true.label;
+                },
+                [&](lowering::GotoFalseInstruction goto_false) {
+                    ss << "GotoFalse ==> " << goto_false.label;
+                },[&](lowering::GotoInstruction _goto) {
+                    ss << "Goto ==> " << _goto.label;
                 },
             }, instruction);
         }

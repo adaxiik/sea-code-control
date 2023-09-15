@@ -34,16 +34,15 @@ namespace scc
     {
         m_to_lower.push(lowering::PopScopeInstruction());
 
-        for (auto &statement : block_statement.statements)
+        for (auto it = block_statement.statements.rbegin(); it != block_statement.statements.rend(); it++)
         {
-            auto node = statement.get();
-            if (block_statement.statements.size() > 1 &&
-                node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
+            auto node = (*it).get();
+            if (node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
                 should_drop_after_statement(*static_cast<const binding::BoundExpressionStatement*>(node)))
             {
                 m_to_lower.push(lowering::DropInstruction());
             }
-            m_to_lower.push(statement.get());
+            m_to_lower.push(node);
         }
 
         m_to_lower.push(lowering::PushScopeInstruction());
@@ -78,7 +77,42 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundIfStatement &if_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundIfStatement");
+        if (!if_statement.else_statement)
+        {
+            // if (condition) { ... }
+            //   =>
+            // condition
+            // goto_false end
+            // ...
+            // end:
+
+            Label end_label = create_label();
+            m_to_lower.push(lowering::LabelInstruction(end_label));
+            m_to_lower.push(if_statement.then_statement.get());
+            m_to_lower.push(lowering::GotoFalseInstruction(end_label));
+            m_to_lower.push(if_statement.condition.get());
+            return;
+        }
+        
+        // if (condition) { ... } else { ... }
+        //   =>
+        // condition
+        // goto_false else
+        // ...
+        // goto end
+        // else:
+        // ...
+        // end:
+
+        Label else_label = create_label();
+        Label end_label = create_label();
+        m_to_lower.push(lowering::LabelInstruction(end_label));
+        m_to_lower.push(if_statement.else_statement.get());
+        m_to_lower.push(lowering::LabelInstruction(else_label));
+        m_to_lower.push(lowering::GotoInstruction(end_label));
+        m_to_lower.push(if_statement.then_statement.get());
+        m_to_lower.push(lowering::GotoFalseInstruction(else_label));
+        m_to_lower.push(if_statement.condition.get());
     }
 
     void Lowerer::lower(const binding::BoundWhileStatement &while_statement)
@@ -169,6 +203,10 @@ namespace scc
         return true;
     }
 
+    Lowerer::Label Lowerer::create_label()
+    {
+        return m_current_label++;
+    }
 
     std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundNode *root)
     {

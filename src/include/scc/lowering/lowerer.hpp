@@ -33,6 +33,12 @@ namespace scc
 
         std::stack<BoundNodeOrInstruction> m_to_lower;
 
+
+        using Label = size_t;
+        Label m_current_label;
+        Label create_label();
+
+
         bool should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement);
 
         static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
@@ -59,5 +65,7 @@ namespace scc
 
     public:
         std::vector<lowering::Instruction> lower(const binding::BoundNode *root);
+
+        Lowerer(): m_current_label(0) {}
     };
 }

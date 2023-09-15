@@ -11,6 +11,10 @@
 #include "lowering/create_value_variable_instruction.hpp"
 #include "lowering/identifier_instruction.hpp"
 #include "lowering/assignment_instruction.hpp"
+#include "lowering/goto_true_instruction.hpp"
+#include "lowering/goto_false_instruction.hpp"
+#include "lowering/goto_instruction.hpp"
+#include "lowering/label_instruction.hpp"
 
 namespace scc
 {
@@ -25,7 +29,11 @@ namespace scc
             PushScopeInstruction,
             CreateValueVariableInstruction,
             IdentifierInstruction,
-            AssignmentInstruction>;
+            AssignmentInstruction,
+            GotoTrueInstruction,
+            GotoFalseInstruction,
+            GotoInstruction,
+            LabelInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 
