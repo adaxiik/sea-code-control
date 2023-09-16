@@ -22,6 +22,16 @@
         std::exit(1);                                                    \
     } while (0)
 
+#define SCC_UNREACHABLE()                                                \
+    do                                                                   \
+    {                                                                    \
+        std::cerr << "==============================" << std::endl;      \
+        std::cerr << "Unreachable code" << std::endl;                    \
+        std::cerr << "At: " << __FILE__ << ":" << __LINE__ << std::endl; \
+        std::cerr << "==============================" << std::endl;      \
+        std::exit(1);                                                    \
+    } while (0)
+
 namespace scc
 {
     
@@ -117,22 +127,70 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundWhileStatement &while_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundWhileStatement");
+        // while (condition) { ... }
+        //   =>
+        // continue:
+        // condition
+        // goto_false break
+        // ...
+        // goto continue
+        // break:
+
+        Label continue_label = create_label();
+        Label break_label = create_label();
+
+        m_to_lower.push(PopLabels());
+      
+        m_to_lower.push(lowering::LabelInstruction(break_label));
+        m_to_lower.push(lowering::GotoInstruction(continue_label));
+        if (while_statement.body)
+            m_to_lower.push(while_statement.body.get());
+        m_to_lower.push(lowering::GotoFalseInstruction(break_label));
+        m_to_lower.push(while_statement.condition.get());
+        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        
+        m_to_lower.push(PushLabels(continue_label, break_label));
     }
 
     void Lowerer::lower(const binding::BoundDoStatement &do_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundDoStatement");
+        // do { ... } while (condition)
+        //   =>
+        // continue:
+        // ...
+        // condition
+        // goto_true continue
+        // break:
+
+        Label continue_label = create_label();
+        Label break_label = create_label();
+
+        m_to_lower.push(PopLabels());
+
+        m_to_lower.push(lowering::LabelInstruction(break_label));
+        m_to_lower.push(lowering::GotoTrueInstruction(continue_label));
+        m_to_lower.push(do_statement.condition.get());
+        if (do_statement.body)
+            m_to_lower.push(do_statement.body.get());
+        m_to_lower.push(lowering::LabelInstruction(continue_label));
+
+        m_to_lower.push(PushLabels(continue_label, break_label));
     }
 
     void Lowerer::lower(const binding::BoundBreakStatement &break_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundBreakStatement");
+        if (m_loop_labels.empty())
+            SCC_UNREACHABLE();
+        
+        m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().break_label));
     }
 
     void Lowerer::lower(const binding::BoundContinueStatement &continue_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundContinueStatement");
+        if (m_loop_labels.empty())
+            SCC_UNREACHABLE();
+        
+        m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().continue_label));
     }
 
     void Lowerer::lower(const binding::BoundFunctionStatement &function_statement)
@@ -239,6 +297,21 @@ namespace scc
             if (std::holds_alternative<InstructionType>(current_node_or_instruction))
             {
                 result.push_back(std::move(std::get<InstructionType>(current_node_or_instruction)));
+                m_to_lower.pop();
+                continue;
+            }
+
+            if (std::holds_alternative<PushLabels>(current_node_or_instruction))
+            {
+                auto labels = std::get<PushLabels>(current_node_or_instruction);
+                m_loop_labels.push(labels);
+                m_to_lower.pop();
+                continue;
+            }
+
+            if (std::holds_alternative<PopLabels>(current_node_or_instruction))
+            {
+                m_loop_labels.pop();
                 m_to_lower.pop();
                 continue;
             }

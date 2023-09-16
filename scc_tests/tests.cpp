@@ -403,111 +403,111 @@ TEST_CASE("Assignments")
     SCC_TEST_IS_OK("int c = a + b;"); // 3 + 3.1 = 6.1 -> 6
     SCC_TEST_INTERPRET_RESULT(int, 6, "c;");
 }
-// TEST_CASE("If statement")
-// {
-//     SUBCASE("Simple")
-//     {
-//         auto interpreter = scc::Interpreter();
-//         SCC_TEST_IS_OK("int a = 0;");
-//         SCC_TEST_IS_OK("int b = 0;");
+TEST_CASE("If statement")
+{
+    SUBCASE("Simple")
+    {
+        auto interpreter = scc::Interpreter();
+        SCC_TEST_IS_OK("int a = 0;");
+        SCC_TEST_IS_OK("int b = 0;");
 
-//         SCC_TEST_IS_OK("if (0) { b = 1; }");       
-//         SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
+        SCC_TEST_IS_OK("if (0) { b = 1; }");       
+        SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
 
-//         SCC_TEST_IS_OK("if (1) { b = 1; }");
-//         SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+        SCC_TEST_IS_OK("if (1) { b = 1; }");
+        SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
 
-//         auto statement = ""
-//         "if (a == 0) {"
-//         "   b = 10;"
-//         "   a = 1;"
-//         "}"
-//         "else if (a == 1) {"
-//         "   b = 20;"
-//         "   a = 2;"
-//         "}"
-//         "else {"
-//         "   b = 30;"
-//         "   a = 3;"
-//         "}";
+        auto statement = ""
+        "if (a == 0) {"
+        "   b = 10;"
+        "   a = 1;"
+        "}"
+        "else if (a == 1) {"
+        "   b = 20;"
+        "   a = 2;"
+        "}"
+        "else {"
+        "   b = 30;"
+        "   a = 3;"
+        "}";
 
-//         SCC_TEST_IS_OK(statement);
-//         SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 10, "b;");
-//         SCC_TEST_IS_OK(statement);
-//         SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 20, "b;");
-//         SCC_TEST_IS_OK(statement);
-//         SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
-//         SCC_TEST_IS_OK(statement);
-//         SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
-//         SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
-//     }
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 10, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 20, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
+        SCC_TEST_IS_OK(statement);
+        SCC_TEST_INTERPRET_RESULT(int, 3, "a;");
+        SCC_TEST_INTERPRET_RESULT(int, 30, "b;");
+    }
 
-//     SUBCASE("Shadowing")
-//     {
-//         auto interpreter = scc::Interpreter();
-//         SCC_TEST_IS_OK("int a = 10;");
-//         SCC_TEST_IS_OK("if (1) { int a = 20; }");
-//         SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
-//     }
-// }
+    SUBCASE("Shadowing")
+    {
+        auto interpreter = scc::Interpreter();
+        SCC_TEST_IS_OK("int a = 10;");
+        SCC_TEST_IS_OK("if (1) { int a = 20; }");
+        SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
+    }
+}
 
-// TEST_CASE("While and Do statements")
-// {
-//     auto interpreter = scc::Interpreter();
-//     SCC_TEST_IS_OK("int a = 0;");
-//     SCC_TEST_IS_OK("int b = 0;");
+TEST_CASE("While and Do statements")
+{
+    auto interpreter = scc::Interpreter();
+    SCC_TEST_IS_OK("int a = 0;");
+    SCC_TEST_IS_OK("int b = 0;");
 
-//     SCC_TEST_IS_OK("while (0) { b = 1; }");       
-//     SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
+    SCC_TEST_IS_OK("while (0) { b = 1; }");       
+    SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
 
-//     SCC_TEST_IS_OK("a = 1;");
-//     SCC_TEST_IS_OK("while (a+=1) { b = 1; break;}");
-//     SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+    SCC_TEST_IS_OK("a = 1;");
+    SCC_TEST_IS_OK("while (a+=1) { b = 1; break;}");
+    SCC_TEST_INTERPRET_RESULT(int, 2, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
 
-//     SCC_TEST_IS_OK("a = 1;");
-//     SCC_TEST_IS_OK("b = 0;");
+    SCC_TEST_IS_OK("a = 1;");
+    SCC_TEST_IS_OK("b = 0;");
 
-//     SCC_TEST_IS_OK("do { b = 1; break;} while (a+=1);");
-//     SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
+    SCC_TEST_IS_OK("do { b = 1; break;} while (a+=1);");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 1, "b;");
 
-//     SCC_TEST_IS_OK("a = 0;");
-//     SCC_TEST_IS_OK("b = 0;");
-//     SCC_TEST_IS_OK(""
-//     "while (a < 20) {"
-//     "   a += 1;"
-//     "   if (a == 10) {"
-//     "       continue;"
-//     "   }"
-//     "   b += 1;"
-//     "}"
-//     );
+    SCC_TEST_IS_OK("a = 0;");
+    SCC_TEST_IS_OK("b = 0;");
+    SCC_TEST_IS_OK(""
+    "while (a < 20) {"
+    "   a += 1;"
+    "   if (a == 10) {"
+    "       continue;"
+    "   }"
+    "   b += 1;"
+    "}"
+    );
 
-//     SCC_TEST_INTERPRET_RESULT(int, 20, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 19, "b;");
+    SCC_TEST_INTERPRET_RESULT(int, 20, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 19, "b;");
 
-//     SCC_TEST_IS_OK("a = 0;");
-//     SCC_TEST_IS_OK("b = 0;");
-//     SCC_TEST_IS_OK(""
-//     "while (a < 20) {"
-//     "   a += 1;"
-//     "   if (a == 10) {"
-//     "       break;"
-//     "   }"
-//     "   b += 1;"
-//     "}"
-//     );
+    SCC_TEST_IS_OK("a = 0;");
+    SCC_TEST_IS_OK("b = 0;");
+    SCC_TEST_IS_OK(""
+    "while (a < 20) {"
+    "   a += 1;"
+    "   if (a == 10) {"
+    "       break;"
+    "   }"
+    "   b += 1;"
+    "}"
+    );
 
-//     SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
-//     SCC_TEST_INTERPRET_RESULT(int, 9, "b;");
-// }
+    SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
+    SCC_TEST_INTERPRET_RESULT(int, 9, "b;");
+}
 
 // TEST_CASE("Functions")
 // {

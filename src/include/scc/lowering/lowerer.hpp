@@ -27,17 +27,28 @@ namespace scc
 {
     class Lowerer
     {   
-        using BoundNodeType = const binding::BoundNode *;
-        using InstructionType = lowering::Instruction;
-        using BoundNodeOrInstruction = std::variant<BoundNodeType, InstructionType>;
-
-        std::stack<BoundNodeOrInstruction> m_to_lower;
-
-
         using Label = size_t;
         Label m_current_label;
         Label create_label();
 
+        struct LoopLabels
+        {
+            Label continue_label;
+            Label break_label;
+            LoopLabels(Label continue_label, Label break_label): continue_label(continue_label), break_label(break_label) {}
+        };
+
+        std::stack<LoopLabels> m_loop_labels;
+
+        using PushLabels = LoopLabels;
+        struct PopLabels{};
+
+        // Dirty lowering signals
+        using BoundNodeType = const binding::BoundNode *;
+        using InstructionType = lowering::Instruction;
+        using ToLower = std::variant<BoundNodeType, InstructionType, PushLabels, PopLabels>;
+
+        std::stack<ToLower> m_to_lower;
 
         bool should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement);
 
