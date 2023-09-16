@@ -18,7 +18,9 @@ namespace scc
         : m_state({ 
             Memory(0),
             InterpreterScopeStack(m_state.memory.allocate(STACK_SIZE) + STACK_SIZE),
-            {}
+            {}, // result_stack
+            0,  // instruction_pointer
+            {}  // labels
         }) {} 
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);

@@ -5,6 +5,9 @@ namespace scc
     {
         InterpreterResult CastInstruction::execute(InterpreterState &state) const
         {
+            if (state.result_stack.empty())
+                return InterpreterError::RuntimeError;
+
             InterpreterResult result{state.result_stack.top()};
             state.result_stack.pop();
 

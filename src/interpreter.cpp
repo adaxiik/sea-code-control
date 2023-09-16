@@ -1,6 +1,7 @@
 #include "interpreter.hpp"
 
 #include <iostream>
+#include <variant>
 #include "debug.hpp"
 #include "cpp_compiler.hpp"
 #include "operation_result.hpp"
@@ -77,7 +78,13 @@ namespace scc
 
         for (size_t i = 0; i < lowered.size(); i++)
         {
-            auto& instruction = lowered[i];
+            if (std::holds_alternative<lowering::LabelInstruction>(lowered[i]))
+                m_state.labels[std::get<lowering::LabelInstruction>(lowered[i]).label] = i;
+        }
+
+        for (m_state.instruction_pointer = 0; m_state.instruction_pointer < lowered.size(); m_state.instruction_pointer++)
+        {
+            auto& instruction = lowered[m_state.instruction_pointer];
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
                 return result;
@@ -86,7 +93,7 @@ namespace scc
             if (result.has_value())
                 m_state.result_stack.push(result);
 
-            if (i == lowered.size() - 1)
+            if (m_state.instruction_pointer == lowered.size() - 1)
             {
                 if (!m_state.result_stack.empty())
                 {
