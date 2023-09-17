@@ -21,48 +21,6 @@ namespace scc
         return interpret(parse_result);
     }
 
-    InterpreterResult Interpreter::register_functions(binding::BoundBlockStatement &block_statement)
-    {
-        TRACE();
-
-        // size_t index = 0;
-        // while (index < block_statement.statements.size())
-        // {
-        //     std::unique_ptr<binding::BoundStatement>& current_statement = block_statement.statements[index];
-        //     if (current_statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
-        //     {
-        //         index++;
-        //         continue;
-        //     }
-        //     std::unique_ptr<binding::BoundFunctionStatement> function_statement {std::unique_ptr<binding::BoundFunctionStatement>(static_cast<binding::BoundFunctionStatement*>(current_statement.release()))} ;
-        //     block_statement.statements.erase(block_statement.statements.begin() + index);
-
-        //     bool already_exists = m_functions.find(function_statement->function_name) != m_functions.end();
-        //     if (!already_exists)
-        //     {
-        //         m_functions[function_statement->function_name] = std::move(function_statement);
-        //         continue;
-        //     }
-
-        //     auto& existing_function = m_functions[function_statement->function_name];
-
-        //     if (*function_statement != *existing_function)
-        //         return InterpreterError::IncosistentFunctionSignatureError;
-
-        //     if (!function_statement->body)
-        //             continue;
-                
-        //     if (existing_function->body)
-        //         return InterpreterError::FunctionAlreadyDefinedError;
-                
-        //     existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
-                      
-
-        // }
-
-        return InterpreterError::None;
-    }
-
     InterpreterResult Interpreter::interpret(const ParserResult &parse_result)
     {
         TRACE();

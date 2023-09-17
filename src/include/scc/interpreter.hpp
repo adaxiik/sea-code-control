@@ -25,9 +25,6 @@ namespace scc
         Lowerer m_lowerer;
         InterpreterState m_state;
         std::vector<lowering::Instruction> m_program;
-        
-        InterpreterResult register_functions(binding::BoundBlockStatement &block_statement);
-
     };
 
 }
