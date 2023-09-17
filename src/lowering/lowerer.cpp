@@ -292,17 +292,6 @@ namespace scc
 
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
     {
-        // TODOOOOO: drop after variable creation as well
-        // auto node = node.expression.get();
-        // if (node->bound_node_kind() == binding::BoundNodeKind::CallExpression)
-        // {
-        //     auto call_expresion = static_cast<const binding::BoundCallExpression*>(node);
-        //     if (call_expresion->type.kind == Type::Kind::Void && 
-        //         !call_expresion->type.is_pointer())
-        //     {
-        //         return false;
-        //     }
-        // }
 
         if (statement->bound_node_kind() == binding::BoundNodeKind::VariableDeclarationStatement)
             return true;
@@ -326,20 +315,6 @@ namespace scc
         return m_current_label++;
     }
 
-    // void Lowerer::pregenerate_function_labels(const binding::BoundBlockStatement &block_statement)
-    // {
-    //     for (const auto& statement: block_statement.statements)
-    //     {
-    //         if (statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
-    //             continue;
-            
-    //         auto function_statement = static_cast<const binding::BoundFunctionStatement*>(statement.get());
-    //         if (m_interpreter_state.functions.find(function_statement->function_name) == m_interpreter_state.functions.end())
-    //             continue;
-            
-    //         m_interpreter_state.functions.insert({function_statement->function_name, create_label()});
-    //     }
-    // }
 
     std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundBlockStatement *root)
     {
@@ -348,7 +323,6 @@ namespace scc
         {
             auto node = it->get();
             if (statements.size() > 1 &&
-                // node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
                 should_drop_after_statement(node))
             {
                 m_to_lower.push(lowering::DropInstruction());
