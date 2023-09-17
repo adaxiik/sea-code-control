@@ -8,7 +8,7 @@ namespace scc
         {
         }
 
-        InterpreterResult LabelInstruction::execute(InterpreterState &state) const
+        InterpreterResult LabelInstruction::execute(InterpreterState &) const
         {
             return InterpreterError::None;
         }

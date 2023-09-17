@@ -6,7 +6,10 @@ namespace scc
     {
         InterpreterResult IdentifierInstruction::execute(InterpreterState &state) const
         {
-            auto variable = state.scope_stack.get_from_scopestack(identifier);
+            auto variable = state.call_stack.scope_stack().get_from_scopestack(identifier);
+            if (!variable)
+                variable = state.global_scope.get_variable(identifier);
+
             if (!variable)
                 return InterpreterError::VariableDoesntExistError;
 

@@ -47,8 +47,7 @@ namespace scc
         for (auto it = block_statement.statements.rbegin(); it != block_statement.statements.rend(); it++)
         {
             auto node = (*it).get();
-            if (node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
-                should_drop_after_statement(*static_cast<const binding::BoundExpressionStatement*>(node)))
+            if (should_drop_after_statement(node))
             {
                 m_to_lower.push(lowering::DropInstruction());
             }
@@ -64,7 +63,8 @@ namespace scc
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
             variable_value_declaration_statement.initializer != nullptr,
-            variable_value_declaration_statement.is_constant
+            variable_value_declaration_statement.is_constant,
+            variable_value_declaration_statement.is_global
         ));
         
         if (variable_value_declaration_statement.initializer)
@@ -177,7 +177,7 @@ namespace scc
         m_to_lower.push(PushLabels(continue_label, break_label));
     }
 
-    void Lowerer::lower(const binding::BoundBreakStatement &break_statement)
+    void Lowerer::lower(const binding::BoundBreakStatement &)
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
@@ -185,7 +185,7 @@ namespace scc
         m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().break_label));
     }
 
-    void Lowerer::lower(const binding::BoundContinueStatement &continue_statement)
+    void Lowerer::lower(const binding::BoundContinueStatement &)
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
@@ -195,12 +195,54 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundFunctionStatement &function_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundFunctionStatement");
+        if (!function_statement.body)
+            return;
+        
+        Label funtion_end_label = create_label();
+
+        m_to_lower.push(lowering::LabelInstruction(funtion_end_label));
+        m_to_lower.push(lowering::PopScopeInstruction());
+
+        // for missing returns in non void functions should check binder
+        if (function_statement.return_type == Type(Type::Kind::Void))
+            m_to_lower.push(lowering::ReturnInstruction());
+
+
+        auto& statements = function_statement.body->statements;
+        for (auto it = statements.rbegin(); it != statements.rend(); it++)
+        {
+            auto node = (*it).get();
+            if (should_drop_after_statement(node))
+            {
+                m_to_lower.push(lowering::DropInstruction());
+            }
+            m_to_lower.push(node);
+        }
+
+        for (auto it = function_statement.parameters.rbegin(); it != function_statement.parameters.rend(); it++)
+        {
+            m_to_lower.push(lowering::DropInstruction());
+            auto& parameter = *it;
+            m_to_lower.push(lowering::CreateValueVariableInstruction(
+                parameter->variable_name,
+                parameter->type,
+                true,
+                parameter->is_constant,
+                false
+            ));
+        }
+
+        m_to_lower.push(lowering::PushScopeInstruction());
+        m_to_lower.push(lowering::RegisterFunctionInstruction(function_statement.function_name));
+        m_to_lower.push(lowering::GotoInstruction(funtion_end_label));
     }
 
     void Lowerer::lower(const binding::BoundReturnStatement &return_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundReturnStatement");
+        m_to_lower.push(lowering::ReturnInstruction(return_statement.has_return_expression()));
+
+        if (return_statement.has_return_expression())
+            m_to_lower.push(return_statement.return_expression.get());
     }
 
     void Lowerer::lower(const binding::BoundBinaryExpression &binary_expression)
@@ -212,7 +254,7 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundLiteralExpression &literal_expression)
     {
-        m_to_lower.push(lowering::PushLiteralInstruction(literal_expression));
+        m_to_lower.push(lowering::PushLiteralInstruction(literal_expression.type, literal_expression.value));
     }
 
     void Lowerer::lower(const binding::BoundCastExpression &cast_expression)
@@ -243,21 +285,39 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundCallExpression &call_expression)
     {
-        SCC_NOT_IMPLEMENTED("BoundCallExpression");
+        m_to_lower.push(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::Kind::Void)));
+        for (auto& argument: call_expression.arguments)
+            m_to_lower.push(argument.get());
     }
 
-    bool Lowerer::should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement)
+    bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
     {
-        auto node = expression_statement.expression.get();
-        if (node->bound_node_kind() == binding::BoundNodeKind::CallExpression)
+        // TODOOOOO: drop after variable creation as well
+        // auto node = node.expression.get();
+        // if (node->bound_node_kind() == binding::BoundNodeKind::CallExpression)
+        // {
+        //     auto call_expresion = static_cast<const binding::BoundCallExpression*>(node);
+        //     if (call_expresion->type.kind == Type::Kind::Void && 
+        //         !call_expresion->type.is_pointer())
+        //     {
+        //         return false;
+        //     }
+        // }
+
+        if (statement->bound_node_kind() == binding::BoundNodeKind::VariableDeclarationStatement)
+            return true;
+        
+        if (statement->bound_node_kind() != binding::BoundNodeKind::ExpressionStatement)
+            return false;
+
+        auto expression_statement = static_cast<const binding::BoundExpressionStatement*>(statement);
+        auto expression = expression_statement->expression.get();
+        if (expression->bound_node_kind() == binding::BoundNodeKind::CallExpression &&
+            static_cast<const binding::BoundCallExpression*>(expression)->type == Type(Type::Kind::Void))
         {
-            auto call_expresion = static_cast<const binding::BoundCallExpression*>(node);
-            if (call_expresion->type.kind == Type::Kind::Void && 
-                !call_expresion->type.is_pointer())
-            {
-                return false;
-            }
+            return false;    
         }
+
         return true;
     }
 
@@ -266,27 +326,35 @@ namespace scc
         return m_current_label++;
     }
 
-    std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundNode *root)
+    // void Lowerer::pregenerate_function_labels(const binding::BoundBlockStatement &block_statement)
+    // {
+    //     for (const auto& statement: block_statement.statements)
+    //     {
+    //         if (statement->bound_node_kind() != binding::BoundNodeKind::FunctionStatement)
+    //             continue;
+            
+    //         auto function_statement = static_cast<const binding::BoundFunctionStatement*>(statement.get());
+    //         if (m_interpreter_state.functions.find(function_statement->function_name) == m_interpreter_state.functions.end())
+    //             continue;
+            
+    //         m_interpreter_state.functions.insert({function_statement->function_name, create_label()});
+    //     }
+    // }
+
+    std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundBlockStatement *root)
     {
-        if (root->bound_node_kind() == binding::BoundNodeKind::BlockStatement)
+        auto& statements = root->statements;
+        for (auto it = statements.rbegin(); it != statements.rend(); it++)
         {
-            auto& statements = static_cast<const binding::BoundBlockStatement*>(root)->statements;
-            for (auto it = statements.rbegin(); it != statements.rend(); it++)
+            auto node = it->get();
+            if (statements.size() > 1 &&
+                // node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
+                should_drop_after_statement(node))
             {
-                auto node = it->get();
-                if (statements.size() > 1 &&
-                    node->bound_node_kind() == binding::BoundNodeKind::ExpressionStatement &&
-                    should_drop_after_statement(*static_cast<const binding::BoundExpressionStatement*>(node)))
-                {
-                    m_to_lower.push(lowering::DropInstruction());
-                }
-               
-                m_to_lower.push(node);
+                m_to_lower.push(lowering::DropInstruction());
             }
-        }
-        else
-        {
-            m_to_lower.push(root);
+            
+            m_to_lower.push(node);
         }
 
         std::vector<lowering::Instruction> result;

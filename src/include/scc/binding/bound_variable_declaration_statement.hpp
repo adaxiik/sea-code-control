@@ -15,14 +15,17 @@ namespace scc
             std::string variable_name;
             Type type;
             bool is_constant;
+            bool is_global;
 
             BoundVariableDeclarationStatement(
                  std::string variable_name
                 , Type type
-                , bool is_constant = false)
+                , bool is_constant = false
+                , bool is_global = false)
                 : variable_name(std::move(variable_name))
                 , type(type)
                 , is_constant(is_constant)
+                , is_global(is_global)
             {
             }
 
@@ -53,8 +56,9 @@ namespace scc
                  std::string variable_name
                 , Type type
                 , std::unique_ptr<BoundExpression> initializer
-                , bool is_constant = false)
-                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                , bool is_constant = false
+                , bool is_global = false)
+                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
                 , initializer(std::move(initializer))
             {
             }
@@ -62,8 +66,9 @@ namespace scc
             BoundVariableValueDeclarationStatement(
                  std::string variable_name
                 , Type type
-                , bool is_constant = false)
-                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                , bool is_constant = false
+                , bool is_global = false)
+                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
             {
             }
 
@@ -88,8 +93,9 @@ namespace scc
                     , Type type
                     , std::vector<std::unique_ptr<BoundExpression>> initializer
                     , size_t array_size
-                    , bool is_constant = false)
-                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                    , bool is_constant = false
+                    , bool is_global = false)
+                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
                     , initializers(std::move(initializer))
                     , array_size(array_size)
                 {
@@ -99,8 +105,9 @@ namespace scc
                     std::string variable_name
                     , Type type
                     , std::vector<std::unique_ptr<BoundExpression>> initializer
-                    , bool is_constant = false)
-                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                    , bool is_constant = false
+                    , bool is_global = false)
+                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
                     , initializers(std::move(initializer))
                     , array_size(initializer.size())
                 {
@@ -109,8 +116,9 @@ namespace scc
                     std::string variable_name
                     , Type type
                     , size_t array_size
-                    , bool is_constant = false)
-                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                    , bool is_constant = false
+                    , bool is_global = false)
+                    : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
                     , array_size(array_size)
                 {
                 }
@@ -134,8 +142,9 @@ namespace scc
                  std::string variable_name
                 , Type type
                 , std::unique_ptr<BoundExpression> initializer
-                , bool is_constant = false)
-                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                , bool is_constant = false
+                , bool is_global = false)
+                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
                 , initializer(std::move(initializer))
             {
             }
@@ -143,8 +152,9 @@ namespace scc
             BoundVariablePointerDeclarationStatement(
                  std::string variable_name
                 , Type type
-                , bool is_constant = false)
-                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant)
+                , bool is_constant = false
+                , bool is_global = false)
+                : BoundVariableDeclarationStatement(std::move(variable_name), type, is_constant, is_global)
             {
             }
 

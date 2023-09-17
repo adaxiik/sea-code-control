@@ -7,21 +7,12 @@
 namespace scc
 {
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
+    constexpr auto GLOBAL_SCOPE_SIZE = 1 * Memory::MEGABYTE;
     constexpr auto MAIN_FUNCTION_NAME = "main";
     class Interpreter
     {
     public:
-        // Interpreter(): m_memory(0)
-        //              , m_scope_stack(m_memory.allocate(STACK_SIZE) + STACK_SIZE) {} // TODO: 
-
-        Interpreter()
-        : m_state({ 
-            Memory(0),
-            InterpreterScopeStack(m_state.memory.allocate(STACK_SIZE) + STACK_SIZE),
-            {}, // result_stack
-            0,  // instruction_pointer
-            {}  // labels
-        }) {} 
+        Interpreter(): m_state(InterpreterState(0, STACK_SIZE, GLOBAL_SCOPE_SIZE)){}
         ~Interpreter() = default;
         ParserResult parse(const std::string &code);
         InterpreterResult interpret(const std::string &code);
@@ -33,6 +24,7 @@ namespace scc
         Binder m_binder;
         Lowerer m_lowerer;
         InterpreterState m_state;
+        std::vector<lowering::Instruction> m_program;
         
 
         InterpreterResult register_functions(binding::BoundBlockStatement &block_statement);

@@ -1,7 +1,6 @@
 #pragma once
 #include "interpreter_result.hpp"
 #include "interpreter_state.hpp"
-#include "binding/bound_literal_expression.hpp"
 
 namespace scc
 {
@@ -9,8 +8,11 @@ namespace scc
     {
         struct PushLiteralInstruction
         {
-            const binding::BoundLiteralExpression& bound_literal_expression;
-            PushLiteralInstruction(const binding::BoundLiteralExpression& bound_literal_expression) : bound_literal_expression(bound_literal_expression){}
+            const Type type;
+            Type::Value value;
+            PushLiteralInstruction(const Type& type, Type::Value value)
+            : type(type)
+            , value(value) {}
             InterpreterResult execute(InterpreterState &state) const;
         };
     }

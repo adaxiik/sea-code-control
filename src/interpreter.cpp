@@ -73,27 +73,35 @@ namespace scc
         if (binded.is_error())
             return InterpreterError::BindError;
 
-        auto lowered = m_lowerer.lower(binded.get_value());
+        binding::BoundNode* root = binded.get_value();
+        if (root->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
+            return InterpreterError::BindError;
+
+        auto lowered = m_lowerer.lower(static_cast<binding::BoundBlockStatement*>(root));
         debug::instructions_as_text(std::cout, lowered);
 
-        for (size_t i = 0; i < lowered.size(); i++)
+        size_t latest_program_size = m_program.size();
+        std::copy(lowered.begin(), lowered.end(), std::back_inserter(m_program));
+
+        for (size_t i = latest_program_size; i < m_program.size(); i++)
         {
-            if (std::holds_alternative<lowering::LabelInstruction>(lowered[i]))
-                m_state.labels[std::get<lowering::LabelInstruction>(lowered[i]).label] = i;
+            if (std::holds_alternative<lowering::LabelInstruction>(m_program[i]))
+                m_state.labels[std::get<lowering::LabelInstruction>(m_program[i]).label] = i;
+            else if (std::holds_alternative<lowering::RegisterFunctionInstruction>(m_program[i]))
+                m_state.functions[std::get<lowering::RegisterFunctionInstruction>(m_program[i]).function_name] = i;
         }
 
-        for (m_state.instruction_pointer = 0; m_state.instruction_pointer < lowered.size(); m_state.instruction_pointer++)
+        for (m_state.instruction_pointer = latest_program_size; m_state.instruction_pointer < m_program.size(); m_state.instruction_pointer++)
         {
-            auto& instruction = lowered[m_state.instruction_pointer];
+            auto& instruction = m_program[m_state.instruction_pointer];
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
                 return result;
             
-            // TODOO: push to value stack? 
             if (result.has_value())
                 m_state.result_stack.push(result);
 
-            if (m_state.instruction_pointer == lowered.size() - 1)
+            if (m_state.instruction_pointer == m_program.size() - 1)
             {
                 if (!m_state.result_stack.empty())
                 {

@@ -14,11 +14,17 @@ namespace scc
             const Type variable_type;
             const bool has_initializer;
             const bool is_const;
-            CreateValueVariableInstruction(const std::string& variable_name, Type variable_type, bool has_initializer, bool is_const)
+            const bool is_global;
+            CreateValueVariableInstruction(const std::string& variable_name
+                                         , Type variable_type
+                                         , bool has_initializer
+                                         , bool is_const
+                                         , bool is_global)
             : variable_name(variable_name)
             , variable_type(variable_type)
             , has_initializer(has_initializer)
-            , is_const(is_const){}
+            , is_const(is_const)
+            , is_global(is_global){}
             
             InterpreterResult execute(InterpreterState &state) const;
         };

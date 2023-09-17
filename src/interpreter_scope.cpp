@@ -28,7 +28,11 @@ namespace  scc
         return InterpreterScope(m_current_address); 
     }
 
-    
+    Memory::address_t InterpreterScopeStack::current_address() const 
+    { 
+        return m_scopes.back().current_address();
+    }
+
 
     InterpreterScopeStack::InterpreterScopeStack(Memory::address_t start_address)
     {        

@@ -29,7 +29,6 @@ namespace scc
 
     class InterpreterScopeStack : public ScopeStack<InterpreterScope>
     {
-
     public:
         InterpreterScopeStack(Memory::address_t start_address);
         virtual ~InterpreterScopeStack() = default;
@@ -38,6 +37,7 @@ namespace scc
 
         InterpreterResult create_variable(const std::string &name, Type type, size_t size_bytes, bool is_constant);
         std::vector<InterpreterScope> &ref_scopes();
+        Memory::address_t current_address() const;
     };
 
 }

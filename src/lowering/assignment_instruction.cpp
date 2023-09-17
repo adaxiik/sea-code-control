@@ -14,7 +14,10 @@ namespace scc
             auto result = state.result_stack.top();
             state.result_stack.pop();
 
-            auto variable = state.scope_stack.get_from_scopestack(variable_name);
+            auto variable = state.call_stack.scope_stack().get_from_scopestack(variable_name);
+            if (!variable)
+                variable = state.global_scope.get_variable(variable_name);
+
             if (!variable)
                 return InterpreterError::VariableDoesntExistError;
 

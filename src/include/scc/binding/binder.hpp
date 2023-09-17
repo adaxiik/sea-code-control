@@ -59,6 +59,7 @@ namespace scc
         {
             Type return_type;
             std::vector<Type> parameters;
+            bool is_defined;
 
             bool operator==(const FunctionDeclaration &other) const
             {

@@ -6,7 +6,7 @@ namespace scc
     {
         InterpreterResult PushLiteralInstruction::execute(InterpreterState &) const
         {
-            return InterpreterResult::ok(InterpreterResultValue(bound_literal_expression.value, bound_literal_expression.type));
+            return InterpreterResult::ok(InterpreterResultValue(value, type));
         }
     }
 }

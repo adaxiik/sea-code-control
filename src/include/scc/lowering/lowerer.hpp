@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <stack>
+
 #include "lowering/instruction.hpp"
 #include "binding/bound_node.hpp"
 #include "binding/bound_expression_statement.hpp"
@@ -50,7 +51,7 @@ namespace scc
 
         std::stack<ToLower> m_to_lower;
 
-        bool should_drop_after_statement(const binding::BoundExpressionStatement& expression_statement);
+        bool should_drop_after_statement(const binding::BoundStatement* statement);
 
         static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
 
@@ -75,8 +76,7 @@ namespace scc
         void lower(const binding::BoundCallExpression &call_expression);
 
     public:
-        std::vector<lowering::Instruction> lower(const binding::BoundNode *root);
-
+        std::vector<lowering::Instruction> lower(const binding::BoundBlockStatement* root);
         Lowerer(): m_current_label(0) {}
     };
 }

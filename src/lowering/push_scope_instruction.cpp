@@ -6,7 +6,7 @@ namespace scc
     {
         InterpreterResult PushScopeInstruction::execute(InterpreterState &state) const
         {
-            state.scope_stack.push();
+            state.call_stack.push_scope();
             return InterpreterError::None;
         }
     }

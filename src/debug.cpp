@@ -636,10 +636,10 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 13, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 16, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
-                    ss << "BinaryOperation ==>";
+                    ss << "BinaryOperation ==> ";
                     #define CASE_OP_KIND(KIND, OP) \
                         case binding::BoundBinaryExpression::OperatorKind::KIND: \
                             ss << std::quoted(OP); \
@@ -690,7 +690,9 @@ namespace scc
                     ss << "PushScope";
                 },
                 [&](lowering::CreateValueVariableInstruction create_value_variable) {
-                    ss << "CreateValueVariable ==> "<< (create_value_variable.is_const ? "const " : "") << create_value_variable.variable_type \
+                    ss << "CreateValueVariable ==> "<< (create_value_variable.is_global ? "global " : "") \
+                    << (create_value_variable.is_const ? "const " : "") \
+                    << create_value_variable.variable_type \
                     << " " << create_value_variable.variable_name;
                 },
                 [&](lowering::IdentifierInstruction identifer) {
@@ -709,6 +711,15 @@ namespace scc
                     ss << "GotoFalse ==> " << goto_false.label;
                 },[&](lowering::GotoInstruction _goto) {
                     ss << "Goto ==> " << _goto.label;
+                },
+                [&](lowering::ReturnInstruction _return) {
+                    ss << "Return" << (_return.has_return_expression ? " value" : "");
+                },
+                [&](lowering::CallInstruction call) {
+                    ss << "Call ==> " << call.function_name;
+                },
+                [&](lowering::RegisterFunctionInstruction register_function) {
+                    ss << "RegisterFunction ==> " << register_function.function_name;
                 },
             }, instruction);
         }

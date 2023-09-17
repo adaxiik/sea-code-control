@@ -15,6 +15,9 @@
 #include "lowering/goto_false_instruction.hpp"
 #include "lowering/goto_instruction.hpp"
 #include "lowering/label_instruction.hpp"
+#include "lowering/return_instruction.hpp"
+#include "lowering/register_function_instruction.hpp"
+#include "lowering/call_instruction.hpp"
 
 namespace scc
 {
@@ -33,7 +36,10 @@ namespace scc
             GotoTrueInstruction,
             GotoFalseInstruction,
             GotoInstruction,
-            LabelInstruction>;
+            LabelInstruction,
+            ReturnInstruction,
+            RegisterFunctionInstruction,
+            CallInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

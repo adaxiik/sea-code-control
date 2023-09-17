@@ -6,7 +6,7 @@ namespace scc
     {
         InterpreterResult PopScopeInstruction::execute(InterpreterState &state) const
         {
-            state.scope_stack.pop();
+            state.call_stack.pop_scope();
             return InterpreterError::None;
         }
     }

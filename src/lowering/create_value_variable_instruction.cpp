@@ -6,12 +6,25 @@ namespace scc
     {
         InterpreterResult CreateValueVariableInstruction::execute(InterpreterState &state) const
         {
-            auto creation_result = state.scope_stack.create_variable(
-                  variable_name
-                , variable_type
-                , variable_type.size_bytes()
-                , is_const
-            );
+            InterpreterResult creation_result = InterpreterError::None;
+            if (!is_global)
+            {
+                creation_result = state.call_stack.scope_stack().create_variable(
+                    variable_name
+                    , variable_type
+                    , variable_type.size_bytes()
+                    , is_const
+                );
+            }
+            else
+            {
+                creation_result = state.global_scope.create_variable(
+                    variable_name
+                    , variable_type
+                    , variable_type.size_bytes()
+                    , is_const
+                );
+            }
 
             if (creation_result.is_error())
                 return creation_result;
@@ -19,7 +32,10 @@ namespace scc
             if (!has_initializer)
                 return creation_result;
 
-            auto variable = state.scope_stack.get_from_scopestack(variable_name);
+            auto variable = is_global 
+             ? state.global_scope.get_variable(variable_name) 
+             : state.call_stack.scope_stack().get_from_scopestack(variable_name);
+
             if (!variable)
                 return InterpreterError::VariableDoesntExistError;
             
