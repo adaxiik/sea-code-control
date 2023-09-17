@@ -19,6 +19,10 @@
 #include "binding/bound_return_statement.hpp"
 #include "binding/bound_call_expression.hpp"
 
+#include "lowering/binary_operation_instruction.hpp"
+#include "lowering/cast_instruction.hpp"
+#include "lowering/drop_instruction.hpp"
+
 #include "overloaded.hpp"
 
 namespace scc
@@ -627,6 +631,106 @@ namespace scc
                 default:
                     ss << "Unknown error";
                     break;
+            }
+        }
+    
+        void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
+        {
+            static_assert(lowering::InstructionCount == 16, "Update this switch statement");
+            std::visit(overloaded{
+                [&](lowering::BinaryOperationInstruction binary_operation) { 
+                    ss << "BinaryOperation ==> ";
+                    #define CASE_OP_KIND(KIND, OP) \
+                        case binding::BoundBinaryExpression::OperatorKind::KIND: \
+                            ss << std::quoted(OP); \
+                            break;
+
+                        static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 18, "Update this switch statement");
+
+                        switch(binary_operation.operator_kind)
+                        {
+                            CASE_OP_KIND(Addition, "+")
+                            CASE_OP_KIND(Subtraction, "-")
+                            CASE_OP_KIND(Multiplication, "*")
+                            CASE_OP_KIND(Division, "/")
+                            CASE_OP_KIND(Modulo, "%")
+                            CASE_OP_KIND(BitwiseAnd, "&")
+                            CASE_OP_KIND(BitwiseOr, "|")
+                            CASE_OP_KIND(BitwiseXor, "^")
+                            CASE_OP_KIND(BitwiseShiftLeft, "<<")
+                            CASE_OP_KIND(BitwiseShiftRight, ">>")
+                            CASE_OP_KIND(LogicalAnd, "&&")
+                            CASE_OP_KIND(LogicalOr, "||")
+                            CASE_OP_KIND(Equals, "==")
+                            CASE_OP_KIND(NotEquals, "!=")
+                            CASE_OP_KIND(LessThan, "<")
+                            CASE_OP_KIND(GreaterThan, ">")
+                            CASE_OP_KIND(LessThanOrEqual, "<=")
+                            CASE_OP_KIND(GreaterThanOrEqual, ">=")
+                            default:
+                                ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                                break;
+                        }
+
+                        #undef CASE_OP_KIND
+                },
+                [&](lowering::CastInstruction cast) {
+                    ss << "Cast ==> " << cast.type;
+                },
+                [&](lowering::DropInstruction drop) {
+                    ss << "Drop ==> " << drop.count;
+                },
+                [&](lowering::PopScopeInstruction) {
+                    ss << "PopScope";
+                },
+                [&](lowering::PushLiteralInstruction) {
+                    ss << "PushLiteral"; // TODOO: Get value
+                },
+                [&](lowering::PushScopeInstruction) {
+                    ss << "PushScope";
+                },
+                [&](lowering::CreateValueVariableInstruction create_value_variable) {
+                    ss << "CreateValueVariable ==> "<< (create_value_variable.is_global ? "global " : "") \
+                    << (create_value_variable.is_const ? "const " : "") \
+                    << create_value_variable.variable_type \
+                    << " " << create_value_variable.variable_name;
+                },
+                [&](lowering::IdentifierInstruction identifer) {
+                    ss << "Identifer ==> " << identifer.type << " " << identifer.identifier;
+                },
+                [&](lowering::AssignmentInstruction assignment) {
+                    ss << "Assignment ==> " << assignment.variable_name;
+                },
+                [&](lowering::LabelInstruction label) {
+                    ss << "Label ==> " << label.label;
+                },
+                [&](lowering::GotoTrueInstruction goto_true) {
+                    ss << "GotoTrue ==> " << goto_true.label;
+                },
+                [&](lowering::GotoFalseInstruction goto_false) {
+                    ss << "GotoFalse ==> " << goto_false.label;
+                },[&](lowering::GotoInstruction _goto) {
+                    ss << "Goto ==> " << _goto.label;
+                },
+                [&](lowering::ReturnInstruction _return) {
+                    ss << "Return" << (_return.has_return_expression ? " value" : "");
+                },
+                [&](lowering::CallInstruction call) {
+                    ss << "Call ==> " << call.function_name;
+                },
+                [&](lowering::RegisterFunctionInstruction register_function) {
+                    ss << "RegisterFunction ==> " << register_function.function_name;
+                },
+            }, instruction);
+        }
+
+        void instructions_as_text(std::ostream &ss, const std::vector<lowering::Instruction>& instructions)
+        {
+            for (size_t i = 0; i < instructions.size(); i++)
+            {
+                ss << i << ": ";
+                instruction_as_text(ss, instructions[i]);
+                ss << std::endl;
             }
         }
     }

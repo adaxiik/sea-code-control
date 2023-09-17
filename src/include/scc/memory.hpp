@@ -61,7 +61,9 @@ namespace scc
 
             if (real_memory_index + sizeof(T) > m_memory.at(start_address).size)
                 return std::nullopt;
-            
+
+
+            // std::cout << "READ: " << address << " " << *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) << std::endl;   
             return *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]);
         }
 
@@ -77,6 +79,8 @@ namespace scc
         template<typename T>
         bool write(address_t address, T value)
         {
+            // std::cout << "WRITE: " << address << " " << value << std::endl;
+
             static_assert(sizeof(T) <= 8, "T is too big");
             std::optional<address_t> start_address_opt = find_start_of_chunk(address);
             if (!start_address_opt.has_value())

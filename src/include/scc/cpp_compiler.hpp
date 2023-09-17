@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(__clang__)
     #define SCC_CLANG
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -67,3 +69,11 @@
 #else
     #define TRACE()
 #endif
+
+#include <type_traits>
+template <typename T, typename U>
+const T& ikwid_rc (const U& u) // I know what I'm doing reference cast (used for downcasting)
+{
+    static_assert(std::is_base_of_v<U,T>);
+    return *static_cast<const T*>(&u);
+}

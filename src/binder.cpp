@@ -642,6 +642,7 @@ namespace scc
 
 
         bool is_constant = has_qualifier && node.first_named_child().value() == "const";
+        bool is_global = m_scope_stack.is_global_scope();
         auto type_descriptor = node.named_child(type_index).value();
         auto type = Type::from_string(type_descriptor);
         if(!type.has_value())
@@ -659,7 +660,7 @@ namespace scc
         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
         // multidimensional arrays and multidimensional initializer..
         auto& type_scope = m_scope_stack;
-        auto resolve_declarator = [&type, is_constant, &type_scope](const TreeNode &node, int identifier_index, bool has_initializer = false)
+        auto resolve_declarator = [&type, is_constant, &type_scope, is_global](const TreeNode &node, int identifier_index, bool has_initializer = false)
         ->  binding::BinderResult<binding::BoundVariableDeclarationStatement>
         {
             switch (node.named_child(identifier_index).symbol())
@@ -673,7 +674,8 @@ namespace scc
                     return static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(
                          std::make_unique<binding::BoundVariableValueDeclarationStatement>(identifier
                     , type.value()
-                    , is_constant));
+                    , is_constant
+                    , is_global));
                     break;
                 }
                 case Parser::ARRAY_DECLARATOR_SYMBOL:
@@ -718,7 +720,8 @@ namespace scc
                     return static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(std::make_unique<binding::BoundVariableStaticArrayDeclarationStatement>(identifier
                     , type.value()
                     , array_size
-                    , is_constant));
+                    , is_constant
+                    , is_global));
                     break;
                 }
                 case Parser::POINTER_DECLARATOR_SYMBOL:
@@ -739,7 +742,8 @@ namespace scc
 
                     return  static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(std::make_unique<binding::BoundVariablePointerDeclarationStatement>(identifier
                     , type.value()
-                    , is_constant));
+                    , is_constant
+                    , is_global));
 
                     break;
                 }
@@ -1088,7 +1092,7 @@ namespace scc
         
         
         std::vector<std::unique_ptr<binding::BoundVariableDeclarationStatement>> parameters;
-        FunctionDeclaration fn_declaration = {return_type, std::vector<Type>()};
+        FunctionDeclaration fn_declaration = {return_type, std::vector<Type>(), false};
         
         m_scope_stack.push();
         for (size_t i = 0; i < parameter_list.named_child_count(); i++)
@@ -1114,18 +1118,28 @@ namespace scc
                 error.add_diagnostic("Function signature mismatch: " + function_name);
                 return error;
             }
+
+            if (existing_fn_declaration.is_defined)
+            {
+                auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::FunctionAlreadyDefinedError, node));
+                error.add_diagnostic("Function redeclaration: " + function_name);
+                return error;
+            }
         }
         else
         {
             m_functions.insert({function_name, fn_declaration});
         }
 
+
+        // TODOOOOOOOOO: check for missing return statement
         std::unique_ptr<binding::BoundBlockStatement> body = nullptr;
         if (node.last_named_child().symbol() == Parser::COMPOUND_STATEMENT_SYMBOL)
         {
             auto body_result = bind_impl(node.last_named_child());
             BUBBLE_ERROR(body_result);
             body = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_result.release_value().release()));
+            m_functions.at(function_name).is_defined = true;
         }
         m_scope_stack.pop();
         
@@ -1157,6 +1171,13 @@ namespace scc
             return std::make_unique<binding::BoundReturnStatement>(std::make_unique<binding::BoundCastExpression>(expression.release_value()
                                                                 , m_current_function.value().get().return_type));
         }
+
+        if (m_current_function.value().get().return_type != Type(Type::Kind::Void))
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReturnStatementMissingExpressionError, node));
+            return error;
+        }
+
         return std::make_unique<binding::BoundReturnStatement>();
     }
 

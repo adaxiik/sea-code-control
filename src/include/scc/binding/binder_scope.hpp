@@ -37,6 +37,11 @@ namespace scc
                 m_scopes.back().ref_scopes().emplace(name, type);
                 return true;
             }
+
+            bool is_global_scope() const
+            {
+                return m_scopes.size() == 1;
+            }
         };
     }
 }
