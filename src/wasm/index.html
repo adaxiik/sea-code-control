@@ -65,19 +65,27 @@
     <script src="scc.js"></script>
 
     <script>
-        var stdoutBuffer = [];
+        var buffered_stdout = "";
+        function stdout_term(str) {
+            return;
+            buffered_stdout += str;
+            let lines = buffered_stdout.split("\n");
+
+            buffered_stdout = lines.pop();
+            for (let line of lines) {
+                term.writeln(line);
+            }
+        }
+
+        function stderr_term(str) {
+            term.write(str.replace("\n", "\r\n"));
+        }
+
+
         let x = Module({
             onRuntimeInitialized:async function() {
                 Module = await x;
             },
-            stdout(code) {
-                if (code === "\n".charCodeAt(0) && stdoutBuffer !== "") {
-                    term.writeln(new TextDecoder("utf-8").decode(new Uint8Array(stdoutBuffer)));
-                    stdoutBuffer = [];
-                } else {
-                    stdoutBuffer.push(code);
-                }
-            }
         });
     </script>
 
@@ -86,6 +94,8 @@
     <script>
         function run() {
             try {
+                Module.set_stdout_callback("stdout_term");
+                Module.set_stderr_callback("stderr_term");
                 var interpreter = new Module.Interpreter();
                 var output = interpreter.interpret_string(editor.getValue());
 

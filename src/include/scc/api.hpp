@@ -3,10 +3,12 @@
 #ifdef BUILDING_WASM
 
 #include <emscripten/bind.h>
+#include <emscripten.h>
+
 #include "debug.hpp"
 #include "interpreter.hpp"
 #include "parser.hpp"
-
+#include "interpreter_io.hpp"
 namespace scc
 {
     namespace api
@@ -24,6 +26,28 @@ namespace scc
             std::stringstream ss;
             debug::ast_as_puml(ss, parser_result);
             return ss.str();
+        }
+
+        void set_stdout_callback(const std::string& fn_name)
+        {
+            scc::InterpreterIO::set_stdout_callback([fn_name](const char* str) {
+                EM_ASM({
+                    var fn_name = UTF8ToString($0);
+                    var str = UTF8ToString($1);
+                    window[fn_name](str);
+                }, fn_name.c_str(), str);
+            });            
+        }
+
+        void set_stderr_callback(const std::string& fn_name)
+        {
+            scc::InterpreterIO::set_stderr_callback([fn_name](const char* str) {
+                EM_ASM({
+                    var fn_name = UTF8ToString($0);
+                    var str = UTF8ToString($1);
+                    window[fn_name](str);
+                }, fn_name.c_str(), str);
+            });            
         }
     }
 }
@@ -50,6 +74,8 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .function("interpret_parserresult", emscripten::select_overload<scc::InterpreterResult(const scc::ParserResult&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers());
     emscripten::function("debug_ast_as_json", &scc::api::debug_ast_as_json);
     emscripten::function("debug_ast_as_puml", &scc::api::debug_ast_as_puml);
+    emscripten::function("set_stdout_callback", &scc::api::set_stdout_callback, emscripten::allow_raw_pointers());
+    emscripten::function("set_stderr_callback", &scc::api::set_stderr_callback, emscripten::allow_raw_pointers());
 }
 
 #endif

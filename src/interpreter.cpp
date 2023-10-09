@@ -8,6 +8,8 @@
 #include "overloaded.hpp"
 #include "lowering/instruction.hpp"
 
+#include "interpreter_io.hpp"
+
 namespace scc
 {
     ParserResult Interpreter::parse(const std::string &code)
@@ -16,7 +18,7 @@ namespace scc
     }
 
     InterpreterResult Interpreter::interpret(const std::string &code)
-    {
+    {  
         auto parse_result = m_parser.parse(code);
         return interpret(parse_result);
     }
