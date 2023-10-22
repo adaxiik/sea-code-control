@@ -337,7 +337,47 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundForStatement &for_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundForStatement");
+        // for (initializer; condition; increment) { ... } // initializer, condition, increment can be null.. if so, condition is true
+        //   =>
+        // initializer
+        // continue:
+        // condition
+        // goto_false break
+        // ...
+        // increment
+        // goto continue
+        // break:
+
+        Label continue_label = create_label();
+        Label break_label = create_label();
+
+        m_to_lower.push(lowering::PopScopeInstruction());
+        m_to_lower.push(PopLabels());
+
+        m_to_lower.push(lowering::LabelInstruction(break_label));
+        
+        m_to_lower.push(lowering::GotoInstruction(continue_label));
+
+        if (for_statement.increment)
+            m_to_lower.push(for_statement.increment.get());
+        
+        if (for_statement.body)
+            m_to_lower.push(for_statement.body.get());
+                
+        if (for_statement.condition)
+        {
+            m_to_lower.push(lowering::GotoFalseInstruction(break_label));
+            m_to_lower.push(for_statement.condition.get());
+        }
+
+        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        
+        if (for_statement.initializer)
+            m_to_lower.push(for_statement.initializer.get());
+
+        m_to_lower.push(PushLabels(continue_label, break_label));
+        m_to_lower.push(lowering::PushScopeInstruction());
+
     }
 
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
