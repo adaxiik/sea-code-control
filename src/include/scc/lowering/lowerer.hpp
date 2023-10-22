@@ -74,6 +74,8 @@ namespace scc
         void lower(const binding::BoundIdentifierExpression &identifier_expression);
         void lower(const binding::BoundAssignmentExpression &assignment_expression);
         void lower(const binding::BoundCallExpression &call_expression);
+        void lower_user_fn_call(const binding::BoundCallExpression &call_expression);
+        void lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression);
 
     public:
         std::vector<lowering::Instruction> lower(const binding::BoundBlockStatement* root);

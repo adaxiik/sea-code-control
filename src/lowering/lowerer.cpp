@@ -8,6 +8,7 @@
 #include "lowering/cast_instruction.hpp"
 #include "lowering/drop_instruction.hpp"
 #include "lowering/identifier_instruction.hpp"
+#include "lowering/inbuild_functions.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -283,11 +284,55 @@ namespace scc
         m_to_lower.push(assignment_expression.expression.get());
     }
 
-    void Lowerer::lower(const binding::BoundCallExpression &call_expression)
+    void Lowerer::lower_user_fn_call(const binding::BoundCallExpression &call_expression)
     {
         m_to_lower.push(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::Kind::Void)));
         for (auto& argument: call_expression.arguments)
             m_to_lower.push(argument.get());
+    }
+
+    void Lowerer::lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression)
+    {
+        const auto& fn = lowering::inbuild::inbuild_functions.at(call_expression.function_name);
+        m_to_lower.push(lowering::CallInbuildInstruction(call_expression.function_name, fn.inbuild_function, fn.return_type != Type(Type::Kind::Void)));
+        for (auto& argument: call_expression.arguments)
+            m_to_lower.push(argument.get());
+    }
+
+    void Lowerer::lower(const binding::BoundCallExpression &call_expression)
+    {
+
+        if (lowering::inbuild::inbuild_functions.find(call_expression.function_name) == lowering::inbuild::inbuild_functions.end())
+        {
+            // user function
+            lower_user_fn_call(call_expression);
+            return;
+        }
+
+        // inbuild function
+        const auto& function_types = lowering::inbuild::inbuild_functions.at(call_expression.function_name);
+        if (function_types.return_type != call_expression.type)
+        {
+            lower_user_fn_call(call_expression);
+            return;
+        }
+
+        if (function_types.argument_types.size() != call_expression.arguments.size())
+        {
+            lower_user_fn_call(call_expression);
+            return;
+        }
+
+        for (size_t i = 0; i < function_types.argument_types.size(); i++)
+        {
+            if (function_types.argument_types[i] != call_expression.arguments[i]->type)
+            {
+                lower_user_fn_call(call_expression);
+                return;
+            }
+        }
+
+        lower_inbuild_fn_call(call_expression);  
     }
 
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)

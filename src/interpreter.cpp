@@ -51,7 +51,18 @@ namespace scc
                 m_state.functions[std::get<lowering::RegisterFunctionInstruction>(m_program[i]).function_name] = i;
         }
 
-        for (m_state.instruction_pointer = latest_program_size; m_state.instruction_pointer < m_program.size(); m_state.instruction_pointer++)
+        m_state.instruction_pointer = latest_program_size;
+
+        if (m_state.functions.find(MAIN_FUNCTION_NAME) != m_state.functions.end())
+        {
+            m_state.instruction_pointer = m_program.size(); // return address
+            std::visit(
+                lowering::InstructionExecuter(m_state),
+                lowering::Instruction{lowering::CallInstruction(MAIN_FUNCTION_NAME, true)}
+            );
+        }
+
+        for (; m_state.instruction_pointer < m_program.size(); m_state.instruction_pointer++)
         {
             auto& instruction = m_program[m_state.instruction_pointer];
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);

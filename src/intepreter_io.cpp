@@ -21,6 +21,16 @@ namespace scc
             std::cerr << str;
     }
 
+    void InterpreterIO::write_stdout(const std::string& str)
+    {
+        write_stdout(str.c_str());
+    }
+
+    void InterpreterIO::write_stderr(const std::string& str)
+    {
+        write_stderr(str.c_str());
+    }
+
     void InterpreterIO::set_stdout_callback(std::function<void(const char*)> callback)
     {
         stdout_callback = callback;

@@ -636,7 +636,7 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 16, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 17, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==> ";
@@ -717,6 +717,9 @@ namespace scc
                 },
                 [&](lowering::CallInstruction call) {
                     ss << "Call ==> " << call.function_name;
+                },
+                [&](lowering::CallInbuildInstruction call) {
+                    ss << "CallInbuild ==> " << call.function_name;
                 },
                 [&](lowering::RegisterFunctionInstruction register_function) {
                     ss << "RegisterFunction ==> " << register_function.function_name;
