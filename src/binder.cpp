@@ -110,6 +110,13 @@ namespace scc
             if (child.symbol() == Parser::COMMENT_SYMBOL)
                 continue;
 
+            // ====================================================
+            // TODOO: REMOVE THIS LATER!
+            if (child.symbol() == Parser::PREPROC_INCLUDE_SYMBOL)
+                continue;
+            // ====================================================
+
+
             auto binded = bind_impl(child);
             BUBBLE_ERROR(binded);
 
