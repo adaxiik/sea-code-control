@@ -31,7 +31,12 @@ namespace scc
 
         auto binded {m_binder.bind(parse_result.root_node())};
         if (binded.is_error())
+        {
+            std::cerr << static_cast<int>(binded.get_error().kind) << std::endl;
             return InterpreterError::BindError;
+        }
+
+        debug::bound_ast_as_text_tree(std::cout, *binded.get_value());
 
         binding::BoundNode* root = binded.get_value();
         if (root->bound_node_kind() != binding::BoundNodeKind::BlockStatement)

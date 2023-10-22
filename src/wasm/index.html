@@ -95,6 +95,7 @@
             try {
                 Module.set_stdout_callback("stdout_term");
                 Module.set_stderr_callback("stderr_term");
+                buffered_stdout = "";
                 var interpreter = new Module.Interpreter();
                 var output = interpreter.interpret_string(editor.getValue());
 

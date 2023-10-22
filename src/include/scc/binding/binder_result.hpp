@@ -25,6 +25,7 @@ namespace scc
                 ReturnStatementOutsideFunctionError,
                 FunctionAlreadyDefinedError,
                 ReturnStatementMissingExpressionError,
+                UnsupportedForStatementError,
                 // TODOO: Variable already exists / Variable does not exist
                 COUNT
             };

@@ -15,6 +15,7 @@
 #include "binding/bound_continue_statement.hpp"
 #include "binding/bound_function_statement.hpp"
 #include "binding/bound_return_statement.hpp"
+#include "binding/bound_for_statement.hpp"
 
 #include "binding/bound_binary_expression.hpp"
 #include "binding/bound_literal_expression.hpp"
@@ -53,7 +54,7 @@ namespace scc
 
         bool should_drop_after_statement(const binding::BoundStatement* statement);
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17);
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18);
 
         void lower(const binding::BoundExpressionStatement &expression_statement);
         void lower(const binding::BoundBlockStatement &block_statement);
@@ -66,6 +67,7 @@ namespace scc
         void lower(const binding::BoundContinueStatement &continue_statement);
         void lower(const binding::BoundFunctionStatement &function_statement);
         void lower(const binding::BoundReturnStatement &return_statement);
+        void lower(const binding::BoundForStatement &for_statement);
 
         void lower(const binding::BoundBinaryExpression &binary_expression);
         void lower(const binding::BoundLiteralExpression &literal_expression);

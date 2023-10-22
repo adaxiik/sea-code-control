@@ -22,14 +22,15 @@
 #include "binding/bound_continue_statement.hpp"
 #include "binding/bound_function_statement.hpp"
 #include "binding/bound_return_statement.hpp"
-#include <binding/bound_call_expression.hpp>
+#include "binding/bound_call_expression.hpp"
+#include "binding/bound_for_statement.hpp"
 
 namespace scc
 {
     class Binder
     {
         
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -47,6 +48,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundNode, binding::BoundFunctionStatement>, "FunctionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundCallExpression>, "CallExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundReturnStatement>, "ReturnStatement must be derived from BoundStatement"); 
+        static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundForStatement>, "ForStatement must be derived from BoundStatement");
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -83,6 +85,7 @@ namespace scc
                 return !(*this == other);
             }
         };
+
         std::map<std::string, FunctionDeclaration> m_functions;
         std::optional<std::reference_wrapper<const FunctionDeclaration>> m_current_function;
         
@@ -107,6 +110,7 @@ namespace scc
         binding::BinderResult<binding::BoundFunctionStatement> bind_function(const TreeNode &node);
         binding::BinderResult<binding::BoundReturnStatement> bind_return_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundCallExpression> bind_call_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundForStatement> bind_for_statement(const TreeNode &node);
     public:
         Binder(): m_current_function(std::nullopt) { m_scope_stack.push();}
         ~Binder() = default;

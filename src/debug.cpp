@@ -18,6 +18,7 @@
 #include "binding/bound_function_statement.hpp"
 #include "binding/bound_return_statement.hpp"
 #include "binding/bound_call_expression.hpp"
+#include "binding/bound_for_statement.hpp"
 
 #include "lowering/binary_operation_instruction.hpp"
 #include "lowering/cast_instruction.hpp"
@@ -185,7 +186,7 @@ namespace scc
                 ss << "*";            
         }
 
-        // TODOOOO: convert it into multiple functions for each node type
+        // TODOOOOOOOOOO: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {  
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
@@ -203,7 +204,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 17, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18, "Update this switch statement");
                 
                 
                 switch (node.bound_node_kind())
@@ -449,6 +450,40 @@ namespace scc
                         bound_ast_as_text_tree_impl(*call_expression.arguments[i]
                                                     , depth + 1
                                                     , i == call_expression.arguments.size() - 1
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+                case binding::BoundNodeKind::ForStatement:
+                {
+                    auto& for_statement = static_cast<const binding::BoundForStatement&>(node);
+                    ss << "ForStatement" << std::endl;
+                    if (for_statement.initializer)
+                    {
+                        bound_ast_as_text_tree_impl(*for_statement.initializer
+                                                    , depth + 1
+                                                    , false
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    if (for_statement.condition)
+                    {
+                        bound_ast_as_text_tree_impl(*for_statement.condition
+                                                    , depth + 1
+                                                    , false
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    if (for_statement.increment)
+                    {
+                        bound_ast_as_text_tree_impl(*for_statement.increment
+                                                    , depth + 1
+                                                    , false
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    if (for_statement.body)
+                    {
+                        bound_ast_as_text_tree_impl(*for_statement.body
+                                                    , depth + 1
+                                                    , true
                                                     , prefix + (last ? SPACE : DOWN_PIPE));
                     }
                     break;

@@ -16,6 +16,7 @@ namespace scc
             ContinueStatement,
             FunctionStatement,
             ReturnStatement,
+            ForStatement,
 
 
             // Expressions .. see is_statement() 
