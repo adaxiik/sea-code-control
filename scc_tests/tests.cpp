@@ -552,3 +552,33 @@ TEST_CASE("Functions")
     SCC_TEST_IS_OK("int fn_f() { return var; }");
     SCC_TEST_INTERPRET_RESULT(int, 420, "fn_f();");
 }
+#include "interpreter_io.hpp"
+TEST_CASE("stdout and stderr")
+{
+    auto interpreter = scc::Interpreter();
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+    SCC_TEST_IS_OK("void _scc_puti(int i);");
+    SCC_TEST_IS_OK("void _scc_putc(char c);");
+
+    SCC_TEST_IS_OK("_scc_puti(1);");
+    SCC_TEST_IS_OK("_scc_puti(2);");
+
+    SCC_TEST_IS_OK("_scc_putc('a');");
+    SCC_TEST_IS_OK("_scc_putc('b');");
+    SCC_TEST_IS_OK("_scc_putc('\\n');");
+
+    CHECK(ss.str() == "1\n2\nab\n");
+    CHECK(ss_err.str() == "");
+
+    SCC_TEST_IS_OK("int a = 34;");
+    SCC_TEST_IS_OK("_scc_puti(a);");
+    SCC_TEST_IS_OK("a += 35;");
+    SCC_TEST_IS_OK("_scc_puti(a);");
+
+    CHECK(ss.str() == "1\n2\nab\n34\n69\n");
+    CHECK(ss_err.str() == "");
+}

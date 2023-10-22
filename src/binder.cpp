@@ -311,7 +311,42 @@ namespace scc
         }
         else if (node.symbol() == Parser::CHAR_LITERAL_SYMBOL)
         {
-            return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(node.value()[1]));
+            char c_value = 0;
+            std::string node_value = node.value();
+            if (node_value[1] == '\\')
+            {
+                switch (node_value[2])
+                {
+                case 'n':
+                    c_value = '\n';
+                    break;
+                case 't':
+                    c_value = '\t';
+                    break;
+                case 'r':
+                    c_value = '\r';
+                    break;
+                case '0':
+                    c_value = '\0';
+                    break;
+                case '\\':
+                    c_value = '\\';
+                    break;
+                case '\'':
+                    c_value = '\'';
+                    break;
+                case '\"':
+                    c_value = '\"';
+                    break;
+                default:
+                    SCC_UNREACHABLE();
+                }
+            }
+            else
+            {
+                c_value = node_value[1];
+            }
+            return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(c_value));
         }
 
         

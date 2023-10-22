@@ -42,7 +42,7 @@ namespace scc::lowering::inbuild
             return InterpreterError::ReachedUnreachableError;
         
         Type::Primitive::Char val = std::get<Type::Primitive::Char>(value.get_value().value);
-        InterpreterIO::write_stdout(std::string(1, val) + "\n");
+        InterpreterIO::write_stdout(std::string(1, val));
 
         return InterpreterError::None;  
     }
