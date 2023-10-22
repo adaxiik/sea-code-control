@@ -107,6 +107,9 @@ namespace scc
         for (uint32_t i = 0; i < node.named_child_count(); i++)
         {
             auto child = node.named_child(i);
+            if (child.symbol() == Parser::COMMENT_SYMBOL)
+                continue;
+
             auto binded = bind_impl(child);
             BUBBLE_ERROR(binded);
 

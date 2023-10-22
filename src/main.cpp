@@ -57,7 +57,9 @@ int main(int argc, char const *argv[])
 
     if (interpret_result.is_error())
     {
-        std::cerr << "Parse error" << std::endl;
+        std::cerr << "Interpret error" << std::endl;
+        scc::debug::interpreter_error_as_text(std::cerr, interpret_result.get_error());
+        std::cerr << std::endl;
         return 1;
     }
 
