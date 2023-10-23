@@ -1292,6 +1292,8 @@ namespace scc
 
         // for(int i = 0; i < 10; i++)
 
+        m_scope_stack.push();
+
         auto initializer_result = bind_impl(node.named_child(0));
         BUBBLE_ERROR(initializer_result);
 
@@ -1310,6 +1312,8 @@ namespace scc
         BUBBLE_ERROR(body_statement_result);
         if(not body_statement_result.get_value()->is_statement())
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+
+        m_scope_stack.pop();
         
         std::unique_ptr<binding::BoundBlockStatement> body_statement = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_statement_result.release_value().release()));
 
@@ -1347,6 +1351,8 @@ namespace scc
         case Parser::FOR_STATEMENT_SYMBOL:
             return bind_for_statement(node);
         case Parser::IDENTIFIER_SYMBOL:
+        case Parser::NUMBER_LITERAL_SYMBOL:
+        case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
             return bind_expression(node);
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;

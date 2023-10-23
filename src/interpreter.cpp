@@ -33,6 +33,7 @@ namespace scc
         if (binded.is_error())
         {
             std::cerr << static_cast<int>(binded.get_error().kind) << std::endl;
+            std::cerr << binded.get_error().location.row << ":" << binded.get_error().location.column << std::endl;
             return InterpreterError::BindError;
         }
 

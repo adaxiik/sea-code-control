@@ -582,3 +582,51 @@ TEST_CASE("stdout and stderr")
     CHECK(ss.str() == "1\n2\nab\n34\n69\n");
     CHECK(ss_err.str() == "");
 }
+
+TEST_CASE("For statements")
+{
+    auto interpreter = scc::Interpreter();
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+    SCC_TEST_IS_OK("void _scc_puti(int i);");
+    SCC_TEST_IS_OK("void print_num(int i) { _scc_puti(i);}");
+
+    SCC_TEST_IS_OK("for (int i = 0; i < 10; i += 1) { print_num(i); }");
+    CHECK(ss.str() == "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n");
+    CHECK(ss_err.str() == "");
+
+    SCC_TEST_IS_OK("for (;;) {print_num(69); break;}");
+    CHECK(ss.str() == "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n69\n");
+    CHECK(ss_err.str() == "");
+
+    ss.str("");
+    ss_err.str("");
+    SCC_TEST_IS_OK("for (int i = 0; i < 10; i += 1) { if (i == 5) { continue; } print_num(i); }");
+    CHECK(ss.str() == "0\n1\n2\n3\n4\n6\n7\n8\n9\n");
+    CHECK(ss_err.str() == "");
+
+    ss.str("");
+    ss_err.str("");
+    SCC_TEST_IS_OK("int x = 0;");
+    SCC_TEST_IS_OK("for (x = 5; x < 10; x += 2) { print_num(x); }");
+    CHECK(ss.str() == "5\n7\n9\n");
+    CHECK(ss_err.str() == "");
+
+    ss.str("");
+    ss_err.str("");
+
+    SCC_TEST_IS_OK("for (int i = 0; i < 10; i += 1) { if (i == 5 || i == 6) { int i = 90; continue; } print_num(i); }");
+    CHECK(ss.str() == "0\n1\n2\n3\n4\n7\n8\n9\n");
+    CHECK(ss_err.str() == "");
+
+    ss.str("");
+    ss_err.str("");
+
+    SCC_TEST_IS_OK("for (int i = 0; i < 4; i += 1) { for (int j = 0; j < 4; j += 1) { print_num(i * 4 + j); } }");
+    CHECK(ss.str() == "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n");
+
+
+}

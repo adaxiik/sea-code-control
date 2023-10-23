@@ -184,6 +184,7 @@ namespace scc
             SCC_UNREACHABLE();
         
         m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().break_label));
+        m_to_lower.push(lowering::PopScopeInstruction());
     }
 
     void Lowerer::lower(const binding::BoundContinueStatement &)
@@ -192,6 +193,7 @@ namespace scc
             SCC_UNREACHABLE();
         
         m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().continue_label));
+        m_to_lower.push(lowering::PopScopeInstruction());
     }
 
     void Lowerer::lower(const binding::BoundFunctionStatement &function_statement)
@@ -340,14 +342,16 @@ namespace scc
         // for (initializer; condition; increment) { ... } // initializer, condition, increment can be null.. if so, condition is true
         //   =>
         // initializer
-        // continue:
+        // restart:
         // condition
         // goto_false break
         // ...
+        // continue:
         // increment
-        // goto continue
+        // goto restart
         // break:
 
+        Label restart_label = create_label();
         Label continue_label = create_label();
         Label break_label = create_label();
 
@@ -356,10 +360,12 @@ namespace scc
 
         m_to_lower.push(lowering::LabelInstruction(break_label));
         
-        m_to_lower.push(lowering::GotoInstruction(continue_label));
+        m_to_lower.push(lowering::GotoInstruction(restart_label));
 
         if (for_statement.increment)
             m_to_lower.push(for_statement.increment.get());
+        
+        m_to_lower.push(lowering::LabelInstruction(continue_label));
         
         if (for_statement.body)
             m_to_lower.push(for_statement.body.get());
@@ -370,7 +376,7 @@ namespace scc
             m_to_lower.push(for_statement.condition.get());
         }
 
-        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        m_to_lower.push(lowering::LabelInstruction(restart_label));
         
         if (for_statement.initializer)
             m_to_lower.push(for_statement.initializer.get());
