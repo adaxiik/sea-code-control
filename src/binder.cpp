@@ -459,25 +459,28 @@ namespace scc
 
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
+        // okay, this function actually becomes redundat, because TreeSitter is so inconsistent
+        // some functions call this directly so we are adding location here as well
+
         // SCC_UNIMPLEMENTED();
         switch (node.symbol())
         {
         case Parser::BINARY_EXPRESSION_SYMBOL:
-            return bind_binary_expression(node);
+            return bind_binary_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::CAST_EXPRESSION_SYMBOL:
-            return bind_cast_expression(node);
+            return bind_cast_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
-            return bind_parenthesized_expression(node);
+            return bind_parenthesized_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::STRING_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
-            return bind_literal_expression(node);
+            return bind_literal_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::IDENTIFIER_SYMBOL:
-            return bind_identifier_expression(node);
+            return bind_identifier_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
-            return bind_assignment_expression(node);
+            return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::CALL_EXPRESSION_SYMBOL:
-            return bind_call_expression(node);
+            return bind_call_expression(node).add_location_to_value_if_ok(node.location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
@@ -1323,37 +1326,37 @@ namespace scc
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_impl);
-
         switch (node.symbol())
         {
         case Parser::TRANSLATION_UNIT_SYMBOL:
-            return bind_block_statement(node);
+            return bind_block_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::EXPRESSION_STATEMENT_SYMBOL:
-            return bind_expression_statement(node);
+            return bind_expression_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::COMPOUND_STATEMENT_SYMBOL:
-            return bind_block_statement(node);
+            return bind_block_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::DECLARATION_SYMBOL:
-            return bind_declaration(node);
+            return bind_declaration(node).add_location_to_value_if_ok(node.location());
         case Parser::IF_STATEMENT_SYMBOL:
-            return bind_if_statement(node);
+            return bind_if_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::WHILE_STATEMENT_SYMBOL:
-            return bind_while_statement(node);
+            return bind_while_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::DO_STATEMENT_SYMBOL:
-            return bind_do_statement(node);
+            return bind_do_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::BREAK_STATEMENT_SYMBOL:
-            return bind_break_statement(node);
+            return bind_break_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::CONTINUE_STATEMENT_SYMBOL:
-            return bind_continue_statement(node);
+            return bind_continue_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::FUNCTION_DEFINITION_SYMBOL:
-            return bind_function(node);
+            return bind_function(node).add_location_to_value_if_ok(node.location());
         case Parser::RETURN_STATEMENT_SYMBOL:
-            return bind_return_statement(node);
+            return bind_return_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::FOR_STATEMENT_SYMBOL:
-            return bind_for_statement(node);
+            return bind_for_statement(node).add_location_to_value_if_ok(node.location());
         case Parser::IDENTIFIER_SYMBOL:
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
-            return bind_expression(node);
+            // bind_expression already adds location.. so no need to add it again
+            return bind_expression(node); 
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));

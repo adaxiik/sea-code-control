@@ -1,5 +1,6 @@
 #pragma once
-
+#include "location.hpp"
+#include <optional>
 namespace scc
 {
     namespace binding
@@ -38,6 +39,8 @@ namespace scc
 
         struct BoundNode
         {
+            std::optional<Location> location = std::nullopt;
+
             // BoundNodeKind bound_node_kind;
             virtual ~BoundNode() = default;
             virtual BoundNodeKind bound_node_kind() const = 0;
@@ -51,6 +54,11 @@ namespace scc
             bool is_expression() const
             {
                 return !is_statement();
+            }
+
+            void add_location(Location loc)
+            {
+                location = loc;
             }
         };
     }

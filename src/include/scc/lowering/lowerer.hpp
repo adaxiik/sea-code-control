@@ -25,6 +25,8 @@
 #include "binding/bound_assignment_expression.hpp"
 #include "binding/bound_call_expression.hpp"
 
+#include "location.hpp"
+
 namespace scc
 {
     class Lowerer
@@ -47,7 +49,7 @@ namespace scc
 
         // Dirty lowering signals
         using BoundNodeType = const binding::BoundNode *;
-        using InstructionType = lowering::Instruction;
+        using InstructionType = std::pair<lowering::Instruction, std::optional<Location>>;
         using ToLower = std::variant<BoundNodeType, InstructionType, PushLabels, PopLabels>;
 
         std::stack<ToLower> m_to_lower;
@@ -80,7 +82,7 @@ namespace scc
         void lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression);
 
     public:
-        std::vector<lowering::Instruction> lower(const binding::BoundBlockStatement* root);
+        std::vector<std::pair<lowering::Instruction, std::optional<Location>>> lower(const binding::BoundBlockStatement* root);
         Lowerer(): m_current_label(0) {}
     };
 }

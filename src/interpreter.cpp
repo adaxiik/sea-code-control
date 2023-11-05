@@ -43,7 +43,16 @@ namespace scc
         if (root->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
             return InterpreterError::BindError;
 
-        auto lowered = m_lowerer.lower(static_cast<binding::BoundBlockStatement*>(root));
+        auto lowered_with_location = m_lowerer.lower(static_cast<binding::BoundBlockStatement*>(root));
+
+        std::vector<lowering::Instruction> lowered;
+        std::transform(
+            lowered_with_location.begin(),
+            lowered_with_location.end(),
+            std::back_inserter(lowered),
+            [](auto& pair) { return pair.first; }
+        );
+
         debug::instructions_as_text(std::cout, lowered);
 
         size_t latest_program_size = m_program.size();

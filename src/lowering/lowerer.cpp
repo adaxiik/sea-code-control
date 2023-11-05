@@ -43,30 +43,31 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBlockStatement &block_statement)
     {
-        m_to_lower.push(lowering::PopScopeInstruction());
+        // m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), block_statement.location));
+        m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), block_statement.location));
 
         for (auto it = block_statement.statements.rbegin(); it != block_statement.statements.rend(); it++)
         {
             auto node = (*it).get();
             if (should_drop_after_statement(node))
             {
-                m_to_lower.push(lowering::DropInstruction());
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), block_statement.location));
             }
             m_to_lower.push(node);
         }
 
-        m_to_lower.push(lowering::PushScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::PushScopeInstruction(), block_statement.location));
     }
 
     void Lowerer::lower(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration_statement)
     {
-        m_to_lower.push(lowering::CreateValueVariableInstruction(
+        m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
             variable_value_declaration_statement.initializer != nullptr,
             variable_value_declaration_statement.is_constant,
             variable_value_declaration_statement.is_global
-        ));
+        ), variable_value_declaration_statement.location));
         
         if (variable_value_declaration_statement.initializer)
             m_to_lower.push(variable_value_declaration_statement.initializer.get());
@@ -98,9 +99,9 @@ namespace scc
             // end:
 
             Label end_label = create_label();
-            m_to_lower.push(lowering::LabelInstruction(end_label));
+            m_to_lower.push(std::make_pair(lowering::LabelInstruction(end_label), if_statement.location));
             m_to_lower.push(if_statement.then_statement.get());
-            m_to_lower.push(lowering::GotoFalseInstruction(end_label));
+            m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(end_label), if_statement.location));
             m_to_lower.push(if_statement.condition.get());
             return;
         }
@@ -117,12 +118,12 @@ namespace scc
 
         Label else_label = create_label();
         Label end_label = create_label();
-        m_to_lower.push(lowering::LabelInstruction(end_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(end_label), if_statement.location));
         m_to_lower.push(if_statement.else_statement.get());
-        m_to_lower.push(lowering::LabelInstruction(else_label));
-        m_to_lower.push(lowering::GotoInstruction(end_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(else_label), if_statement.location));
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(end_label), if_statement.location));
         m_to_lower.push(if_statement.then_statement.get());
-        m_to_lower.push(lowering::GotoFalseInstruction(else_label));
+        m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(else_label), if_statement.location));
         m_to_lower.push(if_statement.condition.get());
     }
 
@@ -142,13 +143,13 @@ namespace scc
 
         m_to_lower.push(PopLabels());
       
-        m_to_lower.push(lowering::LabelInstruction(break_label));
-        m_to_lower.push(lowering::GotoInstruction(continue_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(break_label), while_statement.location));
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(continue_label), while_statement.location));
         if (while_statement.body)
             m_to_lower.push(while_statement.body.get());
-        m_to_lower.push(lowering::GotoFalseInstruction(break_label));
+        m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(break_label), while_statement.location));
         m_to_lower.push(while_statement.condition.get());
-        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), while_statement.location));
         
         m_to_lower.push(PushLabels(continue_label, break_label));
     }
@@ -168,32 +169,32 @@ namespace scc
 
         m_to_lower.push(PopLabels());
 
-        m_to_lower.push(lowering::LabelInstruction(break_label));
-        m_to_lower.push(lowering::GotoTrueInstruction(continue_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(break_label), do_statement.location));
+        m_to_lower.push(std::make_pair(lowering::GotoTrueInstruction(continue_label), do_statement.location));
         m_to_lower.push(do_statement.condition.get());
         if (do_statement.body)
             m_to_lower.push(do_statement.body.get());
-        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), do_statement.location));
 
         m_to_lower.push(PushLabels(continue_label, break_label));
     }
 
-    void Lowerer::lower(const binding::BoundBreakStatement &)
+    void Lowerer::lower(const binding::BoundBreakStatement & break_statement)
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
         
-        m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().break_label));
-        m_to_lower.push(lowering::PopScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(m_loop_labels.top().break_label), break_statement.location));
+        m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), break_statement.location));
     }
 
-    void Lowerer::lower(const binding::BoundContinueStatement &)
+    void Lowerer::lower(const binding::BoundContinueStatement & continue_statement)
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
         
-        m_to_lower.push(lowering::GotoInstruction(m_loop_labels.top().continue_label));
-        m_to_lower.push(lowering::PopScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(m_loop_labels.top().continue_label), continue_statement.location));
+        m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), continue_statement.location));
     }
 
     void Lowerer::lower(const binding::BoundFunctionStatement &function_statement)
@@ -203,12 +204,12 @@ namespace scc
         
         Label funtion_end_label = create_label();
 
-        m_to_lower.push(lowering::LabelInstruction(funtion_end_label));
-        m_to_lower.push(lowering::PopScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(funtion_end_label), function_statement.location));
+        m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), function_statement.location));
 
         // for missing returns in non void functions should check binder
         if (function_statement.return_type == Type(Type::Kind::Void))
-            m_to_lower.push(lowering::ReturnInstruction());
+            m_to_lower.push(std::make_pair(lowering::ReturnInstruction(), function_statement.location));
 
 
         auto& statements = function_statement.body->statements;
@@ -217,32 +218,32 @@ namespace scc
             auto node = (*it).get();
             if (should_drop_after_statement(node))
             {
-                m_to_lower.push(lowering::DropInstruction());
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), function_statement.location));
             }
             m_to_lower.push(node);
         }
 
         for (auto it = function_statement.parameters.rbegin(); it != function_statement.parameters.rend(); it++)
         {
-            m_to_lower.push(lowering::DropInstruction());
+            m_to_lower.push(std::make_pair(lowering::DropInstruction(), function_statement.location));
             auto& parameter = *it;
-            m_to_lower.push(lowering::CreateValueVariableInstruction(
+            m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
                 parameter->variable_name,
                 parameter->type,
                 true,
                 parameter->is_constant,
                 false
-            ));
+            ), function_statement.location));
         }
 
-        m_to_lower.push(lowering::PushScopeInstruction());
-        m_to_lower.push(lowering::RegisterFunctionInstruction(function_statement.function_name));
-        m_to_lower.push(lowering::GotoInstruction(funtion_end_label));
+        m_to_lower.push(std::make_pair(lowering::PushScopeInstruction(), function_statement.location));
+        m_to_lower.push(std::make_pair(lowering::RegisterFunctionInstruction(function_statement.function_name), function_statement.location));
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(funtion_end_label), function_statement.location));
     }
 
     void Lowerer::lower(const binding::BoundReturnStatement &return_statement)
     {
-        m_to_lower.push(lowering::ReturnInstruction(return_statement.has_return_expression()));
+        m_to_lower.push(std::make_pair(lowering::ReturnInstruction(return_statement.has_return_expression()), return_statement.location));
 
         if (return_statement.has_return_expression())
             m_to_lower.push(return_statement.return_expression.get());
@@ -250,26 +251,26 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundBinaryExpression &binary_expression)
     {
-        m_to_lower.push(lowering::BinaryOperationInstruction(binary_expression.op_kind));
+        m_to_lower.push(std::make_pair(lowering::BinaryOperationInstruction(binary_expression.op_kind), binary_expression.location));
         m_to_lower.push(binary_expression.left.get());
         m_to_lower.push(binary_expression.right.get());
     }
 
     void Lowerer::lower(const binding::BoundLiteralExpression &literal_expression)
     {
-        m_to_lower.push(lowering::PushLiteralInstruction(literal_expression.type, literal_expression.value));
+        m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(literal_expression.type, literal_expression.value), literal_expression.location));
     }
 
     void Lowerer::lower(const binding::BoundCastExpression &cast_expression)
     {
-        m_to_lower.push(lowering::CastInstruction(cast_expression.type));
+        m_to_lower.push(std::make_pair(lowering::CastInstruction(cast_expression.type), cast_expression.location));
         m_to_lower.push(cast_expression.expression.get());
     }
 
     void Lowerer::lower(const binding::BoundParenthesizedExpression &parenthesized_expression)
     {
         if (parenthesized_expression.expressions.size() > 1)
-            m_to_lower.push(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1));
+            m_to_lower.push(std::make_pair(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1), parenthesized_expression.location));
         
         for (const auto& expression: parenthesized_expression.expressions)
             m_to_lower.push(expression.get());
@@ -277,18 +278,18 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundIdentifierExpression &identifier_expression)
     {
-        m_to_lower.push(lowering::IdentifierInstruction(identifier_expression.identifier, identifier_expression.type));
+        m_to_lower.push(std::make_pair(lowering::IdentifierInstruction(identifier_expression.identifier, identifier_expression.type), identifier_expression.location));
     }
 
     void Lowerer::lower(const binding::BoundAssignmentExpression &assignment_expression)
     {
-        m_to_lower.push(lowering::AssignmentInstruction(assignment_expression.identifier));
+        m_to_lower.push(std::make_pair(lowering::AssignmentInstruction(assignment_expression.identifier), assignment_expression.location));
         m_to_lower.push(assignment_expression.expression.get());
     }
 
     void Lowerer::lower_user_fn_call(const binding::BoundCallExpression &call_expression)
     {
-        m_to_lower.push(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::Kind::Void)));
+        m_to_lower.push(std::make_pair(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::Kind::Void)), call_expression.location));
         for (auto& argument: call_expression.arguments)
             m_to_lower.push(argument.get());
     }
@@ -296,7 +297,17 @@ namespace scc
     void Lowerer::lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression)
     {
         const auto& fn = lowering::inbuild::inbuild_functions.at(call_expression.function_name);
-        m_to_lower.push(lowering::CallInbuildInstruction(call_expression.function_name, fn.inbuild_function, fn.return_type != Type(Type::Kind::Void)));
+        
+        m_to_lower.push(
+            std::make_pair(
+                lowering::CallInbuildInstruction(
+                    call_expression.function_name,
+                    fn.inbuild_function,
+                    fn.return_type != Type(Type::Kind::Void)
+                ), 
+            call_expression.location)
+        );
+
         for (auto& argument: call_expression.arguments)
             m_to_lower.push(argument.get());
     }
@@ -355,34 +366,34 @@ namespace scc
         Label continue_label = create_label();
         Label break_label = create_label();
 
-        m_to_lower.push(lowering::PopScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), for_statement.location));
         m_to_lower.push(PopLabels());
 
-        m_to_lower.push(lowering::LabelInstruction(break_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(break_label), for_statement.location));
         
-        m_to_lower.push(lowering::GotoInstruction(restart_label));
+        m_to_lower.push(std::make_pair(lowering::GotoInstruction(restart_label), for_statement.location));
 
         if (for_statement.increment)
             m_to_lower.push(for_statement.increment.get());
         
-        m_to_lower.push(lowering::LabelInstruction(continue_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), for_statement.location));
         
         if (for_statement.body)
             m_to_lower.push(for_statement.body.get());
                 
         if (for_statement.condition)
         {
-            m_to_lower.push(lowering::GotoFalseInstruction(break_label));
+            m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(break_label), for_statement.location));
             m_to_lower.push(for_statement.condition.get());
         }
 
-        m_to_lower.push(lowering::LabelInstruction(restart_label));
+        m_to_lower.push(std::make_pair(lowering::LabelInstruction(restart_label), for_statement.location));
         
         if (for_statement.initializer)
             m_to_lower.push(for_statement.initializer.get());
 
         m_to_lower.push(PushLabels(continue_label, break_label));
-        m_to_lower.push(lowering::PushScopeInstruction());
+        m_to_lower.push(std::make_pair(lowering::PushScopeInstruction(), for_statement.location));
 
     }
 
@@ -411,8 +422,7 @@ namespace scc
         return m_current_label++;
     }
 
-
-    std::vector<lowering::Instruction> Lowerer::lower(const binding::BoundBlockStatement *root)
+    std::vector<std::pair<lowering::Instruction, std::optional<Location>>> Lowerer::lower(const binding::BoundBlockStatement *root)
     {
         auto& statements = root->statements;
         for (auto it = statements.rbegin(); it != statements.rend(); it++)
@@ -421,13 +431,13 @@ namespace scc
             if (statements.size() > 1 &&
                 should_drop_after_statement(node))
             {
-                m_to_lower.push(lowering::DropInstruction());
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), root->location));
             }
             
             m_to_lower.push(node);
         }
 
-        std::vector<lowering::Instruction> result;
+        std::vector<std::pair<lowering::Instruction, std::optional<Location>>> result;
 
         while (!m_to_lower.empty())
         {

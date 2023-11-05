@@ -75,6 +75,8 @@ namespace scc
 
                 escape_string(ss, node.symbol_name());
 
+                ss << "\",\"location\": \"" << node.location().row << ":" << node.location().column;
+
                 ss << "\",\"value\": \"";
                 escape_string(ss, node.value());
                 ss << "\"";
@@ -207,6 +209,9 @@ namespace scc
                 static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18, "Update this switch statement");
                 
                 
+                if (node.location)
+                    ss << node.location.value().row << ":" << node.location.value().column << " ";
+
                 switch (node.bound_node_kind())
                 {
                 case binding::BoundNodeKind::BlockStatement:
