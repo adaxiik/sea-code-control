@@ -28,3 +28,9 @@ body,html{
 .xterm-viewport {
     overflow-y: hidden !important;
 }
+
+.ace_gutter-cell.ace_breakpoint{ 
+    border-radius: 20px 0px 0px 20px;
+    /* Change the color of the breakpoint if you want */
+    box-shadow: 0px 0px 2px 2px #ff0000 inset; 
+}
