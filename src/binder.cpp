@@ -1320,7 +1320,7 @@ namespace scc
         
         std::unique_ptr<binding::BoundBlockStatement> body_statement = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_statement_result.release_value().release()));
 
-        return std::make_unique<binding::BoundForStatement>(std::move(initializer_result.release_value()), std::move(condition), std::move(increment), std::move(body_statement));        
+        return std::make_unique<binding::BoundForStatement>(initializer_result.release_value(), std::move(condition), std::move(increment), std::move(body_statement));        
     }
 
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
@@ -1365,6 +1365,9 @@ namespace scc
 
     binding::BinderResult<binding::BoundNode> Binder::bind(const TreeNode &node)
     {
+        if (node.has_error())
+            return binding::BinderResult<binding::BoundNode>(binding::BinderError(ErrorKind::ParserError, node));
+
         SCC_BINDER_RESULT_TYPE(bind);
         if (node.symbol() != Parser::TRANSLATION_UNIT_SYMBOL)
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));

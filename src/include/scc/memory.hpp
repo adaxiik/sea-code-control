@@ -21,6 +21,10 @@ namespace scc
 
         Memory(address_t offset = DEFAULT_ADDRESS_OFFSET) : m_next_address(offset) {}
         ~Memory() = default;
+        Memory(const Memory&) = delete;
+        Memory(Memory&&) = default;
+        Memory& operator=(const Memory&) = delete;
+        Memory& operator=(Memory&&) = default;
 
         struct MemoryChunk
         {

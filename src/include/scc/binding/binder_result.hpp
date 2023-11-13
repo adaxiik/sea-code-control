@@ -26,6 +26,7 @@ namespace scc
                 FunctionAlreadyDefinedError,
                 ReturnStatementMissingExpressionError,
                 UnsupportedForStatementError,
+                ParserError, // Tree sitter error
                 // TODOO: Variable already exists / Variable does not exist
                 COUNT
             };

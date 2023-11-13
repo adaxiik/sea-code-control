@@ -84,6 +84,8 @@
         let x = Module({
             onRuntimeInitialized:async function() {
                 Module = await x;
+                Module.set_stdout_callback("stdout_term");
+                Module.set_stderr_callback("stderr_term");
             },
         });
     </script>
@@ -92,9 +94,8 @@
 
     <script>
         function run() {
-            try {
-                Module.set_stdout_callback("stdout_term");
-                Module.set_stderr_callback("stderr_term");
+            // editor.setReadOnly(true);
+            try {   
                 buffered_stdout = "";
                 var interpreter = new Module.Interpreter();
                 var output = interpreter.interpret_string(editor.getValue());
@@ -105,6 +106,7 @@
                 interpreter.delete();
                 output.delete();
             }
+            // editor.setReadOnly(false);
         }
 
        

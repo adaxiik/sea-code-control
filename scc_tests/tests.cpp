@@ -7,11 +7,24 @@
 #include <scc/memory.hpp>
 #include <scc/type.hpp>
 
+auto scc_append_and_continue(scc::Interpreter& interpreter, scc::RunningInterpreter& running_interpreter, const std::string& code)
+{
+    auto parsed = interpreter.parse(code);
+    if (parsed.has_error())
+        return scc::InterpreterResult::error(scc::InterpreterError::ParseError);
+    auto binded = interpreter.bind(parsed.root_node());
+    if (binded.is_error())
+        return scc::InterpreterResult::error(scc::InterpreterError::BindError);
+    auto lowered = interpreter.lower(static_cast<scc::binding::BoundBlockStatement*>(binded.get_value()));
+    return running_interpreter.append_code(lowered).continue_execution();
+}
+
+#define SCC_APPEND_AND_CONTINUE(CODE) scc_append_and_continue(interpreter, running_interpreter, CODE)
 
 #define SCC_TEST_TYPE(TYPE, VALUE) \
     do \
     {  \
-        auto result = interpreter.interpret(#VALUE ";"); \
+        auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
     }while(0)
@@ -19,7 +32,7 @@
 #define SCC_TEST_TYPE_PTR(TYPE,PTR_DEPTH, VALUE) \
     do \
     {  \
-        auto result = interpreter.interpret(#VALUE ";"); \
+        auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
         CHECK(result.get_value().type.pointer_depth == PTR_DEPTH); \
@@ -28,7 +41,7 @@
 #define SCC_TEST_TYPE_AUTO(VALUE) \
     do \
     {  \
-        auto result = interpreter.interpret(#VALUE ";"); \
+        auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::deduce_type<decltype(VALUE)>().kind); \
     }while(0)
@@ -36,13 +49,13 @@
 #define SCC_TEST_IS_ERROR(VALUE) \
     do \
     {  \
-        auto result = interpreter.interpret(VALUE); \
+        auto result = SCC_APPEND_AND_CONTINUE(VALUE); \
         CHECK(result.is_error()); \
     }while(0)
 
 #define SCC_TEST_INTERPRET_RESULT(CTYPE, EXPECTED_VALUE, CODE) \
     do{ \
-        auto result = interpreter.interpret(CODE); \
+        auto result = SCC_APPEND_AND_CONTINUE(CODE); \
         CHECK(result.is_ok_and_has_value()); \
         CHECK(result.get_value().type.kind == scc::Type::deduce_type<CTYPE>().kind); \
         CHECK(std::get<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
@@ -50,7 +63,7 @@
 
 #define SCC_TEST_IS_OK(CODE) \
     do{ \
-        auto result = interpreter.interpret(CODE); \
+        auto result = SCC_APPEND_AND_CONTINUE(CODE); \
         CHECK(result.is_ok()); \
     }while(0)
 
@@ -72,14 +85,21 @@
         CHECK(binded.is_error()); \
     }while(0)
 
+
+
+
+
 TEST_CASE("Single Expressions")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+
 
     SUBCASE("Failed to parse")
     {
         SCC_TEST_IS_ERROR("1 + ;");
-        CHECK(interpreter.interpret("1").is_error());
+        CHECK(SCC_APPEND_AND_CONTINUE("1").is_error());
     }
 
     SUBCASE("Literals")
@@ -368,17 +388,19 @@ TEST_CASE("Memory alloc and free")
 TEST_CASE("Scopes")
 {
     auto interpreter = scc::Interpreter();
-    auto a = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int a;"));
-    auto b = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("int b;"));
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    auto a = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("int a;"));
+    auto b = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("int b;"));
 
     CHECK(a != b);
     CHECK(a == b + sizeof(int));
-    CHECK(interpreter.interpret("int a;").is_error());
-    CHECK(interpreter.interpret("int b;").is_error());
+    CHECK(SCC_APPEND_AND_CONTINUE("int a;").is_error());
+    CHECK(SCC_APPEND_AND_CONTINUE("int b;").is_error());
 
     // TODOOO: hook on assert
-    // auto c1 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
-    // auto c2 = SCC_GET_PTR_FROM_RESULT(interpreter.interpret("{int c;}"));
+    // auto c1 = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("{int c;}"));
+    // auto c2 = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("{int c;}"));
     // CHECK(c1 == c2);
     // CHECK(b == c1 + sizeof(int));
 }
@@ -386,6 +408,8 @@ TEST_CASE("Scopes")
 TEST_CASE("Assignments")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
     SCC_TEST_IS_ERROR("a;"); // undeclared
     SCC_TEST_IS_OK("int a;");
     SCC_TEST_IS_ERROR("a;"); // not initialized
@@ -409,6 +433,8 @@ TEST_CASE("If statement")
     SUBCASE("Simple")
     {
         auto interpreter = scc::Interpreter();
+        auto running_interpreter = scc::RunningInterpreter({});
+
         SCC_TEST_IS_OK("int a = 0;");
         SCC_TEST_IS_OK("int b = 0;");
 
@@ -451,6 +477,8 @@ TEST_CASE("If statement")
     SUBCASE("Shadowing")
     {
         auto interpreter = scc::Interpreter();
+        auto running_interpreter = scc::RunningInterpreter({});
+        
         SCC_TEST_IS_OK("int a = 10;");
         SCC_TEST_IS_OK("if (1) { int a = 20; }");
         SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
@@ -460,6 +488,8 @@ TEST_CASE("If statement")
 TEST_CASE("While and Do statements")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
     SCC_TEST_IS_OK("int a = 0;");
     SCC_TEST_IS_OK("int b = 0;");
 
@@ -513,6 +543,8 @@ TEST_CASE("While and Do statements")
 TEST_CASE("Functions")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
     SCC_TEST_IS_OK("int fn_a();");
     SCC_TEST_IS_ERROR("fn_a();");
     SCC_TEST_IS_OK("int fn_a() { return 1; }");
@@ -556,6 +588,8 @@ TEST_CASE("Functions")
 TEST_CASE("stdout and stderr")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
     std::stringstream ss;
     std::stringstream ss_err;
     scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
@@ -586,6 +620,8 @@ TEST_CASE("stdout and stderr")
 TEST_CASE("For statements")
 {
     auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
     std::stringstream ss;
     std::stringstream ss_err;
     scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });

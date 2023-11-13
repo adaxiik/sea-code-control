@@ -25,6 +25,7 @@ namespace scc
         IncosistentFunctionSignatureError,
         MissingReturnStatementError,
         MissingReturnValueError,
+        BreakpointReachedError,
         COUNT
     };
 
