@@ -220,6 +220,14 @@ namespace scc
         };
     }
 
+    Interpreter::RunningInterpreterCreationResult Interpreter::interpret(const LocationAnotatedProgram& program)
+    {
+        return RunningInterpreterCreationResult{
+            RunningInterpreter(program),
+            std::nullopt
+        };
+    }
+
 
     std::optional<LocationAnotatedProgram> Interpreter::compile_or_nothing(const std::string& code)
     {

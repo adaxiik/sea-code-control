@@ -50,6 +50,14 @@ namespace scc
         // InterpreterResult run();
         InterpreterResult continue_execution();
         InterpreterResult next();
+
+        // InterpreterResult continue_execution(){
+        //     return InterpreterResult::error(InterpreterError::None);
+        // }
+
+        // InterpreterResult next(){
+        //     return InterpreterResult::error(InterpreterError::None);
+        // }
         
         Breakpoints& breakpoints();
     private:  
@@ -59,6 +67,7 @@ namespace scc
         Breakpoints m_breakpoints;
     };
 
+    
 
     class Interpreter
     {
@@ -68,9 +77,8 @@ namespace scc
             std::optional<RunningInterpreter> running_interpreter;
             std::optional<binding::BinderError> binder_error;
             bool is_error() const { return binder_error.has_value(); }
-            RunningInterpreter&& value() { return std::move(running_interpreter.value()); }
+            RunningInterpreter value() { return std::move(running_interpreter.value()); }
         };
-
 
         ParserResult parse(const std::string &code);
         binding::BinderResult<binding::BoundNode> bind(const TreeNode& root_node);
@@ -81,6 +89,7 @@ namespace scc
         RunningInterpreterCreationResult interpret(const std::string &code);
         RunningInterpreterCreationResult interpret(const ParserResult &parse_result);
         RunningInterpreterCreationResult interpret(const binding::BinderResult<binding::BoundNode>& bind_result);
+        RunningInterpreterCreationResult interpret(const LocationAnotatedProgram& program);
         RunningInterpreterCreationResult interpret();
 
     private:
