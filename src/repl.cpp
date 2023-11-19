@@ -47,6 +47,8 @@ namespace scc
 
     void REPL::run()
     {
+        auto running_interpreter = m_interpreter.interpret().value();
+
         std::string line;
         do
         {
@@ -102,7 +104,28 @@ namespace scc
                 continue;
             }
 
-            auto result = m_interpreter.interpret(parse_result);
+            auto bind_result = m_interpreter.bind(parse_result.root_node());
+            if (bind_result.is_error())
+            {
+                m_output_stream << RED << "Bind error" << RESET << std::endl;
+                continue;
+            }
+
+            auto lower_result = m_interpreter.lower(static_cast<binding::BoundBlockStatement*>(bind_result.get_value()));
+            {
+                std::vector<lowering::Instruction> lowered;
+                std::transform(
+                    lower_result.begin(),
+                    lower_result.end(),
+                    std::back_inserter(lowered),
+                    [](auto& pair) { return pair.first; }
+                );
+                debug::instructions_as_text(std::cout, lowered);
+            }
+            
+            // running_interpreter.append_code(lower_result);
+
+            auto result = running_interpreter.continue_execution();
 
             if (result.is_ok_and_has_value())
             {

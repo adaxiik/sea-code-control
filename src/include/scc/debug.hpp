@@ -15,6 +15,7 @@
 #include "memory.hpp"
 #include "interpreter_result.hpp"
 #include "lowering/instruction.hpp"
+#include "interpreter.hpp"
 
 namespace scc
 {
@@ -39,5 +40,6 @@ namespace scc
 
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction);
         void instructions_as_text(std::ostream &ss, const std::vector<lowering::Instruction>& instructions);
+        void instructions_as_text(std::ostream &ss, const LocationAnotatedProgram& instructions);
     } 
 } 

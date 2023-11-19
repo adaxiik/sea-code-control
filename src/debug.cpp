@@ -608,7 +608,7 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 19, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 20, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:
@@ -667,6 +667,9 @@ namespace scc
                     break;
                 case InterpreterError::MissingReturnValueError:
                     ss << "Missing return value error";
+                    break;
+                case InterpreterError::BreakpointReachedError:
+                    ss << "Breakpoint reached error";
                     break;
                 default:
                     ss << "Unknown error";
@@ -773,6 +776,18 @@ namespace scc
             {
                 ss << i << ": ";
                 instruction_as_text(ss, instructions[i]);
+                ss << std::endl;
+            }
+        }
+
+        void instructions_as_text(std::ostream &ss, const LocationAnotatedProgram& instructions)
+        {
+            for (size_t i = 0; i < instructions.size(); i++)
+            {
+                ss << i << ": ";
+                if (instructions[i].second.has_value())
+                    ss << instructions[i].second.value().row << ":" << instructions[i].second.value().column << " ";
+                instruction_as_text(ss, instructions[i].first);
                 ss << std::endl;
             }
         }

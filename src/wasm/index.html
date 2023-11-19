@@ -29,8 +29,10 @@
 <body>
     <div id="window">
         <div id="controls">
-            <button onclick="run()">Run</button>
-            <button onclick="term.clear()">Clear</button>
+            <button id="run" onclick="run()">Run</button>
+            <button hidden id="continue" onclick="continue_execution()">Continue</button>
+            <button hidden id="next" onclick="next()">Next</button>
+            <button id="clear" style="margin-left: 1em;" onclick="term.clear()">Clear</button>
         </div>
         <div id="layout"></div>
     </div>
@@ -84,6 +86,8 @@
         let x = Module({
             onRuntimeInitialized:async function() {
                 Module = await x;
+                Module.set_stdout_callback("stdout_term");
+                Module.set_stderr_callback("stderr_term");
             },
         });
     </script>
@@ -91,22 +95,126 @@
 
 
     <script>
-        function run() {
-            try {
-                Module.set_stdout_callback("stdout_term");
-                Module.set_stderr_callback("stderr_term");
-                buffered_stdout = "";
-                var interpreter = new Module.Interpreter();
-                var output = interpreter.interpret_string(editor.getValue());
+        function delete_if_exists(obj) {
+            if (obj) {
+                obj.delete();
+            }
+            return null;
+        }
 
-            } catch (e) {
-                console.log(e);
-            } finally {
-                interpreter.delete();
-                output.delete();
+        function hide_by_id(id) {
+            document.getElementById(id).hidden = true;
+        }
+        function show_by_id(id) {
+            document.getElementById(id).hidden = false;
+        }
+
+        function interpreter_reset() {
+            interpreter = delete_if_exists(interpreter);
+            running_interpreter = delete_if_exists(running_interpreter);
+            hide_by_id("continue");
+            hide_by_id("next");
+            show_by_id("run");
+            editor.setReadOnly(false);
+        }
+
+        function add_breakpoints_to_running_interpreter(running_interpreter) {
+            let breakpoints = editor.session.getBreakpoints();
+            for (let i = 0; i < breakpoints.length; i++) {
+                if (breakpoints[i]) {
+                    running_interpreter.breakpoints().add(i);
+                }
             }
         }
 
+        function remove_all_markers() {
+            // https://stackoverflow.com/questions/65677814/how-to-remove-all-the-existing-highlight-markers-in-ace-editor-using-react
+            const markers = editor.session.getMarkers();
+            if (markers) {
+                const prevMarkersArr = Object.keys(markers);
+                for (let item of prevMarkersArr) {
+                    if (markers[item].clazz === 'line-highlight'){
+                        editor.session.removeMarker(markers[item].id);
+                    }
+                }
+            }
+        }
+
+        var interpreter = null;
+        var running_interpreter = null;
+        function run() {
+            interpreter = delete_if_exists(interpreter);
+            running_interpreter = delete_if_exists(running_interpreter);
+
+            editor.setReadOnly(true);
+            try {   
+                buffered_stdout = "";
+                interpreter = new Module.Interpreter();
+                let running_interpreter_creation_result = interpreter.interpret_string(editor.getValue());
+                if (running_interpreter_creation_result.is_error()){
+                    throw "Error creating interpreter";
+                } 
+                running_interpreter = running_interpreter_creation_result.value();
+                add_breakpoints_to_running_interpreter(running_interpreter);
+
+                hide_by_id("run");
+                show_by_id("continue");
+                show_by_id("next");
+                continue_execution();
+            } catch (e) {
+                console.log(e);
+                interpreter_reset();
+            } 
+
+        }
+        
+        function continue_execution() {
+            try {
+                remove_all_markers();
+
+                let result = running_interpreter.continue_execution();
+                if (result.is_ok()){
+                    console.log("Execution finished");
+                    interpreter_reset();
+                    return;
+                }
+                
+                let error = result.get_error();
+                if (error == Module.InterpreterError.BreakpointReachedError){
+                    console.log("Breakpoint reached");
+                    let current_line = Module.get_location_row(running_interpreter.current_location());
+                    editor.gotoLine(current_line + 1);
+                    editor.session.addMarker(new ace.Range(current_line, 0, current_line, 1), "line-highlight", "fullLine");
+                    return;
+                }
+
+                console.log("Error during interpreting: " + Module.debug_interpreter_error_as_text(error));
+                interpreter_reset();
+            } catch (e) {
+                console.log(e);
+                interpreter_reset();
+            } 
+        }
+
+        function next(){
+            try {
+                remove_all_markers();
+
+                let result = running_interpreter.next();
+                if (result.is_error()){
+                    throw Module.debug_interpreter_error_as_text(result.get_error());
+                }                
+
+                let current_line = Module.get_location_row(running_interpreter.current_location());
+                editor.gotoLine(current_line + 1);
+                editor.session.addMarker(new ace.Range(current_line, 0, current_line, 1), "line-highlight", "fullLine");
+
+            } catch (e) {
+                console.log(e);
+                interpreter_reset();
+            } 
+        
+        }
        
 
         // let x = Module({

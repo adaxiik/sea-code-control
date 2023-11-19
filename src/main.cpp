@@ -53,7 +53,17 @@ int main(int argc, char const *argv[])
         puml_file << puml.str();
     }
 
-    auto interpret_result = interpreter.interpret(parse_result);
+    auto running_intepreter_result = interpreter.interpret(parse_result);
+    if (running_intepreter_result.is_error())
+    {
+        auto binder_error = running_intepreter_result.binder_error;
+        std::cerr << "Binder error" << std::endl;
+
+        return 1;
+    }
+
+    auto running_interpreter = running_intepreter_result.value();
+    auto interpret_result = running_interpreter.continue_execution();
 
     if (interpret_result.is_error())
     {
