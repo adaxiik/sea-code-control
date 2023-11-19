@@ -11,6 +11,7 @@ namespace scc
         Breakpoints& remove(BreakLineNumber line_number);
         bool contains(BreakLineNumber line_number) const;
         void clear();
+        size_t size() const;
 
     private:
         std::set<BreakLineNumber> m_breakpoints;

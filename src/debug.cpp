@@ -779,5 +779,17 @@ namespace scc
                 ss << std::endl;
             }
         }
+
+        void instructions_as_text(std::ostream &ss, const LocationAnotatedProgram& instructions)
+        {
+            for (size_t i = 0; i < instructions.size(); i++)
+            {
+                ss << i << ": ";
+                if (instructions[i].second.has_value())
+                    ss << instructions[i].second.value().row << ":" << instructions[i].second.value().column << " ";
+                instruction_as_text(ss, instructions[i].first);
+                ss << std::endl;
+            }
+        }
     }
 }

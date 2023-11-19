@@ -17,7 +17,11 @@ int main()
     a += 35;
     _scc_puti(a);
 
-    _scc_putc('E');
+    for (int i = 'a'; i < 'z'; i+=1)
+    {
+        _scc_putc(i);
+    }
+    _scc_putc('\\n');
         
     return 0;
 }

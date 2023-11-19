@@ -23,4 +23,10 @@ namespace scc
     {
         m_breakpoints.clear();
     }
+
+    size_t Breakpoints::size() const
+    {
+        return m_breakpoints.size();
+    }
+
 }

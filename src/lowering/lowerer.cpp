@@ -51,7 +51,7 @@ namespace scc
             auto node = (*it).get();
             if (should_drop_after_statement(node))
             {
-                m_to_lower.push(std::make_pair(lowering::DropInstruction(), block_statement.location));
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), node->location));
             }
             m_to_lower.push(node);
         }
@@ -218,7 +218,7 @@ namespace scc
             auto node = (*it).get();
             if (should_drop_after_statement(node))
             {
-                m_to_lower.push(std::make_pair(lowering::DropInstruction(), function_statement.location));
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), node->location));
             }
             m_to_lower.push(node);
         }
@@ -431,7 +431,7 @@ namespace scc
             if (statements.size() > 1 &&
                 should_drop_after_statement(node))
             {
-                m_to_lower.push(std::make_pair(lowering::DropInstruction(), root->location));
+                m_to_lower.push(std::make_pair(lowering::DropInstruction(), node->location));
             }
             
             m_to_lower.push(node);

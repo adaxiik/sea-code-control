@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <variant>
+#include <numeric>
+
 #include "debug.hpp"
 #include "cpp_compiler.hpp"
 #include "operation_result.hpp"
@@ -201,15 +203,16 @@ namespace scc
         auto lowered_with_location = m_lowerer.lower(static_cast<binding::BoundBlockStatement*>(root));
 
         {
-            std::vector<lowering::Instruction> lowered;
-            std::transform(
-                lowered_with_location.begin(),
-                lowered_with_location.end(),
-                std::back_inserter(lowered),
-                [](auto& pair) { return pair.first; }
-            );
+            // std::vector<lowering::Instruction> lowered;
+            // std::transform(
+            //     lowered_with_location.begin(),
+            //     lowered_with_location.end(),
+            //     std::back_inserter(lowered),
+            //     [](auto& pair) { return pair.first; }
+            // );
 
-            debug::instructions_as_text(std::cout, lowered);
+            // debug::instructions_as_text(std::cout, lowered);
+            debug::instructions_as_text(std::cout, lowered_with_location);
         }
         
         // this doesnt have copy constructor
@@ -278,6 +281,8 @@ namespace scc
 
     RunningInterpreter::RunningInterpreter(const LocationAnotatedProgram& program)
         : m_state(InterpreterState(0, STACK_SIZE, GLOBAL_SCOPE_SIZE))
+        , m_current_location{0, 0}
+        , m_continuing_after_breakpoint(false)
     {
         append_code(program);
     }
@@ -307,7 +312,7 @@ namespace scc
     InterpreterResult RunningInterpreter::continue_execution()
     {
 
-        if (m_state.functions.find(MAIN_FUNCTION_NAME) != m_state.functions.end())
+        if (m_state.functions.find(MAIN_FUNCTION_NAME) != m_state.functions.end() and (m_state.instruction_pointer == 0))
         {
             m_state.instruction_pointer = m_program.size(); // return address
             std::visit(
@@ -319,11 +324,30 @@ namespace scc
         // auto call_stack = m_state.call_stack;
         // auto global_scope = m_state.global_scope;
 
+        std::cout << m_state.instruction_pointer << std::endl;
+
         for (; m_state.instruction_pointer < m_program.size(); )
         {
-            const auto& [instruction, location] = m_program[m_state.instruction_pointer++];
+            const auto& [instruction, location] = m_program[m_state.instruction_pointer];  
+
+            bool should_break = false;
             if (location.has_value())
+            {
+                should_break = m_current_location.row != location.value().row;
                 m_current_location = location.value();
+            }
+
+            if (
+                m_breakpoints.contains(m_current_location.row) 
+                and not m_continuing_after_breakpoint
+                and should_break
+            ){
+                m_continuing_after_breakpoint = true;
+                return InterpreterError::BreakpointReachedError;
+            }
+
+            m_continuing_after_breakpoint = false;
+            m_state.instruction_pointer++;
 
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
@@ -346,6 +370,7 @@ namespace scc
                     return top;
                 }
             }
+
         }
         
         return InterpreterError::None;
@@ -353,38 +378,40 @@ namespace scc
 
     InterpreterResult RunningInterpreter::next()
     {
-        const auto& [instruction, location] = m_program[m_state.instruction_pointer];
-        if (location.has_value())
-            m_current_location = location.value();
 
-        auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
-        if (result.is_error())
-            return result;
-        
-        if (result.has_value())
-            m_state.result_stack.push(result);
-
-        if (m_state.instruction_pointer == m_program.size() - 1)
+        auto last_location = m_current_location;
+        std::cout << last_location.row << std::endl;
+        while (true)
         {
-            if (!m_state.result_stack.empty())
+            const auto& [instruction, location] = m_program[m_state.instruction_pointer];
+            if (location.has_value())
+                m_current_location = location.value();
+
+            if (m_current_location.row != last_location.row)
+                break;
+
+            auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
+            if (result.is_error())
+                return result;
+            
+            if (result.has_value())
+                m_state.result_stack.push(result);
+
+            if (m_state.instruction_pointer == m_program.size() - 1)
             {
-                auto top = m_state.result_stack.top();
-                m_state.result_stack.pop();
-                return top;
+                if (!m_state.result_stack.empty())
+                {
+                    auto top = m_state.result_stack.top();
+                    m_state.result_stack.pop();
+                    return top;
+                }
             }
+
+            m_state.instruction_pointer++;
         }
 
-        m_state.instruction_pointer++;
+       
         return InterpreterError::None;
     }
-
-    Breakpoints& RunningInterpreter::breakpoints()
-    {
-        return m_breakpoints;
-    }
-
-
-
-
 
 }

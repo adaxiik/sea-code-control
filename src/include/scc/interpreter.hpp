@@ -47,24 +47,22 @@ namespace scc
 
         RunningInterpreter& append_code(const LocationAnotatedProgram& program);
 
-        // InterpreterResult run();
         InterpreterResult continue_execution();
         InterpreterResult next();
 
-        // InterpreterResult continue_execution(){
-        //     return InterpreterResult::error(InterpreterError::None);
-        // }
+        #ifndef BUILDING_WASM
+        Breakpoints& breakpoints() { return m_breakpoints; }
+        #else
+        // WTF, whyyy.. It took me a while to figure out
+        Breakpoints* breakpoints() { return &m_breakpoints; }
+        #endif
 
-        // InterpreterResult next(){
-        //     return InterpreterResult::error(InterpreterError::None);
-        // }
-        
-        Breakpoints& breakpoints();
     private:  
         InterpreterState m_state;
         Location m_current_location;
         LocationAnotatedProgram m_program;
         Breakpoints m_breakpoints;
+        bool m_continuing_after_breakpoint;
     };
 
     
