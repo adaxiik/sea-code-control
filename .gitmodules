@@ -1,3 +1,0 @@
-[submodule "src/wasm/3rdparty/VisualizerBP"]
-	path = src/wasm/3rdparty/VisualizerBP
-	url = git@github.com:anevrly/VisualizerBP.git
