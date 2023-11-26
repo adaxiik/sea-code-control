@@ -324,6 +324,8 @@ namespace scc
         // auto call_stack = m_state.call_stack;
         // auto global_scope = m_state.global_scope;
 
+        std::cout << m_state.instruction_pointer << std::endl;
+
         for (; m_state.instruction_pointer < m_program.size(); )
         {
             const auto& [instruction, location] = m_program[m_state.instruction_pointer];  
@@ -378,6 +380,7 @@ namespace scc
     {
 
         auto last_location = m_current_location;
+        std::cout << last_location.row << std::endl;
         while (true)
         {
             const auto& [instruction, location] = m_program[m_state.instruction_pointer];
