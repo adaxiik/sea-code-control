@@ -666,3 +666,83 @@ TEST_CASE("For statements")
 
 
 }
+
+TEST_CASE("Breakpoints")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+    std::string code = R"(
+        void _scc_puti(int i);      // 1
+        void print(int a, int b) {  // 2
+            _scc_puti(a);           // 3
+            _scc_puti(b);           // 4
+        }                           // 5
+        int a = 34;                 // 6
+        int b = 0;                  // 7
+        print(a, b);                // 8
+        a += 35;                    // 9
+        print(a, b);                // 10
+        b = a;                      // 11
+        print(a, b);                // 12
+    )";
+
+    SUBCASE("Without breakpoints")
+    {
+        SCC_TEST_IS_OK(code);
+        CHECK(ss.str() == "34\n0\n69\n0\n69\n69\n");
+        CHECK(ss_err.str() == "");
+    }
+
+    SUBCASE("With breakpoints")
+    {
+        running_interpreter.breakpoints().add(8);
+        running_interpreter.breakpoints().add(10);
+        running_interpreter.breakpoints().add(12);
+
+        SCC_TEST_IS_ERROR(code); // breakpoint reached error
+        CHECK(ss.str() == "");
+        CHECK(ss_err.str() == "");
+
+        auto result = running_interpreter.continue_execution();
+        CHECK(result.is_error());
+        CHECK(result.get_error() == scc::InterpreterError::BreakpointReachedError);
+        CHECK(ss.str() == "34\n0\n");
+        CHECK(ss_err.str() == "");
+
+        result = running_interpreter.continue_execution();
+        CHECK(result.is_error());
+        CHECK(result.get_error() == scc::InterpreterError::BreakpointReachedError);
+        CHECK(ss.str() == "34\n0\n69\n0\n");
+        CHECK(ss_err.str() == "");
+
+        result = running_interpreter.continue_execution();
+        CHECK(result.is_ok());
+        CHECK(ss.str() == "34\n0\n69\n0\n69\n69\n");
+        CHECK(ss_err.str() == "");
+    }
+    
+    SUBCASE("Stepping")
+    {
+        running_interpreter.breakpoints().add(3);
+        SCC_TEST_IS_ERROR(code); // breakpoint reached error
+        CHECK(ss.str() == "");
+        CHECK(ss_err.str() == "");
+
+        auto result = running_interpreter.next();
+        CHECK(result.is_ok());
+        CHECK(ss.str() == "34\n");
+        CHECK(ss_err.str() == "");
+
+        result = running_interpreter.continue_execution();
+        REQUIRE(result.is_error());
+        CHECK(result.get_error() == scc::InterpreterError::BreakpointReachedError);
+        CHECK(ss.str() == "34\n0\n"); // it breaks again in the function
+        CHECK(ss_err.str() == "");
+    }
+}
