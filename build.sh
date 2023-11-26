@@ -73,7 +73,7 @@ build_wasm() {
         mkdir -p "$BUILD_WASM_FOLDER/web"
     fi
     print_green "Copying files to web folder"
-    cp $PROJECT_PATH/src/wasm/* $BUILD_WASM_FOLDER/web
+    cp $PROJECT_PATH/src/wasm/*.{js,css,html} $BUILD_WASM_FOLDER/web
     cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
 }
