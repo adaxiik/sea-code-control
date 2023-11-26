@@ -75,15 +75,17 @@ build_wasm() {
     emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILDING_WASM=ON $PROJECT_PATH
     make -j$BUILD_THREADS
 
-    npm install --prefix $C_VISUALIZER_PATH
-    npm run build --prefix $C_VISUALIZER_PATH
-    cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
-
-
     if [ ! -d "$BUILD_WASM_FOLDER/web" ]; then
         mkdir -p "$BUILD_WASM_FOLDER/web"
     fi
+
+    print_green "Building c-visualizer library"
+
+    npm install --prefix $C_VISUALIZER_PATH
+    npm run build --prefix $C_VISUALIZER_PATH
     print_green "Copying files to web folder"
+    
+    cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
     cp $PROJECT_PATH/src/wasm/*.{js,css,html} $BUILD_WASM_FOLDER/web
     cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
