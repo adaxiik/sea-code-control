@@ -40,6 +40,11 @@
     <script src="layout.js"></script>
     <script src="editor.js"></script>
     <script src="terminal.js"></script>
+    <!-- <script type="module">
+        import * as Visualizer from './c-visualizer.js';
+        window.Visualizer = Visualizer;
+    </script> -->
+    <script src="c-visualizer.js"></script>
     <script src="visualizer.js"></script>
     <script>
         let layout = init_layout("layout");
@@ -49,15 +54,15 @@
         layout.on('initialised', function() {
             editor = init_editor("editor");
             term = init_terminal("terminal");
-            visualizer = new Visualizer("visualizer");
+            visualizer = init_visualizer("visualizer");
         });
         layout.on('stateChanged', function() {
             if (term) {
                 term.fit();
             }
-            if (visualizer) {
-                visualizer.fit();
-            }
+            // if (visualizer) {
+            //     visualizer.fit();
+            // }
         } );
 
         window.addEventListener('resize', function() {

@@ -19,6 +19,12 @@ SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM
 
 BUILD_THREADS="${BUILD_THREADS=1}"
 
+C_VISUALIZER_PATH="$PROJECT_PATH/src/wasm/3rdparty/c-visualizer/drawingLibrary"
+
+
+
+
+
 
 
 RED='\033[0;31m'
@@ -68,6 +74,11 @@ build_wasm() {
     cd "$BUILD_WASM_FOLDER"
     emcmake cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILDING_WASM=ON $PROJECT_PATH
     make -j$BUILD_THREADS
+
+    npm install --prefix $C_VISUALIZER_PATH
+    npm run build --prefix $C_VISUALIZER_PATH
+    cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
+
 
     if [ ! -d "$BUILD_WASM_FOLDER/web" ]; then
         mkdir -p "$BUILD_WASM_FOLDER/web"
