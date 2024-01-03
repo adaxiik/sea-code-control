@@ -10,27 +10,6 @@ namespace scc
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
     constexpr auto GLOBAL_SCOPE_SIZE = 1 * Memory::MEGABYTE;
     constexpr auto MAIN_FUNCTION_NAME = "main";
-    // class Interpreter
-    // {
-    // public:
-    //     Interpreter(): m_state(InterpreterState(0, STACK_SIZE, GLOBAL_SCOPE_SIZE)){}
-    //     ~Interpreter() = default;
-    //     ParserResult parse(const std::string &code);
-    //     InterpreterResult interpret(const std::string &code);
-    //     InterpreterResult interpret(const ParserResult &parse_result);
-    //     Breakpoints& breakpoints();
-    //     void continue_execution();
-    //     void step_into();
-    //     void step_over();
-    // private:
-    
-    //     Parser m_parser;
-    //     Binder m_binder;
-    //     Lowerer m_lowerer;
-    //     InterpreterState m_state;
-    //     std::vector<std::pair<lowering::Instruction, std::optional<Location>>> m_program;
-    //     Breakpoints m_breakpoints;
-    // };
 
     using LocationAnotatedProgram = std::vector<std::pair<lowering::Instruction, std::optional<Location>>>;
     class RunningInterpreter
@@ -57,12 +36,16 @@ namespace scc
         Breakpoints* breakpoints() { return &m_breakpoints; }
         #endif
 
+        const InterpreterState& state() const { return m_state; }
+
     private:  
         InterpreterState m_state;
         Location m_current_location;
         LocationAnotatedProgram m_program;
         Breakpoints m_breakpoints;
         bool m_continuing_after_breakpoint;
+
+        InterpreterResult execute_in_loop();
     };
 
     

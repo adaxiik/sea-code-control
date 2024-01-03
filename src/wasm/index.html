@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>SCC - test</title>
+    <title>SCC - Sea Code Control</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="index.css">
@@ -190,6 +190,9 @@
                     let current_line = Module.get_location_row(running_interpreter.current_location());
                     editor.gotoLine(current_line + 1);
                     editor.session.addMarker(new ace.Range(current_line, 0, current_line, 1), "line-highlight", "fullLine");
+
+                    console.log(Module.snapshot_running_interpreter_as_json(running_interpreter));
+
                     return;
                 }
 

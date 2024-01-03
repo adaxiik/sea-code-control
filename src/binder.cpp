@@ -102,8 +102,9 @@ namespace scc
             return binding::BinderResult<ResultType>::ok(std::move(block_statement));             
         }
 
+        if (node.has_parent())
+            m_scope_stack.push();
 
-        m_scope_stack.push();
         for (uint32_t i = 0; i < node.named_child_count(); i++)
         {
             auto child = node.named_child(i);
@@ -128,7 +129,10 @@ namespace scc
             auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release_value().release());
             block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(bound_statement_ptr));
         }
-        m_scope_stack.pop();
+
+        if (node.has_parent())
+            m_scope_stack.pop();
+
         return binding::BinderResult<ResultType>::ok(std::move(block_statement));
     }
 
@@ -693,7 +697,7 @@ namespace scc
         bool is_global = m_scope_stack.is_global_scope();
         auto type_descriptor = node.named_child(type_index).value();
         auto type = Type::from_string(type_descriptor);
-        if(!type.has_value())
+        if(not type.has_value())
         {
             // TODOOOOOOOOOOOOO: custom types
             // std::cerr << "Unknown type: " << type_descriptor << std::endl;

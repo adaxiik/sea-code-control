@@ -19,9 +19,10 @@
 #include <scc/interpreter.hpp>
 #include <scc/repl.hpp>
 
+#include <scc/export.hpp>
+
 int main(int argc, char const *argv[])
 {
-
     if (argc < 2)
     {
         // REPL
@@ -64,6 +65,7 @@ int main(int argc, char const *argv[])
 
     auto running_interpreter = running_intepreter_result.value();
     auto interpret_result = running_interpreter.continue_execution();
+    
 
     if (interpret_result.is_error())
     {

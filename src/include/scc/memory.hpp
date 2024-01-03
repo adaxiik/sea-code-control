@@ -72,6 +72,17 @@ namespace scc
         }
 
         /**
+         * @brief read value from memory
+         * 
+         * @param address 
+         * @param buffer 
+         * @param size 
+         * @return true if value was read successfully
+         * @return false if address was not found or size is too big
+         */
+        bool read_into(address_t address, void* buffer, size_t size) const;
+
+        /**
          * @brief write value to memory
          * 
          * @tparam T 

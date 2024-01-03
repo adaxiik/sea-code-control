@@ -123,7 +123,7 @@ namespace scc
                 debug::instructions_as_text(std::cout, lowered);
             }
             
-            // running_interpreter.append_code(lower_result);
+            running_interpreter.append_code(lower_result);
 
             auto result = running_interpreter.continue_execution();
 

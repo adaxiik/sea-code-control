@@ -9,6 +9,8 @@
 #include "interpreter.hpp"
 #include "parser.hpp"
 #include "interpreter_io.hpp"
+#include "export.hpp"
+
 namespace scc
 {
     namespace api
@@ -70,6 +72,11 @@ namespace scc
         uint32_t get_location_row(Location location)
         {
             return location.row;
+        }
+
+        std::string snapshot_running_interpreter_as_json(const RunningInterpreter* running_interpreter)
+        {
+            return export_format::to_json(export_format::make_snapshot(running_interpreter->state()));
         }
     }
 }
@@ -179,5 +186,11 @@ EMSCRIPTEN_BINDINGS(scc_api)
         
         // I spend 4 hours debugging this line with no success. I have no idea why it doesn't work.. fucking line
         // .function("interpret", emscripten::select_overload<scc::RunningInterpreterCreationResult(void)>, emscripten::allow_raw_pointers());
+
+
+    // emscripten::function("snapshot_to_json", emscripten::select_overload<std::string(const scc::export_format::ProgramSnapshot&)>(&scc::export_format::to_json),  emscripten::allow_raw_pointers());
+
+    emscripten::function("snapshot_running_interpreter_as_json", &scc::api::snapshot_running_interpreter_as_json, emscripten::allow_raw_pointers());
+
 }
 #endif

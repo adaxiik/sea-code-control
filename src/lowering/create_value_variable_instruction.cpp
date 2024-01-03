@@ -7,7 +7,7 @@ namespace scc
         InterpreterResult CreateValueVariableInstruction::execute(InterpreterState &state) const
         {
             InterpreterResult creation_result = InterpreterError::None;
-            if (!is_global)
+            if (not is_global)
             {
                 creation_result = state.call_stack.scope_stack().create_variable(
                     variable_name
@@ -29,14 +29,14 @@ namespace scc
             if (creation_result.is_error())
                 return creation_result;
 
-            if (!has_initializer)
+            if (not has_initializer)
                 return creation_result;
 
             auto variable = is_global 
              ? state.global_scope.get_variable(variable_name) 
              : state.call_stack.scope_stack().get_from_scopestack(variable_name);
 
-            if (!variable)
+            if (not variable)
                 return InterpreterError::VariableDoesntExistError;
             
             if (state.result_stack.size() < 1)

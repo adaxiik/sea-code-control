@@ -17,6 +17,11 @@ namespace scc
         return ts_node_has_error(m_node);
     }
 
+    bool TreeNode::has_parent() const
+    {
+        return not ts_node_is_null(ts_node_parent(m_node));
+    }
+
     TSSymbol TreeNode::symbol() const
     {
         return ts_node_symbol(m_node);

@@ -309,18 +309,8 @@ namespace scc
         return *this;
     }
 
-    InterpreterResult RunningInterpreter::continue_execution()
+    InterpreterResult RunningInterpreter::execute_in_loop()
     {
-
-        if (m_state.functions.find(MAIN_FUNCTION_NAME) != m_state.functions.end() and (m_state.instruction_pointer == 0))
-        {
-            m_state.instruction_pointer = m_program.size(); // return address
-            std::visit(
-                lowering::InstructionExecuter(m_state),
-                lowering::Instruction{lowering::CallInstruction(MAIN_FUNCTION_NAME, true)}
-            );
-        }
-
         // auto call_stack = m_state.call_stack;
         // auto global_scope = m_state.global_scope;
 
@@ -372,6 +362,25 @@ namespace scc
         }
         
         return InterpreterError::None;
+    }
+
+    InterpreterResult RunningInterpreter::continue_execution()
+    {
+
+        if (m_state.functions.find(MAIN_FUNCTION_NAME) != m_state.functions.end() and (m_state.instruction_pointer == 0))
+        {
+            auto result = execute_in_loop();
+            if (result.is_error())
+                return result;
+
+            m_state.instruction_pointer = m_program.size(); // return address
+            std::visit(
+                lowering::InstructionExecuter(m_state),
+                lowering::Instruction{lowering::CallInstruction(MAIN_FUNCTION_NAME, true)}
+            );
+        }
+
+        return execute_in_loop();
     }
 
     InterpreterResult RunningInterpreter::next()

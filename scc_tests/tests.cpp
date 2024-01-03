@@ -617,6 +617,32 @@ TEST_CASE("stdout and stderr")
     CHECK(ss_err.str() == "");
 }
 
+TEST_CASE("Global variables")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+
+    SCC_TEST_IS_OK(R"(
+        void _scc_puti(int i);
+        int global = 123;
+        int main()
+        {
+            int a = 1;
+            _scc_puti(a);
+            _scc_puti(global);
+            return 0;
+        }
+    )");
+
+    CHECK(ss.str() == "1\n123\n");
+}
+
 TEST_CASE("For statements")
 {
     auto interpreter = scc::Interpreter();

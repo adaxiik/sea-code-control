@@ -40,6 +40,7 @@ namespace scc
 
         std::string value() const;
         bool has_error() const;
+        bool has_parent() const;
         TSSymbol symbol() const;
         std::string symbol_name() const;
 

@@ -65,4 +65,22 @@ namespace scc
             size += chunk.size;
         return size;
     }
+
+    bool Memory::read_into(address_t address, void* buffer, size_t size) const
+    {
+        std::optional<address_t> start_address_opt = find_start_of_chunk(address);
+        if (!start_address_opt.has_value())
+            return false;
+        
+        address_t start_address = start_address_opt.value();
+        address_t real_memory_index = address - start_address;
+        
+        if (real_memory_index + size > m_memory.at(start_address).size)
+            return false;
+
+        std::memcpy(buffer, &m_memory.at(start_address).data[real_memory_index], size);
+        
+        return true;
+    }
+
 }

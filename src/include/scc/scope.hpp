@@ -29,7 +29,8 @@ namespace scc
             return nullptr;
         }
 
-
+        auto begin() const { return m_scope.begin(); }
+        auto end() const { return m_scope.end(); }
     };
 
     template <typename T>
