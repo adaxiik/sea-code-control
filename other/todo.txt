@@ -1,28 +1,30 @@
 Sorted TODO list:
 
-src/binder.cpp:650:             // TODOOOOOOOOOOOOO: custom types
-src/binder.cpp:1135:         // TODOOOOOOOOO: check for missing return statement
-src/binder.cpp:319:         // TODOOOOOOO: might be a macro?
-src/binder.cpp:705:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
-src/binder.cpp:845:                                     // TODOOOOO: what if its custom type? investigate or @help
-src/lowering/lowerer.cpp:295:         // TODOOOOO: drop after variable creation as well
-src/debug.cpp:188:         // TODOOOO: convert it into multiple functions for each node type
+src/binder.cpp:702:             // TODOOOOOOOOOOOOO: custom types
+src/export.cpp:88:         // TODOOOOOOOOOO: after having proper way of expressing struct, pointers and arrays with scc:Type, please fix this, and all bellow :)
+src/debug.cpp:191:         // TODOOOOOOOOOO: convert it into multiple functions for each node type
+src/binder.cpp:1187:         // TODOOOOOOOOO: check for missing return statement
+src/binder.cpp:368:         // TODOOOOOOO: might be a macro?
+src/binder.cpp:757:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
+src/binder.cpp:897:                                     // TODOOOOO: what if its custom type? investigate or @help
 src/include/scc/type.hpp:271:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
-src/interpreter.cpp:58:         //     existing_function->body = std::move(function_statement->body); // TODOOOO: might not be defined
-src/binder.cpp:1103:             // TODOOO: It doesnt have to have a name, but idc for now
-src/binder.cpp:864:                 // TODOOO: investigate other initializers
-src/binder.cpp:635:         // TODOOO: int a, b, c; 
-scc_tests/tests.cpp:379:     // TODOOO: hook on assert
-src/binder.cpp:660:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/binder.cpp:115:                 // TODOOO: UNREACHABLE???
-src/binder.cpp:297:             // TODOOO: 
-src/binder.cpp:345:         // TODOOO: int* a;
-src/binder.cpp:1063:         // TODOO: custom types
-scc_tests/tests.cpp:231:         // TODOO: multiple declarations
+src/binder.cpp:1155:             // TODOOO: It doesnt have to have a name, but idc for now
+src/binder.cpp:311:             // TODOOO: 
+scc_tests/tests.cpp:401:     // TODOOO: hook on assert
+src/binder.cpp:916:                 // TODOOO: investigate other initializers
+src/binder.cpp:712:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:687:         // TODOOO: int a, b, c; 
+src/binder.cpp:394:         // TODOOO: int* a;
+src/binder.cpp:126:                 // TODOOO: UNREACHABLE???
+scc_tests/tests.cpp:251:         // TODOO: multiple declarations
+src/binder.cpp:1115:         // TODOO: custom types
+src/binder.cpp:115:             // TODOO: REMOVE THIS LATER!
 src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
-src/binder.cpp:690:                     // TODOO: int x[1][2];  multi dimensional arrays
-scc_tests/tests.cpp:239:         // TODOO: complex types
-src/include/scc/binding/binder_result.hpp:28:                 // TODOO: Variable already exists / Variable does not exist
-scc_tests/tests.cpp:234:         // TODOO: multiple initializers
-src/debug.cpp:687:                     ss << "PushLiteral"; // TODOO: Get value
-scc_tests/tests.cpp:237:         // TODO: 2d arrays 
+scc_tests/tests.cpp:254:         // TODOO: multiple initializers
+src/include/scc/binding/binder_result.hpp:30:                 // TODOO: Variable already exists / Variable does not exist
+src/binder.cpp:742:                     // TODOO: int x[1][2];  multi dimensional arrays
+scc_tests/tests.cpp:259:         // TODOO: complex types
+src/debug.cpp:730:                     ss << "PushLiteral"; // TODOO: Get value
+scc_tests/tests.cpp:257:         // TODO: 2d arrays 
+src/export.cpp:66:             // {"is_constant", variable.is_constant}, // TODO: do I care? 
+src/include/scc/binding/bound_pointer_expression.hpp:18:                 // TODO: Change this

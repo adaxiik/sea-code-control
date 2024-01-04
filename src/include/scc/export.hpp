@@ -21,12 +21,7 @@ namespace scc
 
             bool operator==(const StructField& other) const
             {
-                return type_index == other.type_index and name == other.name and offset_bytes == other.offset_bytes;
-            }
-
-            bool operator<(const StructField& other) const
-            {
-                return type_index < other.type_index or name < other.name or offset_bytes < other.offset_bytes;
+                return offset_bytes == other.offset_bytes && type_index == other.type_index && name == other.name;
             }
         };
 
@@ -38,85 +33,39 @@ namespace scc
 
             bool operator==(const StructType& other) const
             {
-                return name == other.name and fields == other.fields and size_bytes == other.size_bytes;
-            }
-
-            bool operator<(const StructType& other) const
-            {
-                return name < other.name or fields < other.fields or size_bytes < other.size_bytes;
+                return name == other.name && fields == other.fields && size_bytes == other.size_bytes;
             }
         };
 
-        struct ComparablePrimitive{
-            bool operator==(const ComparablePrimitive&) const { return true; }
-            bool operator<(const ComparablePrimitive&) const { return true; }
-        };
 
-        struct VoidType: public ComparablePrimitive
-        {
-            static constexpr auto *name = "void";
-            static constexpr auto size_bytes = 0;
-        };
-        struct BoolType: public ComparablePrimitive
-        {
-            static constexpr auto *name = "bool";
-            static constexpr auto size_bytes = 1;
-        };
-        struct CharType: public ComparablePrimitive
-        {
-            static constexpr auto *name = "char";
-            static constexpr auto size_bytes = 1;
-        };
-        struct I8Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "i8";
-            static constexpr auto size_bytes = 1;
-        };
-        struct I16Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "i16";
-            static constexpr auto size_bytes = 2;
-        };
-        struct I32Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "i32";
-            static constexpr auto size_bytes = 4;
-        };
-        struct I64Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "i64";
-            static constexpr auto size_bytes = 8;
-        };
-        struct U8Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "u8";
-            static constexpr auto size_bytes = 1;
-        };
-        struct U16Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "u16";
-            static constexpr auto size_bytes = 2;
-        };
-        struct U32Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "u32";
-            static constexpr auto size_bytes = 4;
-        };
-        struct U64Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "u64";
-            static constexpr auto size_bytes = 8;
-        };
-        struct F32Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "f32";
-            static constexpr auto size_bytes = 4;
-        };
-        struct F64Type: public ComparablePrimitive
-        {
-            static constexpr auto *name = "f64";
-            static constexpr auto size_bytes = 8;
-        };
+        #define SCC_EQUALITY_OPERATOR_FOR_PRIMITIVE_TYPE(type) \
+            bool operator==(const type& other) const \
+            { \
+                return true; \
+            }
+            
+        #define SCC_PRIMITIVE_TYPE(TYPE, NAME, SIZE_BYTES) \
+            struct TYPE \
+            { \
+                static constexpr auto *name = NAME; \
+                static constexpr auto size_bytes = SIZE_BYTES; \
+                SCC_EQUALITY_OPERATOR_FOR_PRIMITIVE_TYPE(TYPE) \
+            };
+
+        SCC_PRIMITIVE_TYPE(VoidType, "void", 0)
+        SCC_PRIMITIVE_TYPE(BoolType, "bool", 1)
+        SCC_PRIMITIVE_TYPE(CharType, "char", 1)
+        SCC_PRIMITIVE_TYPE(I8Type, "i8", 1)
+        SCC_PRIMITIVE_TYPE(I16Type, "i16", 2)
+        SCC_PRIMITIVE_TYPE(I32Type, "i32", 4)
+        SCC_PRIMITIVE_TYPE(I64Type, "i64", 8)
+        SCC_PRIMITIVE_TYPE(U8Type, "u8", 1)
+        SCC_PRIMITIVE_TYPE(U16Type, "u16", 2)
+        SCC_PRIMITIVE_TYPE(U32Type, "u32", 4)
+        SCC_PRIMITIVE_TYPE(U64Type, "u64", 8)
+        SCC_PRIMITIVE_TYPE(F32Type, "f32", 4)
+        SCC_PRIMITIVE_TYPE(F64Type, "f64", 8)
+
 
         using PrimitiveType = std::variant<
             VoidType,
@@ -142,11 +91,6 @@ namespace scc
             {
                 return pointing_to_type_index == other.pointing_to_type_index;
             }
-
-            bool operator<(const PointerType& other) const
-            {
-                return pointing_to_type_index < other.pointing_to_type_index;
-            }
         };
 
         struct ArrayType
@@ -156,14 +100,8 @@ namespace scc
 
             bool operator==(const ArrayType& other) const
             {
-                return element_type_index == other.element_type_index and size_bytes == other.size_bytes;
+                return element_type_index == other.element_type_index && size_bytes == other.size_bytes;
             }
-
-            bool operator<(const ArrayType& other) const
-            {
-                return element_type_index < other.element_type_index or size_bytes < other.size_bytes;
-            }
-
         }; 
 
         using Type = std::variant<PrimitiveType, StructType, PointerType, ArrayType>;
@@ -201,3 +139,80 @@ namespace scc
         std::string to_json(const ProgramSnapshot& snapshot);
     }
 }
+
+template <>
+struct std::hash<scc::export_format::StructField>
+{
+    size_t operator()(const scc::export_format::StructField& field) const
+    {
+        return std::hash<uint32_t>()(field.offset_bytes) ^ std::hash<scc::export_format::TypeIndex>()(field.type_index) ^ std::hash<std::string>()(field.name);
+    }
+};
+
+template <>
+struct std::hash<scc::export_format::StructType>
+{
+    size_t operator()(const scc::export_format::StructType& type) const
+    {
+        size_t vector_hash = 0;
+        for (const auto& field : type.fields)
+            vector_hash ^= std::hash<scc::export_format::StructField>()(field);
+
+        return std::hash<std::string>()(type.name) ^ vector_hash ^ std::hash<uint64_t>()(type.size_bytes);
+    }
+};
+
+template <>
+struct std::hash<scc::export_format::PrimitiveType>
+{
+    size_t operator()(const scc::export_format::PrimitiveType& type) const
+    {
+        return std::visit(overloaded{
+            [](const scc::export_format::VoidType) { return std::hash<std::string>()(scc::export_format::VoidType::name); },
+            [](const scc::export_format::BoolType) { return std::hash<std::string>()(scc::export_format::BoolType::name); },
+            [](const scc::export_format::CharType) { return std::hash<std::string>()(scc::export_format::CharType::name); },
+            [](const scc::export_format::I8Type) { return std::hash<std::string>()(scc::export_format::I8Type::name); },
+            [](const scc::export_format::I16Type) { return std::hash<std::string>()(scc::export_format::I16Type::name); },
+            [](const scc::export_format::I32Type) { return std::hash<std::string>()(scc::export_format::I32Type::name); },
+            [](const scc::export_format::I64Type) { return std::hash<std::string>()(scc::export_format::I64Type::name); },
+            [](const scc::export_format::U8Type) { return std::hash<std::string>()(scc::export_format::U8Type::name); },
+            [](const scc::export_format::U16Type) { return std::hash<std::string>()(scc::export_format::U16Type::name); },
+            [](const scc::export_format::U32Type) { return std::hash<std::string>()(scc::export_format::U32Type::name); },
+            [](const scc::export_format::U64Type) { return std::hash<std::string>()(scc::export_format::U64Type::name); },
+            [](const scc::export_format::F32Type) { return std::hash<std::string>()(scc::export_format::F32Type::name); },
+            [](const scc::export_format::F64Type) { return std::hash<std::string>()(scc::export_format::F64Type::name); },
+        }, type);
+    }
+};
+
+template <>
+struct std::hash<scc::export_format::PointerType>
+{
+    size_t operator()(const scc::export_format::PointerType& type) const
+    {
+        return std::hash<scc::export_format::TypeIndex>()(type.pointing_to_type_index);
+    }
+};
+
+template <>
+struct std::hash<scc::export_format::ArrayType>
+{
+    size_t operator()(const scc::export_format::ArrayType& type) const
+    {
+        return std::hash<scc::export_format::TypeIndex>()(type.element_type_index) ^ std::hash<uint64_t>()(type.size_bytes);
+    }
+};
+
+template <>
+struct std::hash<scc::export_format::Type>
+{
+    size_t operator()(const scc::export_format::Type& type) const
+    {
+        return std::visit(overloaded{
+            [](const scc::export_format::PrimitiveType& primitive_type) { return std::hash<scc::export_format::PrimitiveType>()(primitive_type); },
+            [](const scc::export_format::StructType& struct_type) { return std::hash<scc::export_format::StructType>()(struct_type); },
+            [](const scc::export_format::ArrayType& array_type) { return std::hash<scc::export_format::ArrayType>()(array_type); },
+            [](const scc::export_format::PointerType& pointer_type) { return std::hash<scc::export_format::PointerType>()(pointer_type); },
+        }, type);
+    }
+};

@@ -187,8 +187,7 @@ namespace scc::export_format
     ProgramSnapshot make_snapshot(const InterpreterState& state)
     {
         ProgramSnapshot snapshot;
-        
-        std::map<scc::export_format::Type, scc::export_format::TypeIndex> type_to_type_index;
+        std::unordered_map<scc::export_format::Type, scc::export_format::TypeIndex> type_to_type_index;
         auto get_type_index_of([&type_to_type_index, &snapshot](const scc::export_format::Type& type) -> scc::export_format::TypeIndex {
             auto it = type_to_type_index.find(type);
             if (it != type_to_type_index.end())
