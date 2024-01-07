@@ -733,8 +733,9 @@ namespace scc
                     ss << "PushScope";
                 },
                 [&](lowering::CreateValueVariableInstruction create_value_variable) {
-                    ss << "CreateValueVariable ==> "<< (create_value_variable.is_global ? "global " : "") \
-                    << (create_value_variable.is_const ? "const " : "") \
+                    using CVFlags = lowering::CreateValueVariableInstruction::Flags;
+                    ss << "CreateValueVariable ==> "<< (create_value_variable.flags & CVFlags::IsGlobal ? "global " : "") \
+                    << (create_value_variable.flags & CVFlags::IsConst ? "const " : "") \
                     << create_value_variable.variable_type \
                     << " " << create_value_variable.variable_name;
                 },

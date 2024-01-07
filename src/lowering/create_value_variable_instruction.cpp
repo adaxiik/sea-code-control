@@ -7,13 +7,14 @@ namespace scc
         InterpreterResult CreateValueVariableInstruction::execute(InterpreterState &state) const
         {
             InterpreterResult creation_result = InterpreterError::None;
-            if (not is_global)
+            if (not (flags & Flags::IsGlobal))
             {
                 creation_result = state.call_stack.scope_stack().create_variable(
                     variable_name
                     , variable_type
                     , variable_type.size_bytes()
-                    , is_const
+                    , flags & Flags::IsConst
+                    , flags & Flags::IsParameter
                 );
             }
             else
@@ -22,17 +23,17 @@ namespace scc
                     variable_name
                     , variable_type
                     , variable_type.size_bytes()
-                    , is_const
+                    , flags & Flags::IsConst
                 );
             }
 
             if (creation_result.is_error())
                 return creation_result;
 
-            if (not has_initializer)
+            if (not (flags & Flags::HasInitializer))
                 return creation_result;
 
-            auto variable = is_global 
+            auto variable = flags & Flags::IsGlobal
              ? state.global_scope.get_variable(variable_name) 
              : state.call_stack.scope_stack().get_from_scopestack(variable_name);
 
@@ -49,6 +50,16 @@ namespace scc
                 return creation_result;
                 
             return InterpreterError::RuntimeError;
+        }
+
+        CreateValueVariableInstruction::Flags operator|(CreateValueVariableInstruction::Flags lhs, CreateValueVariableInstruction::Flags rhs)
+        {
+            return static_cast<CreateValueVariableInstruction::Flags>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+        }
+
+        bool operator&(CreateValueVariableInstruction::Flags lhs, CreateValueVariableInstruction::Flags rhs)
+        {
+            return static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs);
         }
     }
 }

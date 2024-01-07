@@ -167,7 +167,7 @@ namespace scc::export_format
                         state.memory.read_into(variable.address(), data.data(), data.size()); 
                     }
 
-                    snapshot.stackframes.back().variables.push_back({
+                    export_format::Variable exported_variable{
                         .allocated_place = {
                             .address = variable.address(),
                             .size_bytes = variable.type().size_bytes(),
@@ -176,7 +176,12 @@ namespace scc::export_format
                         .type_index = get_type_index_of(type_to_export_type(variable.type())),
                         .name = name,
                         .is_initialized = variable.is_initialized()
-                    });
+                    };
+
+                    if (variable.is_parameter())
+                        snapshot.stackframes.back().parameters.push_back(std::move(exported_variable));
+                    else
+                        snapshot.stackframes.back().variables.push_back(std::move(exported_variable));
                 }
             }
 

@@ -11,12 +11,14 @@ namespace scc
         Memory::address_t m_address;
         bool m_is_constant;  
         bool m_initialized;
+        bool m_is_parameter;    // only for debug/export purposes, doesnt do anything useful rn
     public:
-        Variable(Type type, Memory::address_t address, bool is_constant = false) 
+        Variable(Type type, Memory::address_t address, bool is_constant = false, bool is_parameter = false) 
         : m_type(type)
         , m_address(address)
         , m_is_constant(is_constant) 
-        , m_initialized(false){}
+        , m_initialized(false)
+        , m_is_parameter(is_parameter) {}
 
         template <typename T>
         std::optional<T> get_value(const Memory& memory) const
@@ -100,5 +102,6 @@ namespace scc
         Memory::address_t address() const { return m_address; }
         bool is_constant() const { return m_is_constant; }
         bool is_initialized() const { return m_initialized; }
+        bool is_parameter() const { return m_is_parameter; }
     };  
 } 

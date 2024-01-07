@@ -61,12 +61,14 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundVariableValueDeclarationStatement &variable_value_declaration_statement)
     {
+        using CVFlags = lowering::CreateValueVariableInstruction::Flags;
         m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
-            variable_value_declaration_statement.initializer != nullptr or variable_value_declaration_statement.is_global,
-            variable_value_declaration_statement.is_constant,
-            variable_value_declaration_statement.is_global
+            CVFlags::None 
+            | ((variable_value_declaration_statement.initializer != nullptr or variable_value_declaration_statement.is_global) ? CVFlags::HasInitializer : CVFlags::None)
+            | (variable_value_declaration_statement.is_global ? CVFlags::IsGlobal : CVFlags::None)
+            | (variable_value_declaration_statement.is_constant ? CVFlags::IsConst : CVFlags::None)
         ), variable_value_declaration_statement.location));
         
         if (variable_value_declaration_statement.initializer)
@@ -235,12 +237,11 @@ namespace scc
         {
             m_to_lower.push(std::make_pair(lowering::DropInstruction(), function_statement.location));
             auto& parameter = *it;
+            using CVFlags = lowering::CreateValueVariableInstruction::Flags;
             m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
                 parameter->variable_name,
                 parameter->type,
-                true,
-                parameter->is_constant,
-                false
+                CVFlags::HasInitializer | CVFlags::IsParameter | (parameter->is_constant ? CVFlags::IsConst : CVFlags::None)
             ), function_statement.location));
         }
 

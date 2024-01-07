@@ -35,7 +35,13 @@ namespace scc
         virtual void push() override;
         
 
-        InterpreterResult create_variable(const std::string &name, Type type, size_t size_bytes, bool is_constant);
+        InterpreterResult create_variable(
+            const std::string &name,
+            Type type,
+            size_t size_bytes,
+            bool is_constant,
+            bool is_parameter
+        );
         std::vector<InterpreterScope> &ref_scopes();
         Memory::address_t current_address() const;
     };

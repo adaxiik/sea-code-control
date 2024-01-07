@@ -40,7 +40,13 @@ namespace  scc
     }
 
 
-    InterpreterResult InterpreterScopeStack::create_variable(const std::string &name, Type type, size_t size_bytes, bool is_constant = false)
+    InterpreterResult InterpreterScopeStack::create_variable(
+        const std::string &name,
+        Type type,
+        size_t size_bytes,
+        bool is_constant = false,
+        bool is_parameter = false
+    )
     {
         if (m_scopes.empty()) // This should be unreachable, but you never know
             return InterpreterError::RuntimeError;
@@ -55,7 +61,7 @@ namespace  scc
         Memory::address_t current_address = m_scopes.back().current_address();
         m_scopes.back()
                 .ref_scopes()
-                .emplace(name,Variable{type, current_address, is_constant});
+                .emplace(name,Variable(type, current_address, is_constant, is_parameter));
         
 
         return InterpreterResult::ok(static_cast<unsigned long long>(current_address));
