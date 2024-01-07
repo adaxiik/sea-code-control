@@ -87,6 +87,7 @@ build_wasm() {
     
     cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
     cp $PROJECT_PATH/src/wasm/*.{js,css,html} $BUILD_WASM_FOLDER/web
+    cp -r $PROJECT_PATH/src/wasm/examples-web $BUILD_WASM_FOLDER/web
     cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
 }

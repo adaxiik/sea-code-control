@@ -33,6 +33,12 @@
             <button hidden id="continue" onclick="continueExecution()">Continue</button>
             <button hidden id="next" onclick="next()">Next</button>
             <button id="clear" style="margin-left: 1em;" onclick="term.clear()">Clear</button>
+            <select id="examples" onchange="loadExample(this.value)" style="margin-left: 3em;">
+                <option>empty.c</option>
+                <option>globals.c</option>
+                <option>loops.c</option>
+                <option>functions.c</option>
+            </select>
         </div>
         <div id="layout"></div>
     </div>
@@ -53,6 +59,7 @@
         var visualizer = null;
         layout.on('initialised', function() {
             editor = initEditor("editor");
+            loadExample("empty.c");
             term = initTerminal("terminal");
             visualizer = initVisualizer("visualizer");
         });
@@ -74,6 +81,16 @@
             let json = Module.snapshot_running_interpreter_as_json(running_interpreter);
             visualizer = initVisualizer("visualizer");
             drawExportedSnapshot(visualizer, json);
+        }
+
+        function loadExample(example) {
+            fetch("./examples-web/" + example)
+                .then(response => response.text())
+                .then(data => {
+                    editor.setValue(data);
+                    editor.clearSelection();
+                });
+            
         }
 
     </script>
@@ -128,6 +145,7 @@
             hideById("continue");
             hideById("next");
             showById("run");
+            showById("examples");
             editor.setReadOnly(false);
         }
 
@@ -171,6 +189,7 @@
                 addBreakpointsToRunningInterpreter(running_interpreter);
 
                 hideById("run");
+                hideById("examples");
                 showById("continue");
                 showById("next");
                 continueExecution();
