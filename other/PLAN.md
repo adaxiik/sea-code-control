@@ -7,12 +7,9 @@
 
 #### TODO's in order
 - even more tests!
-- variable creation, assignment expression
 - pointers?
 - int*[][] .. and other complex types
 - structs
-- control flow, if, while, for..  (goto ??)
-- functions
 - script vs main()
 - ... ???
 

@@ -38,8 +38,8 @@ namespace scc
         };
 
 
-        #define SCC_EQUALITY_OPERATOR_FOR_PRIMITIVE_TYPE(type) \
-            bool operator==(const type& other) const \
+        #define SCC_EQUALITY_OPERATOR_FOR_PRIMITIVE_TYPE(TYPE) \
+            bool operator==(const TYPE&) const \
             { \
                 return true; \
             }

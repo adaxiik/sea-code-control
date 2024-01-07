@@ -64,7 +64,7 @@ set_target_properties(scc-lib PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic"
 target_include_directories(scc-lib PUBLIC ${TREE_SITTER_INCLUDE_DIRS_PUBLIC} ${TREE_SITTER_C_INCLUDE_DIRS})
 target_include_directories(scc-lib PRIVATE ${SCC_INCLUDE_DIRS})
 target_link_libraries(scc-lib tree-sitter tree-sitter-c)
-target_compile_features(scc-lib PUBLIC cxx_std_17)
+target_compile_features(scc-lib PUBLIC cxx_std_20)
 
 
 if(BUILDING_WASM)

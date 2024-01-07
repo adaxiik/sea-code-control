@@ -64,13 +64,21 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
-            variable_value_declaration_statement.initializer != nullptr,
+            variable_value_declaration_statement.initializer != nullptr or variable_value_declaration_statement.is_global,
             variable_value_declaration_statement.is_constant,
             variable_value_declaration_statement.is_global
         ), variable_value_declaration_statement.location));
         
         if (variable_value_declaration_statement.initializer)
+        {
             m_to_lower.push(variable_value_declaration_statement.initializer.get());
+        }
+        else if (variable_value_declaration_statement.is_global)
+        {
+            m_to_lower.push(std::make_pair(lowering::CastInstruction(variable_value_declaration_statement.type), variable_value_declaration_statement.location));
+            m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(variable_value_declaration_statement.type, 0), variable_value_declaration_statement.location));
+        }
+
     }
 
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)

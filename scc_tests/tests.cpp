@@ -398,6 +398,10 @@ TEST_CASE("Scopes")
     CHECK(SCC_APPEND_AND_CONTINUE("int a;").is_error());
     CHECK(SCC_APPEND_AND_CONTINUE("int b;").is_error());
 
+    SCC_TEST_IS_ERROR("int c; int c;");
+    SCC_TEST_IS_ERROR("int d; int d = 1;");
+    SCC_TEST_IS_ERROR("int e = 1; int e;");
+
     // TODOOO: hook on assert
     // auto c1 = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("{int c;}"));
     // auto c2 = SCC_GET_PTR_FROM_RESULT(SCC_APPEND_AND_CONTINUE("{int c;}"));
@@ -412,8 +416,8 @@ TEST_CASE("Assignments")
 
     SCC_TEST_IS_ERROR("a;"); // undeclared
     SCC_TEST_IS_OK("int a;");
-    SCC_TEST_IS_ERROR("a;"); // not initialized
-    SCC_TEST_IS_ERROR("a = a;"); // not initialized
+    // SCC_TEST_IS_ERROR("a;"); // not initialized          EDIT: global variables are initialized to 0, local variables tests are later :)
+    // SCC_TEST_IS_ERROR("a = a;"); // not initialized
     SCC_TEST_INTERPRET_RESULT(int, 1, "a = 1;");
     SCC_TEST_INTERPRET_RESULT(int, 1, "a;");
     SCC_TEST_INTERPRET_RESULT(int, 34, "a = 34;");
@@ -583,6 +587,14 @@ TEST_CASE("Functions")
 
     SCC_TEST_IS_OK("int fn_f() { return var; }");
     SCC_TEST_INTERPRET_RESULT(int, 420, "fn_f();");
+
+    SCC_TEST_IS_ERROR("int fn_g() { return local; int local = 1; } fn_g();");
+    SCC_TEST_IS_ERROR("void fn_h() { int x; x; } fn_h();"); // local variable not initialized
+    SCC_TEST_IS_ERROR("void fn_i() { int x = x; } fn_i();"); // local variable not initialized
+
+    // TODOOOOOO: fix no return statement error.. 
+    // SCC_TEST_IS_ERROR("int fn_j() { int x = 1; } fn_j();"); // no return statement
+
 }
 #include "interpreter_io.hpp"
 TEST_CASE("stdout and stderr")

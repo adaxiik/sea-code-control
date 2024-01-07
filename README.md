@@ -19,7 +19,7 @@
 
 # Used tools
 - bash (for build script, but can be done manually)
-- cmake, compiler with c++17 support
+- cmake, compiler with c++20 support
 - [emscripten](https://emscripten.org/) (only for wasm builds)
 - [nodejs](https://nodejs.org/en/) (only for running wasm builds locally in terminal)
 - [plantuml](https://plantuml.com/) (only for generating diagrams, not used by program itself)
