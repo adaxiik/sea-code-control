@@ -55,16 +55,16 @@ namespace scc
         SCC_PRIMITIVE_TYPE(VoidType, "void", 0)
         SCC_PRIMITIVE_TYPE(BoolType, "bool", 1)
         SCC_PRIMITIVE_TYPE(CharType, "char", 1)
-        SCC_PRIMITIVE_TYPE(I8Type, "i8", 1)
-        SCC_PRIMITIVE_TYPE(I16Type, "i16", 2)
-        SCC_PRIMITIVE_TYPE(I32Type, "i32", 4)
-        SCC_PRIMITIVE_TYPE(I64Type, "i64", 8)
-        SCC_PRIMITIVE_TYPE(U8Type, "u8", 1)
-        SCC_PRIMITIVE_TYPE(U16Type, "u16", 2)
-        SCC_PRIMITIVE_TYPE(U32Type, "u32", 4)
-        SCC_PRIMITIVE_TYPE(U64Type, "u64", 8)
-        SCC_PRIMITIVE_TYPE(F32Type, "f32", 4)
-        SCC_PRIMITIVE_TYPE(F64Type, "f64", 8)
+        SCC_PRIMITIVE_TYPE(I8Type, "signed char", 1)
+        SCC_PRIMITIVE_TYPE(I16Type, "short", 2)
+        SCC_PRIMITIVE_TYPE(I32Type, "int", 4)
+        SCC_PRIMITIVE_TYPE(I64Type, "long", 8)
+        SCC_PRIMITIVE_TYPE(U8Type, "unsigned char", 1)
+        SCC_PRIMITIVE_TYPE(U16Type, "unsigned short", 2)
+        SCC_PRIMITIVE_TYPE(U32Type, "unsigned int", 4)
+        SCC_PRIMITIVE_TYPE(U64Type, "unsigned long", 8)
+        SCC_PRIMITIVE_TYPE(F32Type, "float", 4)
+        SCC_PRIMITIVE_TYPE(F64Type, "double", 8)
 
 
         using PrimitiveType = std::variant<
@@ -123,6 +123,7 @@ namespace scc
 
         struct Stackframe
         {
+            std::string function_name;
             std::vector<Variable> variables;
             std::vector<Variable> parameters;
         };

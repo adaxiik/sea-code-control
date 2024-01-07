@@ -70,7 +70,11 @@ namespace scc::export_format
 
     static void to_json(nlohmann::json& j, const Stackframe& stackframe)
     {
-        j = nlohmann::json{{"variables", stackframe.variables}, {"parameters", stackframe.parameters}};
+        j = nlohmann::json{
+            {"variables", stackframe.variables},
+            {"parameters", stackframe.parameters},
+            {"function_name", stackframe.function_name}
+        };
     }
 
     std::string to_json(const ProgramSnapshot& snapshot)
@@ -151,6 +155,7 @@ namespace scc::export_format
         {
             auto& stackframe = call_stack_copy.top();
             snapshot.stackframes.push_back({
+                .function_name = stackframe.function_name,
                 .variables = {},
                 .parameters = {}
             });
@@ -187,6 +192,10 @@ namespace scc::export_format
 
             call_stack_copy.pop();
         }
+
+        snapshot.stackframes.pop_back(); // remove the last stackframe.. its empty
+        // we'll reverse it, to have the most recent stackframe at the end
+        std::reverse(snapshot.stackframes.begin(), snapshot.stackframes.end());
     }
 
     ProgramSnapshot make_snapshot(const InterpreterState& state)

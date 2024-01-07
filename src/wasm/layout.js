@@ -20,7 +20,7 @@
 //     }]
 // };
 
-function create_component(name)
+function createComponent(name)
 {
     var component = {
         type: 'component',
@@ -30,7 +30,7 @@ function create_component(name)
     return component;
 }
 
-function create_column(components)
+function createColumn(components)
 {
     var column = {
         type: 'column',
@@ -39,7 +39,7 @@ function create_column(components)
     return column;
 }
 
-function create_row(components)
+function createRow(components)
 {
     var row = {
         type: 'row',
@@ -48,12 +48,12 @@ function create_row(components)
     return row;
 }
 
-const terminal_component = create_component('terminal');
-const visualizer_component = create_component('visualizer');
-const editor_component = create_component('editor');
+const terminal_component = createComponent('terminal');
+const visualizer_component = createComponent('visualizer');
+const editor_component = createComponent('editor');
 
-const right_column = create_column([visualizer_component, terminal_component])
-const main_row = create_row([editor_component, right_column]);
+const right_column = createColumn([visualizer_component, terminal_component])
+const main_row = createRow([editor_component, right_column]);
 
 const layout_config = {
     settings:{
@@ -62,7 +62,7 @@ const layout_config = {
     content: [main_row]
 };
 
-function init_layout(layout_id)
+function initLayout(layout_id)
 {
     var layout = new GoldenLayout(layout_config, $('#' + layout_id));
     layout.registerComponent('editor', function(container, state) {

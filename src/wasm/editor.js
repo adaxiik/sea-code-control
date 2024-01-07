@@ -1,4 +1,4 @@
-function init_editor(editor_id)
+function initEditor(editor_id)
 {
     let editor = ace.edit(editor_id);
     editor.setTheme("ace/theme/monokai");

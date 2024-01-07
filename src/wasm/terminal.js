@@ -1,4 +1,4 @@
-function init_terminal(terminal_id)
+function initTerminal(terminal_id)
 {
     let term = new Terminal({
         cursorBlink: true,

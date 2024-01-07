@@ -960,6 +960,12 @@ namespace scc
 
         SCC_ASSERT_NODE_SYMBOL(Parser::IF_STATEMENT_SYMBOL);
         SCC_ASSERT(node.named_child_count() == 2 || node.named_child_count() == 3);
+        // TODOO:
+        // if ()        <- this is error, because it has more childs
+        // // comment
+        // statement
+        // else
+        // statement
         bool has_else = node.named_child_count() == 3;
         auto condition_expr = bind_expression(node.first_named_child());
         BUBBLE_ERROR(condition_expr);

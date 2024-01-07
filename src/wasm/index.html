@@ -30,7 +30,7 @@
     <div id="window">
         <div id="controls">
             <button id="run" onclick="run()">Run</button>
-            <button hidden id="continue" onclick="continue_execution()">Continue</button>
+            <button hidden id="continue" onclick="continueExecution()">Continue</button>
             <button hidden id="next" onclick="next()">Next</button>
             <button id="clear" style="margin-left: 1em;" onclick="term.clear()">Clear</button>
         </div>
@@ -47,14 +47,14 @@
     <script src="c-visualizer.js"></script>
     <script src="visualizer.js"></script>
     <script>
-        let layout = init_layout("layout");
+        let layout = initLayout("layout");
         var editor = null;
         var term = null;
         var visualizer = null;
         layout.on('initialised', function() {
-            editor = init_editor("editor");
-            term = init_terminal("terminal");
-            visualizer = init_visualizer("visualizer");
+            editor = initEditor("editor");
+            term = initTerminal("terminal");
+            visualizer = initVisualizer("visualizer");
         });
         layout.on('stateChanged', function() {
             if (term) {
@@ -68,6 +68,14 @@
         window.addEventListener('resize', function() {
             layout.updateSize();
         });
+
+
+        function visualizeRunningInterpreter(running_interpreter) {
+            let json = Module.snapshot_running_interpreter_as_json(running_interpreter);
+            visualizer = initVisualizer("visualizer");
+            drawExportedSnapshot(visualizer, json);
+        }
+
     </script>
     <script src="scc.js"></script>
 
@@ -100,30 +108,30 @@
 
 
     <script>
-        function delete_if_exists(obj) {
+        function deleteIfExists(obj) {
             if (obj) {
                 obj.delete();
             }
             return null;
         }
 
-        function hide_by_id(id) {
+        function hideById(id) {
             document.getElementById(id).hidden = true;
         }
-        function show_by_id(id) {
+        function showById(id) {
             document.getElementById(id).hidden = false;
         }
 
-        function interpreter_reset() {
-            interpreter = delete_if_exists(interpreter);
-            running_interpreter = delete_if_exists(running_interpreter);
-            hide_by_id("continue");
-            hide_by_id("next");
-            show_by_id("run");
+        function interpreterReset() {
+            interpreter = deleteIfExists(interpreter);
+            running_interpreter = deleteIfExists(running_interpreter);
+            hideById("continue");
+            hideById("next");
+            showById("run");
             editor.setReadOnly(false);
         }
 
-        function add_breakpoints_to_running_interpreter(running_interpreter) {
+        function addBreakpointsToRunningInterpreter(running_interpreter) {
             let breakpoints = editor.session.getBreakpoints();
             for (let i = 0; i < breakpoints.length; i++) {
                 if (breakpoints[i]) {
@@ -132,7 +140,7 @@
             }
         }
 
-        function remove_all_markers() {
+        function removeAllMarkers() {
             // https://stackoverflow.com/questions/65677814/how-to-remove-all-the-existing-highlight-markers-in-ace-editor-using-react
             const markers = editor.session.getMarkers();
             if (markers) {
@@ -148,8 +156,8 @@
         var interpreter = null;
         var running_interpreter = null;
         function run() {
-            interpreter = delete_if_exists(interpreter);
-            running_interpreter = delete_if_exists(running_interpreter);
+            interpreter = deleteIfExists(interpreter);
+            running_interpreter = deleteIfExists(running_interpreter);
 
             editor.setReadOnly(true);
             try {   
@@ -160,27 +168,27 @@
                     throw "Error creating interpreter";
                 } 
                 running_interpreter = running_interpreter_creation_result.value();
-                add_breakpoints_to_running_interpreter(running_interpreter);
+                addBreakpointsToRunningInterpreter(running_interpreter);
 
-                hide_by_id("run");
-                show_by_id("continue");
-                show_by_id("next");
-                continue_execution();
+                hideById("run");
+                showById("continue");
+                showById("next");
+                continueExecution();
             } catch (e) {
                 console.log(e);
-                interpreter_reset();
+                interpreterReset();
             } 
 
         }
         
-        function continue_execution() {
+        function continueExecution() {
             try {
-                remove_all_markers();
+                removeAllMarkers();
 
                 let result = running_interpreter.continue_execution();
                 if (result.is_ok()){
                     console.log("Execution finished");
-                    interpreter_reset();
+                    interpreterReset();
                     return;
                 }
                 
@@ -191,22 +199,22 @@
                     editor.gotoLine(current_line + 1);
                     editor.session.addMarker(new ace.Range(current_line, 0, current_line, 1), "line-highlight", "fullLine");
 
-                    console.log(Module.snapshot_running_interpreter_as_json(running_interpreter));
+                    visualizeRunningInterpreter(running_interpreter);
 
                     return;
                 }
 
                 console.log("Error during interpreting: " + Module.debug_interpreter_error_as_text(error));
-                interpreter_reset();
+                interpreterReset();
             } catch (e) {
                 console.log(e);
-                interpreter_reset();
+                interpreterReset();
             } 
         }
 
         function next(){
             try {
-                remove_all_markers();
+                removeAllMarkers();
 
                 let result = running_interpreter.next();
                 if (result.is_error()){
@@ -216,10 +224,11 @@
                 let current_line = Module.get_location_row(running_interpreter.current_location());
                 editor.gotoLine(current_line + 1);
                 editor.session.addMarker(new ace.Range(current_line, 0, current_line, 1), "line-highlight", "fullLine");
+                visualizeRunningInterpreter(running_interpreter);
 
             } catch (e) {
                 console.log(e);
-                interpreter_reset();
+                interpreterReset();
             } 
         
         }
