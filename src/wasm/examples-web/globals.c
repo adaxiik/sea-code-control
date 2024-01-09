@@ -5,7 +5,10 @@ void _scc_putc(char x);
 
 int g_a = 34;
 int g_b = 35;
-int g_default;  // global variables are initialized to 0
+
+// sadly, precompiling step does not support uninitialized global variables :c
+// you can uncomment this and try it without precompiling :)
+// int g_default;  // global variables are initialized to 0
 
 
 int foo = 420;
@@ -14,7 +17,7 @@ int main()
 {
     _scc_puti(g_a);
     _scc_puti(g_b);
-    _scc_puti(g_default);
+    // _scc_puti(g_default);
 
     // =====
     for (int i = 0; i < 10; i+=1) {
