@@ -59,9 +59,16 @@
         var visualizer = null;
         layout.on('initialised', function() {
             editor = initEditor("editor");
+            editor.commands.addCommand({
+                name: 'run',
+                bindKey: {win: 'Ctrl+Enter', mac: 'Command+Enter'},
+                exec: run
+            });
             loadExample("empty.c");
+
             term = initTerminal("terminal");
             visualizer = initVisualizer("visualizer");
+            
         });
         layout.on('stateChanged', function() {
             if (term) {

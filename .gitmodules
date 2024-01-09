@@ -1,3 +1,6 @@
 [submodule "src/wasm/3rdparty/c-visualizer"]
 	path = src/wasm/3rdparty/c-visualizer
 	url = git@github.com:adaxiik/c-visualizer.git
+[submodule "src/wasm/3rdparty/wasm-clang"]
+	path = src/wasm/3rdparty/wasm-clang
+	url = git@github.com:adaxiik/wasm-clang.git

@@ -20,7 +20,7 @@ SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM
 BUILD_THREADS="${BUILD_THREADS=1}"
 
 C_VISUALIZER_PATH="$PROJECT_PATH/src/wasm/3rdparty/c-visualizer/drawingLibrary"
-
+CLANG_WASM_PATH="$PROJECT_PATH/src/wasm/3rdparty/clang-wasm"
 
 
 
@@ -86,6 +86,7 @@ build_wasm() {
     print_green "Copying files to web folder"
     
     cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
+    cp -r $CLANG_WASM_PATH $BUILD_WASM_FOLDER/web
     cp $PROJECT_PATH/src/wasm/*.{js,css,html} $BUILD_WASM_FOLDER/web
     cp -r $PROJECT_PATH/src/wasm/examples-web $BUILD_WASM_FOLDER/web
     cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
