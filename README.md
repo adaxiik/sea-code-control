@@ -16,6 +16,7 @@
 - [Golden layout](https://golden-layout.com/)
 - [Jquery](https://jquery.com/)
 - [anevrly/VisualizerBP](https://github.com/anevrly/VisualizerBP)
+- [wasm-clang)](https://github.com/binji/wasm-clang)
 
 # Used tools
 - bash (for build script, but can be done manually)
@@ -27,9 +28,9 @@
 
 # Quick start
 
-for usage:
-
 ```bash
+$ git clone --recursive git@github.com:adaxiik/sea-code-control.git
+$ cd sea-code-control
 $ ./build.sh
 ```
 

@@ -20,7 +20,7 @@ SERVER_COMMAND="python3 -m http.server $WASM_SERVER_PORT --directory $BUILD_WASM
 BUILD_THREADS="${BUILD_THREADS=1}"
 
 C_VISUALIZER_PATH="$PROJECT_PATH/src/wasm/3rdparty/c-visualizer/drawingLibrary"
-CLANG_WASM_PATH="$PROJECT_PATH/src/wasm/3rdparty/clang-wasm"
+CLANG_WASM_PATH="$PROJECT_PATH/src/wasm/3rdparty/wasm-clang"
 
 
 
