@@ -406,6 +406,11 @@ namespace scc
 
     }
 
+    void Lowerer::lower(const binding::BoundPointerExpression &pointer_expression)
+    {
+        m_to_lower.push(std::make_pair(lowering::ReferenceInstruction(pointer_expression.identifier), pointer_expression.location));
+    }
+
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
     {
 
@@ -473,7 +478,7 @@ namespace scc
                 continue;
             }
 
-            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18);
+            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 19);
 
             const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
             m_to_lower.pop();
@@ -533,6 +538,9 @@ namespace scc
                 break;
             case binding::BoundNodeKind::ForStatement:
                 lower(*static_cast<const binding::BoundForStatement *>(current_node));
+                break;
+            case binding::BoundNodeKind::PointerExpression:
+                lower(*static_cast<const binding::BoundPointerExpression *>(current_node));
                 break;
             default:
                 SCC_NOT_IMPLEMENTED("Unknown BoundNodeKind in Lowerer::lower");

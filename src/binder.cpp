@@ -461,6 +461,35 @@ namespace scc
 
     }
 
+    binding::BinderResult<binding::BoundPointerExpression> Binder::bind_pointer_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_pointer_expression);
+        SCC_ASSERT_NODE_SYMBOL(Parser::POINTER_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+        // pointer_expression ==>  &a
+        // └── identifier ==>      a
+
+        auto identifier = node.first_named_child();
+        if (identifier.symbol() != Parser::IDENTIFIER_SYMBOL)
+        {
+            // unreachable?
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+        }
+
+        Type* type_ptr = m_scope_stack.get_from_scopestack(identifier.value());
+
+        if (not type_ptr)
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown identifier: " + identifier.value());
+            return error;
+        }
+
+        Type type = *type_ptr;
+        type.modifiers.push_back(Type::Pointer{});
+        return std::make_unique<binding::BoundPointerExpression>(identifier.value(), type);
+    }
+
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
         // okay, this function actually becomes redundat, because TreeSitter is so inconsistent
@@ -485,6 +514,8 @@ namespace scc
             return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::CALL_EXPRESSION_SYMBOL:
             return bind_call_expression(node).add_location_to_value_if_ok(node.location());
+        case Parser::POINTER_EXPRESSION_SYMBOL:
+            return bind_pointer_expression(node).add_location_to_value_if_ok(node.location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;

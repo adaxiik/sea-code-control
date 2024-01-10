@@ -6,17 +6,16 @@ namespace scc
     {
         struct BoundPointerExpression : public BoundExpression
         {
-            Type::Value value;
-            BoundPointerExpression(const Type::Value& value)                
-                : BoundExpression(Type::from_value(value)) 
-                , value(value)
+            std::string identifier;
+            BoundPointerExpression(const std::string &identifier, const Type &result_type)
+                : BoundExpression(result_type), identifier(identifier)
             {
             }
 
             virtual BoundNodeKind bound_node_kind() const override
             {
                 // TODO: Change this
-                return BoundNodeKind::LiteralExpression; 
+                return BoundNodeKind::PointerExpression; 
             }
         };
     } 

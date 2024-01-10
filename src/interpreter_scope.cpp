@@ -63,8 +63,8 @@ namespace  scc
                 .ref_scopes()
                 .emplace(name,Variable(type, current_address, is_constant, is_parameter));
         
-
-        return InterpreterResult::ok(static_cast<unsigned long long>(current_address));
+        type.modifiers.push_back(Type::Pointer{});
+        return InterpreterResult::ok(InterpreterResultValue(current_address, type));
     }
 
     std::vector<InterpreterScope> &InterpreterScopeStack::ref_scopes() { return m_scopes; }

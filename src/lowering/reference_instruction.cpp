@@ -1,10 +1,10 @@
-#include "lowering/identifier_instruction.hpp"
+#include "lowering/reference_instruction.hpp"
 
 namespace scc
 {
     namespace lowering
     {
-        InterpreterResult IdentifierInstruction::execute(InterpreterState &state) const
+        InterpreterResult ReferenceInstruction::execute(InterpreterState &state) const
         {
             auto variable = state.call_stack.scope_stack().get_from_scopestack(identifier);
             if (not variable)
@@ -16,12 +16,11 @@ namespace scc
             if (not variable->is_initialized())
                 return InterpreterError::VariableNotInitializedError;
         
-        
-            auto value = variable->get_value(state.memory, variable->type());
-            if (not value)
-                return InterpreterError::VariableNotInitializedError; // or memory error??
 
-            return InterpreterResult::ok(InterpreterResultValue(value.value()));
+            Type type = variable->type();
+            type.modifiers.push_back(Type::Pointer{});
+
+            return InterpreterResult::ok(InterpreterResultValue(variable->address(), type));
         }
     }
 }

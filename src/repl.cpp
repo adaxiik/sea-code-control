@@ -104,12 +104,18 @@ namespace scc
                 continue;
             }
 
+            debug::ast_as_text_tree(m_output_stream, parse_result);
+
             auto bind_result = m_interpreter.bind(parse_result.root_node());
             if (bind_result.is_error())
             {
                 m_output_stream << RED << "Bind error" << RESET << std::endl;
+                m_output_stream << static_cast<int>(bind_result.get_error().kind) << std::endl;
+
                 continue;
             }
+
+            debug::bound_ast_as_text_tree(m_output_stream, *bind_result.get_value());
 
             auto lower_result = m_interpreter.lower(static_cast<binding::BoundBlockStatement*>(bind_result.get_value()));
             {

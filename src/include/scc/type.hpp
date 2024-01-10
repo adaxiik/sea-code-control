@@ -504,7 +504,7 @@ namespace scc
         struct Value;
 
         template <typename T>
-        static constexpr Type deduce_type()
+        static Type deduce_type()
         {
             if constexpr (std::is_same_v<T, char>)
                 return Type(PrimitiveType::Char);

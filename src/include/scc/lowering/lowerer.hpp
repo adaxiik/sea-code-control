@@ -24,6 +24,7 @@
 #include "binding/bound_identifier_expression.hpp"
 #include "binding/bound_assignment_expression.hpp"
 #include "binding/bound_call_expression.hpp"
+#include "binding/bound_pointer_expression.hpp"
 
 #include "location.hpp"
 
@@ -56,7 +57,7 @@ namespace scc
 
         bool should_drop_after_statement(const binding::BoundStatement* statement);
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18);
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 19);
 
         void lower(const binding::BoundExpressionStatement &expression_statement);
         void lower(const binding::BoundBlockStatement &block_statement);
@@ -80,6 +81,7 @@ namespace scc
         void lower(const binding::BoundCallExpression &call_expression);
         void lower_user_fn_call(const binding::BoundCallExpression &call_expression);
         void lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression);
+        void lower(const binding::BoundPointerExpression &pointer_expression);
 
     public:
         std::vector<std::pair<lowering::Instruction, std::optional<Location>>> lower(const binding::BoundBlockStatement* root);
