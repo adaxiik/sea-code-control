@@ -23,9 +23,9 @@ namespace scc
 
     void REPL::print_result(const InterpreterResult &result)
     {
-        if (result.get_value().type.pointer_depth > 0)
+        if (result.get_value().type.is_pointer())
         {
-            m_output_stream << "0x" << std::hex << std::get<Memory::address_t>(result.get_value().value) << std::dec; 
+            m_output_stream << "0x" << std::hex << std::get<Memory::address_t>(result.get_value().value.primitive_value().value()) << std::dec; 
             return;
         }
 
@@ -42,7 +42,7 @@ namespace scc
             [&](const Type::Primitive::F32& value) { m_output_stream << value; },
             [&](const Type::Primitive::F64& value) { m_output_stream << value; },
             [&](const Type::Primitive::Bool& value) { m_output_stream << (value ? "true" : "false") ; }
-        }, result.get_value().value);
+        }, result.get_value().value.primitive_value().value());
     }
 
     void REPL::run()

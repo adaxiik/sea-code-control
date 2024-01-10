@@ -166,26 +166,8 @@ namespace scc
 
         void type_as_text(std::ostream &ss, const Type &type)
         {
-            static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
-            switch (type.kind)
-            {
-                case Type::Kind::Char: ss << "char";           break;
-                case Type::Kind::U8:   ss << "unsigned char";  break;
-                case Type::Kind::U16:  ss << "unsigned short"; break;
-                case Type::Kind::U32:  ss << "unsigned int";   break;
-                case Type::Kind::U64:  ss << "unsigned long";  break;
-                case Type::Kind::I8:   ss << "signed char";    break;
-                case Type::Kind::I16:  ss << "short";          break;
-                case Type::Kind::I32:  ss << "int";            break;
-                case Type::Kind::I64:  ss << "long";           break;
-                case Type::Kind::F32:  ss << "float";          break;
-                case Type::Kind::F64:  ss << "double";         break;
-                case Type::Kind::Bool: ss << "bool";           break;
-                case Type::Kind::Void: ss << "void";           break;
-                default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
-            }
-            for (size_t i = 0; i < type.pointer_depth; i++)
-                ss << "*";            
+            // dont tell anyone.. its for legacy reasons :D
+            ss << type;
         }
 
         // TODOOOOOOOOOO: convert it into multiple functions for each node type

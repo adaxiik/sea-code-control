@@ -16,53 +16,57 @@ namespace scc
 
             auto target_type{type};
 
+            // TODOOO: casting for structs
+            if (not target_type.is_primitive())
+                return InterpreterResult::error(InterpreterError::InvalidOperationError);
+
 
             if (target_type == result.get_value().type)
                 return result;
 
-            if (target_type.pointer_depth > 0)
+            if (target_type.pointer_depth() > 0)
             {
-                switch (result.get_value().type.kind)
+                switch (result.get_value().type.primitive_type().value_or(Type::PrimitiveType::COUNT))
                 {
-                    case Type::Kind::Char:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Char>(result.get_value().value)), target_type));
-                    case Type::Kind::U8:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U8>(result.get_value().value)), target_type));
-                    case Type::Kind::I8:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I8>(result.get_value().value)), target_type));
-                    case Type::Kind::U16:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U16>(result.get_value().value)), target_type));
-                    case Type::Kind::I16:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I16>(result.get_value().value)), target_type));
-                    case Type::Kind::U32:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U32>(result.get_value().value)), target_type));
-                    case Type::Kind::I32:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I32>(result.get_value().value)), target_type));
-                    case Type::Kind::U64:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value)), target_type));
-                    case Type::Kind::I64:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value)), target_type));
-                    case Type::Kind::F32:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F32>(result.get_value().value)), target_type));
-                    case Type::Kind::F64:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F64>(result.get_value().value)), target_type));
-                    case Type::Kind::Bool:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Bool>(result.get_value().value)), target_type));
-                    case Type::Kind::Void:
+                    case Type::PrimitiveType::Char:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Char>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::U8:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U8>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::I8:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I8>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::U16:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U16>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::I16:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I16>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::U32:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U32>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::I32:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I32>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::U64:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::I64:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::F32:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F32>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::F64:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F64>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::Bool:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::Bool>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::Void:
                         return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(0), target_type));
                     default:
                         return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
                 }
             }
 
-            static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
+            static_assert(static_cast<int>(Type::PrimitiveType::COUNT) == 13, "Update this code");
 
 
-            #define CAST_CASE(KIND_TYPE, TARGET_TYPE) case Type::Kind::KIND_TYPE: \
-                return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::get<Type::Primitive::KIND_TYPE>(result.get_value().value))))
+            #define CAST_CASE(KIND_TYPE, TARGET_TYPE) case Type::PrimitiveType::KIND_TYPE: \
+                return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::get<Type::Primitive::KIND_TYPE>(result.get_value().value.primitive_value().value()))))
             
             #define CAST_ORIGINAL(TARGET_TYPE) do{ \
-                switch(result.get_value().type.kind) \
+                switch(result.get_value().type.primitive_type().value_or(Type::PrimitiveType::COUNT)) \
                 { \
                     CAST_CASE(Char, TARGET_TYPE); \
                     CAST_CASE(U8, TARGET_TYPE); \
@@ -78,21 +82,21 @@ namespace scc
                         return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
                 }}while(0)
 
-            switch(target_type.kind)
+            switch(target_type.primitive_type().value_or(Type::PrimitiveType::COUNT))
             {
-                case Type::Kind::Char: CAST_ORIGINAL(Type::Primitive::Char);
-                case Type::Kind::U8: CAST_ORIGINAL(Type::Primitive::U8);
-                case Type::Kind::I8: CAST_ORIGINAL(Type::Primitive::I8);
-                case Type::Kind::U16: CAST_ORIGINAL(Type::Primitive::U16);
-                case Type::Kind::I16: CAST_ORIGINAL(Type::Primitive::I16);
-                case Type::Kind::U32: CAST_ORIGINAL(Type::Primitive::U32);
-                case Type::Kind::I32: CAST_ORIGINAL(Type::Primitive::I32);
-                case Type::Kind::U64: CAST_ORIGINAL(Type::Primitive::U64);
-                case Type::Kind::I64: CAST_ORIGINAL(Type::Primitive::I64);
-                case Type::Kind::F32: CAST_ORIGINAL(Type::Primitive::F32);
-                case Type::Kind::F64: CAST_ORIGINAL(Type::Primitive::F64);
-                case Type::Kind::Bool: CAST_ORIGINAL(Type::Primitive::Bool);
-                case Type::Kind::Void: 
+                case Type::PrimitiveType::Char: CAST_ORIGINAL(Type::Primitive::Char);
+                case Type::PrimitiveType::U8: CAST_ORIGINAL(Type::Primitive::U8);
+                case Type::PrimitiveType::I8: CAST_ORIGINAL(Type::Primitive::I8);
+                case Type::PrimitiveType::U16: CAST_ORIGINAL(Type::Primitive::U16);
+                case Type::PrimitiveType::I16: CAST_ORIGINAL(Type::Primitive::I16);
+                case Type::PrimitiveType::U32: CAST_ORIGINAL(Type::Primitive::U32);
+                case Type::PrimitiveType::I32: CAST_ORIGINAL(Type::Primitive::I32);
+                case Type::PrimitiveType::U64: CAST_ORIGINAL(Type::Primitive::U64);
+                case Type::PrimitiveType::I64: CAST_ORIGINAL(Type::Primitive::I64);
+                case Type::PrimitiveType::F32: CAST_ORIGINAL(Type::Primitive::F32);
+                case Type::PrimitiveType::F64: CAST_ORIGINAL(Type::Primitive::F64);
+                case Type::PrimitiveType::Bool: CAST_ORIGINAL(Type::Primitive::Bool);
+                case Type::PrimitiveType::Void: 
                     return InterpreterResult::error(InterpreterError::InvalidOperationError);
                 default:
                     return InterpreterResult::error(InterpreterError::ReachedUnreachableError); 

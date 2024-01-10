@@ -14,6 +14,10 @@ namespace scc
         {
             static_assert(static_cast<int>(OperatorKind::COUNT) == 18, "Update this code");
 
+            static_assert(std::variant_size_v<Type::BaseType> == 2, "Update this code");
+            if (std::holds_alternative<Type::StructType>(left.base_type) or std::holds_alternative<Type::StructType>(right.base_type))
+                return std::nullopt;
+
 
         #define DO_CASTED_OP(OP, STRUCT_NAME, LEFT_CAST, RIGHT_CAST) do{ \
             if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,RIGHT_CAST>::type, OperationResult::InvalidOperation>) \
@@ -27,13 +31,13 @@ namespace scc
          }while(0)
 
         #define RIGHT_CASE(OP, STRUCT_NAME, LEFT_CAST, TYPE, CTYPE) \
-            case Type::Kind::TYPE:                     \
+            case Type::PrimitiveType::TYPE:                     \
                 DO_CASTED_OP(OP, STRUCT_NAME, LEFT_CAST, CTYPE)
 
         #define DO_OP_RIGHT(OP, STRUCT_NAME, LEFT_CAST)                                                      \
             do                                                                                               \
             {                                                                                                \
-                switch (right.kind)                                                                          \
+                switch (std::get<Type::PrimitiveType>(right.base_type))                                                                          \
                 {                                                                                            \
                     RIGHT_CASE(OP, STRUCT_NAME, LEFT_CAST, Char, char);                                      \
                     RIGHT_CASE(OP, STRUCT_NAME, LEFT_CAST, U8, unsigned char);                               \
@@ -52,13 +56,13 @@ namespace scc
             } while (0)
 
         #define LEFT_CASE(OP, STRUCT_NAME, TYPE, CTYPE) \
-            case Type::Kind::TYPE:         \
+            case Type::PrimitiveType::TYPE:         \
                 DO_OP_RIGHT(OP, STRUCT_NAME, CTYPE)
 
         #define DO_OP_LEFT(OP,STRUCT_NAME)                                                      \
             do                                                                                  \
             {                                                                                   \
-                switch (left.kind)                                                              \
+                switch(std::get<Type::PrimitiveType>(left.base_type))                       \
                 {                                                                               \
                     LEFT_CASE(OP,STRUCT_NAME, Char, char);                                      \
                     LEFT_CASE(OP,STRUCT_NAME, U8, unsigned char);                               \

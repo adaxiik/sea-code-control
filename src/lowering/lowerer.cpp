@@ -218,7 +218,7 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), function_statement.location));
 
         // for missing returns in non void functions should check binder
-        if (function_statement.return_type == Type(Type::Kind::Void))
+        if (function_statement.return_type == Type(Type::PrimitiveType::Void))
             m_to_lower.push(std::make_pair(lowering::ReturnInstruction(), function_statement.location));
 
 
@@ -298,7 +298,7 @@ namespace scc
 
     void Lowerer::lower_user_fn_call(const binding::BoundCallExpression &call_expression)
     {
-        m_to_lower.push(std::make_pair(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::Kind::Void)), call_expression.location));
+        m_to_lower.push(std::make_pair(lowering::CallInstruction(call_expression.function_name, call_expression.type != Type(Type::PrimitiveType::Void)), call_expression.location));
         for (auto& argument: call_expression.arguments)
             m_to_lower.push(argument.get());
     }
@@ -312,7 +312,7 @@ namespace scc
                 lowering::CallInbuildInstruction(
                     call_expression.function_name,
                     fn.inbuild_function,
-                    fn.return_type != Type(Type::Kind::Void)
+                    fn.return_type != Type(Type::PrimitiveType::Void)
                 ), 
             call_expression.location)
         );
@@ -418,7 +418,7 @@ namespace scc
         auto expression_statement = static_cast<const binding::BoundExpressionStatement*>(statement);
         auto expression = expression_statement->expression.get();
         if (expression->bound_node_kind() == binding::BoundNodeKind::CallExpression &&
-            static_cast<const binding::BoundCallExpression*>(expression)->type == Type(Type::Kind::Void))
+            static_cast<const binding::BoundCallExpression*>(expression)->type == Type(Type::PrimitiveType::Void))
         {
             return false;    
         }

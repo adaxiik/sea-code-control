@@ -31,32 +31,42 @@ namespace scc
 
         std::optional<Type::Value> get_value(const Memory& memory, Type type) const
         {
-            #define CASE_GET_VALUE(KIND) case Type::Kind::KIND: \
+            #define CASE_GET_VALUE(KIND) case Type::PrimitiveType::KIND: \
                 { \
                     auto value = get_value<Type::Primitive::KIND>(memory); \
-                    if (!value.has_value()) \
+                    if (not value.has_value()) \
                         return std::nullopt; \
                     return Type::Value(value.value()); \
                 } \
                 break;
-            switch (type.kind)
-            {
-                CASE_GET_VALUE(Char)
-                CASE_GET_VALUE(I8)
-                CASE_GET_VALUE(U8)
-                CASE_GET_VALUE(I16)
-                CASE_GET_VALUE(U16)
-                CASE_GET_VALUE(I32)
-                CASE_GET_VALUE(U32)
-                CASE_GET_VALUE(I64)
-                CASE_GET_VALUE(U64)
-                CASE_GET_VALUE(F32)
-                CASE_GET_VALUE(F64)
-                CASE_GET_VALUE(Bool)
 
-                case Type::Kind::COUNT:
-                default:
-                    return std::nullopt;
+            static_assert(std::variant_size_v<Type::BaseType> == 2);
+            if (std::holds_alternative<Type::PrimitiveType>(type.base_type))
+            {
+                static_assert(static_cast<int>(Type::PrimitiveType::COUNT) == 13);
+                switch (std::get<Type::PrimitiveType>(type.base_type))
+                {
+                    CASE_GET_VALUE(Char)
+                    CASE_GET_VALUE(I8)
+                    CASE_GET_VALUE(U8)
+                    CASE_GET_VALUE(I16)
+                    CASE_GET_VALUE(U16)
+                    CASE_GET_VALUE(I32)
+                    CASE_GET_VALUE(U32)
+                    CASE_GET_VALUE(I64)
+                    CASE_GET_VALUE(U64)
+                    CASE_GET_VALUE(F32)
+                    CASE_GET_VALUE(F64)
+                    CASE_GET_VALUE(Bool)
+                    default:
+                        return std::nullopt;
+                }
+            }
+            else
+            {
+                // TODOOO: implement struct variables
+                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
+                std::abort(); 
             }
         }
 
@@ -75,9 +85,17 @@ namespace scc
 
         bool set_value(Memory& memory, Type::Value value)
         {
-            #define CASE_SET_VALUE(KIND) case Type::Kind::KIND: \
-                return set_value<Type::Primitive::KIND>(memory, std::get<Type::Primitive::KIND>(value));
-            switch (m_type.kind)
+            #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
+                return set_value<Type::Primitive::KIND>(memory, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
+
+            if (m_type.is_struct())
+            {
+                // TODOOO: implement struct variables
+                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
+                std::abort();
+            }
+
+            switch (std::get<Type::PrimitiveType>(m_type.base_type))
             {
                 CASE_SET_VALUE(Char)
                 CASE_SET_VALUE(I8)
@@ -92,7 +110,7 @@ namespace scc
                 CASE_SET_VALUE(F64)
                 CASE_SET_VALUE(Bool)
 
-                case Type::Kind::COUNT:
+                case Type::PrimitiveType::COUNT:
                 default:
                     return false;
             }

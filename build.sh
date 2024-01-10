@@ -102,7 +102,7 @@ build_native() {
     fi
 
     cd "$BUILD_NATIVE_FOLDER"
-    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE $PROJECT_PATH
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=gcc $PROJECT_PATH
     make -j$BUILD_THREADS 
     cd "$PROJECT_PATH"
 }
