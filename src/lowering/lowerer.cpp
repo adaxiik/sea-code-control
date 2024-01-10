@@ -78,7 +78,7 @@ namespace scc
         else if (variable_value_declaration_statement.is_global)
         {
             m_to_lower.push(std::make_pair(lowering::CastInstruction(variable_value_declaration_statement.type), variable_value_declaration_statement.location));
-            m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(variable_value_declaration_statement.type, 0), variable_value_declaration_statement.location));
+            m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(Type::PrimitiveType::I32, 0), variable_value_declaration_statement.location));
         }
 
     }

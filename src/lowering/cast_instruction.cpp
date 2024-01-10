@@ -20,9 +20,17 @@ namespace scc
             if (not target_type.is_primitive())
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
 
-            // (int)(int*) 
-            if (result.get_value().type.is_pointer() and not target_type.is_pointer())
+            // (int)(int*) x;
+            // int32_t x = (int32_t)(int64_t)(int32_t*)1;  // ok
+            // int32_t y = (int32_t)(int32_t*)1;           // error
+
+            if (result.get_value().type.is_pointer() 
+                and not target_type.is_pointer() 
+                and target_type != Type(Type::PrimitiveType::U64) 
+                and target_type != Type(Type::PrimitiveType::I64))
+            {
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
+            }
 
             if (target_type == result.get_value().type)
                 return result;
@@ -89,6 +97,19 @@ namespace scc
                     default: \
                         return InterpreterResult::error(InterpreterError::ReachedUnreachableError); \
                 }}while(0)
+
+            if (result.get_value().type.is_pointer())
+            {
+                switch(target_type.primitive_type().value_or(Type::PrimitiveType::COUNT))
+                {
+                    case Type::PrimitiveType::I64:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+                    case Type::PrimitiveType::U64:
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+                    default:
+                        return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
+                }
+            }
 
             switch(target_type.primitive_type().value_or(Type::PrimitiveType::COUNT))
             {
