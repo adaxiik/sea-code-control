@@ -20,12 +20,18 @@ namespace scc
             if (not target_type.is_primitive())
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
 
+            // (int)(int*) 
+            if (result.get_value().type.is_pointer() and not target_type.is_pointer())
+                return InterpreterResult::error(InterpreterError::InvalidOperationError);
 
             if (target_type == result.get_value().type)
                 return result;
 
-            if (target_type.pointer_depth() > 0)
+            if (target_type.is_pointer())
             {
+                if (result.get_value().type.is_pointer())
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+
                 switch (result.get_value().type.primitive_type().value_or(Type::PrimitiveType::COUNT))
                 {
                     case Type::PrimitiveType::Char:
@@ -45,7 +51,7 @@ namespace scc
                     case Type::PrimitiveType::U64:
                         return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
                     case Type::PrimitiveType::I64:
-                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::U64>(result.get_value().value.primitive_value().value())), target_type));
+                        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::I64>(result.get_value().value.primitive_value().value())), target_type));
                     case Type::PrimitiveType::F32:
                         return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::U64>(std::get<Type::Primitive::F32>(result.get_value().value.primitive_value().value())), target_type));
                     case Type::PrimitiveType::F64:
@@ -71,6 +77,8 @@ namespace scc
                     CAST_CASE(Char, TARGET_TYPE); \
                     CAST_CASE(U8, TARGET_TYPE); \
                     CAST_CASE(I8, TARGET_TYPE); \
+                    CAST_CASE(U16, TARGET_TYPE); \
+                    CAST_CASE(I16, TARGET_TYPE); \
                     CAST_CASE(U32, TARGET_TYPE); \
                     CAST_CASE(I32, TARGET_TYPE); \
                     CAST_CASE(U64, TARGET_TYPE); \
