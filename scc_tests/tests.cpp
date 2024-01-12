@@ -231,6 +231,12 @@ TEST_CASE("Single Expressions")
         SCC_TEST_INTERPRET_RESULT(int, 420, "(int)420.69f;");
         SCC_TEST_INTERPRET_RESULT(short, 420, "(short)420.69f;");
 
+        // int32_t x = (int32_t)(int64_t)(int32_t*)1;  // ok
+        // int32_t y = (int32_t)(int32_t*)1;           // error
+
+        SCC_TEST_INTERPRET_RESULT(int, 1, "(int)(long)(int*)1;");
+        SCC_TEST_IS_ERROR("(int)(int*)1;");
+
         SCC_TEST_TYPE_PTR(I32, 1, (int*)1);
         SCC_TEST_TYPE_PTR(Char, 1, (char*)1);
         SCC_TEST_TYPE_PTR(I32, 2, (int**)2);
