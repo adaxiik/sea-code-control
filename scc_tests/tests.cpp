@@ -26,7 +26,7 @@ auto scc_append_and_continue(scc::Interpreter& interpreter, scc::RunningInterpre
     {  \
         auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
-        CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
+        CHECK(result.get_value().type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT) == scc::Type::PrimitiveType::TYPE); \
     }while(0)
 
 #define SCC_TEST_TYPE_PTR(TYPE,PTR_DEPTH, VALUE) \
@@ -34,8 +34,8 @@ auto scc_append_and_continue(scc::Interpreter& interpreter, scc::RunningInterpre
     {  \
         auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
-        CHECK(result.get_value().type.kind == scc::Type::Kind::TYPE); \
-        CHECK(result.get_value().type.pointer_depth == PTR_DEPTH); \
+        CHECK(result.get_value().type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT) == scc::Type::PrimitiveType::TYPE); \
+        CHECK(result.get_value().type.pointer_depth() == PTR_DEPTH); \
     }while(0)
 
 #define SCC_TEST_TYPE_AUTO(VALUE) \
@@ -43,7 +43,7 @@ auto scc_append_and_continue(scc::Interpreter& interpreter, scc::RunningInterpre
     {  \
         auto result = SCC_APPEND_AND_CONTINUE(#VALUE ";"); \
         CHECK(result.is_ok_and_has_value()); \
-        CHECK(result.get_value().type.kind == scc::Type::deduce_type<decltype(VALUE)>().kind); \
+        CHECK(result.get_value().type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT) == scc::Type::deduce_type<decltype(VALUE)>().primitive_type().value_or(scc::Type::PrimitiveType::COUNT)); \
     }while(0)
 
 #define SCC_TEST_IS_ERROR(VALUE) \
@@ -57,8 +57,8 @@ auto scc_append_and_continue(scc::Interpreter& interpreter, scc::RunningInterpre
     do{ \
         auto result = SCC_APPEND_AND_CONTINUE(CODE); \
         CHECK(result.is_ok_and_has_value()); \
-        CHECK(result.get_value().type.kind == scc::Type::deduce_type<CTYPE>().kind); \
-        CHECK(std::get<CTYPE>(result.get_value().value) == EXPECTED_VALUE); \
+        CHECK(result.get_value().type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT) == scc::Type::deduce_type<CTYPE>().primitive_type().value_or(scc::Type::PrimitiveType::COUNT)); \
+        CHECK(std::get<CTYPE>(result.get_value().value.primitive_value().value() ) == EXPECTED_VALUE); \
     }while(0)
 
 #define SCC_TEST_IS_OK(CODE) \
@@ -231,6 +231,12 @@ TEST_CASE("Single Expressions")
         SCC_TEST_INTERPRET_RESULT(int, 420, "(int)420.69f;");
         SCC_TEST_INTERPRET_RESULT(short, 420, "(short)420.69f;");
 
+        // int32_t x = (int32_t)(int64_t)(int32_t*)1;  // ok
+        // int32_t y = (int32_t)(int32_t*)1;           // error
+
+        SCC_TEST_INTERPRET_RESULT(int, 1, "(int)(long)(int*)1;");
+        SCC_TEST_IS_ERROR("(int)(int*)1;");
+
         SCC_TEST_TYPE_PTR(I32, 1, (int*)1);
         SCC_TEST_TYPE_PTR(Char, 1, (char*)1);
         SCC_TEST_TYPE_PTR(I32, 2, (int**)2);
@@ -382,7 +388,7 @@ TEST_CASE("Memory alloc and free")
 }
 
 #define SCC_GET_PTR_FROM_RESULT(INTERPRETER_RESULT) \
-    std::get<scc::Type::Primitive::U64>(INTERPRETER_RESULT.get_value().value)
+    std::get<scc::Type::Primitive::PTR>(INTERPRETER_RESULT.get_value().value.primitive_value().value())
 
 
 TEST_CASE("Scopes")

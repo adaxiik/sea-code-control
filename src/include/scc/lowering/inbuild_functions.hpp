@@ -27,11 +27,11 @@ namespace scc::lowering::inbuild
     InterpreterResult cos(InterpreterState &state);
 
     const std::map<FunctionName, Function> inbuild_functions = {
-        {"_scc_puti", {puti, Type(Type::Kind::Void), {Type(Type::Kind::I32)}}},
-        {"_scc_putc", {putc, Type(Type::Kind::Void), {Type(Type::Kind::Char)}}},
-        {"_scc_sinf", {sinf, Type(Type::Kind::F32), {Type(Type::Kind::F32)}}},
-        {"_scc_cosf", {cosf, Type(Type::Kind::F32), {Type(Type::Kind::F32)}}},
-        {"_scc_sin", {sin, Type(Type::Kind::F64), {Type(Type::Kind::F64)}}},
-        {"_scc_cos", {cos, Type(Type::Kind::F64), {Type(Type::Kind::F64)}}},
+        {"_scc_puti", {puti, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::I32)}}},
+        {"_scc_putc", {putc, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::Char)}}},
+        {"_scc_sinf", {sinf, Type(Type::PrimitiveType::F32), {Type(Type::PrimitiveType::F32)}}},
+        {"_scc_cosf", {cosf, Type(Type::PrimitiveType::F32), {Type(Type::PrimitiveType::F32)}}},
+        {"_scc_sin", {sin, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
+        {"_scc_cos", {cos, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
     };
 }

@@ -19,6 +19,7 @@
 #include "binding/bound_return_statement.hpp"
 #include "binding/bound_call_expression.hpp"
 #include "binding/bound_for_statement.hpp"
+#include "binding/bound_pointer_expression.hpp"
 
 #include "lowering/binary_operation_instruction.hpp"
 #include "lowering/cast_instruction.hpp"
@@ -166,29 +167,11 @@ namespace scc
 
         void type_as_text(std::ostream &ss, const Type &type)
         {
-            static_assert(static_cast<int>(Type::Kind::COUNT) == 13, "Update this code");
-            switch (type.kind)
-            {
-                case Type::Kind::Char: ss << "char";           break;
-                case Type::Kind::U8:   ss << "unsigned char";  break;
-                case Type::Kind::U16:  ss << "unsigned short"; break;
-                case Type::Kind::U32:  ss << "unsigned int";   break;
-                case Type::Kind::U64:  ss << "unsigned long";  break;
-                case Type::Kind::I8:   ss << "signed char";    break;
-                case Type::Kind::I16:  ss << "short";          break;
-                case Type::Kind::I32:  ss << "int";            break;
-                case Type::Kind::I64:  ss << "long";           break;
-                case Type::Kind::F32:  ss << "float";          break;
-                case Type::Kind::F64:  ss << "double";         break;
-                case Type::Kind::Bool: ss << "bool";           break;
-                case Type::Kind::Void: ss << "void";           break;
-                default: ss << "Unreachable " << __FILE__ << ":" << __LINE__; std::exit(1); break;
-            }
-            for (size_t i = 0; i < type.pointer_depth; i++)
-                ss << "*";            
+            // dont tell anyone.. its for legacy reasons :D
+            ss << type;
         }
 
-        // TODOOOOOOOOOO: convert it into multiple functions for each node type
+        // TODOOOOOOOOOO0: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {  
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
@@ -206,7 +189,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 18, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 19, "Update this switch statement");
                 
                 
                 if (node.location)
@@ -493,6 +476,12 @@ namespace scc
                     }
                     break;
                 }
+                case binding::BoundNodeKind::PointerExpression:
+                {
+                    auto& pointer_expression = static_cast<const binding::BoundPointerExpression&>(node);
+                    ss << "PointerExpression (" << pointer_expression.type << ") ==> " << pointer_expression.identifier << std::endl;
+                    break;
+                }
                 case binding::BoundNodeKind::VariableDeclarationStatement:
                 {
                     auto& variable_declaration_statement = static_cast<const binding::BoundVariableDeclarationStatement&>(node);
@@ -679,7 +668,7 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 17, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 18, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==> ";
@@ -768,6 +757,9 @@ namespace scc
                 [&](lowering::RegisterFunctionInstruction register_function) {
                     ss << "RegisterFunction ==> " << register_function.function_name;
                 },
+                [&](lowering::ReferenceInstruction reference) {
+                    ss << "Reference ==> " << reference.identifier;
+                }
             }, instruction);
         }
 

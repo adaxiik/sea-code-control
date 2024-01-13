@@ -18,8 +18,11 @@ namespace scc
             
             auto result = state.result_stack.top();
             state.result_stack.pop();
+
+            if (result.get_value().type != Type(Type::PrimitiveType::Bool))
+                return InterpreterError::InvalidOperationError;
             
-            if (!std::get<bool>(result.get_value().value))
+            if (not std::get<bool>(result.get_value().value.primitive_value().value()))
                 state.instruction_pointer = state.labels.at(label);
 
             return InterpreterError::None;

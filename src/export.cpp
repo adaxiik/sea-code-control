@@ -101,23 +101,29 @@ namespace scc::export_format
             std::abort();
         }
 
-        static_assert(static_cast<int>(scc::Type::Kind::COUNT) == 13);
-        switch (type.kind)
+        if (type.is_struct())
         {
-        case scc::Type::Kind::Char: return scc::export_format::PrimitiveType{scc::export_format::CharType{}};
-        case scc::Type::Kind::I8:   return scc::export_format::PrimitiveType{scc::export_format::I8Type{}};
-        case scc::Type::Kind::I16:  return scc::export_format::PrimitiveType{scc::export_format::I16Type{}};
-        case scc::Type::Kind::I32:  return scc::export_format::PrimitiveType{scc::export_format::I32Type{}};
-        case scc::Type::Kind::I64:  return scc::export_format::PrimitiveType{scc::export_format::I64Type{}};
-        case scc::Type::Kind::U8:   return scc::export_format::PrimitiveType{scc::export_format::U8Type{}};
-        case scc::Type::Kind::U16:  return scc::export_format::PrimitiveType{scc::export_format::U16Type{}};
-        case scc::Type::Kind::U32:  return scc::export_format::PrimitiveType{scc::export_format::U32Type{}};
-        case scc::Type::Kind::U64:  return scc::export_format::PrimitiveType{scc::export_format::U64Type{}};
-        case scc::Type::Kind::F32:  return scc::export_format::PrimitiveType{scc::export_format::F32Type{}};
-        case scc::Type::Kind::F64:  return scc::export_format::PrimitiveType{scc::export_format::F64Type{}};
-        case scc::Type::Kind::Bool: return scc::export_format::PrimitiveType{scc::export_format::BoolType{}};
+            std::cerr << "type_to_export_type: struct type is not supported yet" << std::endl;
+            std::abort();
+        }
+
+        static_assert(static_cast<int>(scc::Type::PrimitiveType::COUNT) == 13);
+        switch (type.primitive_type().value())
+        {
+        case scc::Type::PrimitiveType::Char: return scc::export_format::PrimitiveType{scc::export_format::CharType{}};
+        case scc::Type::PrimitiveType::I8:   return scc::export_format::PrimitiveType{scc::export_format::I8Type{}};
+        case scc::Type::PrimitiveType::I16:  return scc::export_format::PrimitiveType{scc::export_format::I16Type{}};
+        case scc::Type::PrimitiveType::I32:  return scc::export_format::PrimitiveType{scc::export_format::I32Type{}};
+        case scc::Type::PrimitiveType::I64:  return scc::export_format::PrimitiveType{scc::export_format::I64Type{}};
+        case scc::Type::PrimitiveType::U8:   return scc::export_format::PrimitiveType{scc::export_format::U8Type{}};
+        case scc::Type::PrimitiveType::U16:  return scc::export_format::PrimitiveType{scc::export_format::U16Type{}};
+        case scc::Type::PrimitiveType::U32:  return scc::export_format::PrimitiveType{scc::export_format::U32Type{}};
+        case scc::Type::PrimitiveType::U64:  return scc::export_format::PrimitiveType{scc::export_format::U64Type{}};
+        case scc::Type::PrimitiveType::F32:  return scc::export_format::PrimitiveType{scc::export_format::F32Type{}};
+        case scc::Type::PrimitiveType::F64:  return scc::export_format::PrimitiveType{scc::export_format::F64Type{}};
+        case scc::Type::PrimitiveType::Bool: return scc::export_format::PrimitiveType{scc::export_format::BoolType{}};
         default:
-            std::cerr << "type_to_export_type: unknown type kind: " << static_cast<int>(type.kind) << std::endl;
+            std::cerr << "type_to_export_type: unknown type kind: " << static_cast<int>(type.primitive_type().value()) << std::endl;
             std::abort();
             break;
         }

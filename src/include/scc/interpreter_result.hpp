@@ -44,29 +44,29 @@ namespace scc
         Type::Value value;
         Type type;
 
-        constexpr InterpreterResultValue(Type::Value value)
+        InterpreterResultValue(Type::Value value)
             : value(value), type(Type::from_value(value)) {}
         
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        constexpr InterpreterResultValue(T value)
+        InterpreterResultValue(T value)
             : value(Type::Value(value)), type(Type::from_value(value)) {}
 
         // fallback error constructor.. should be never actually called
         // its here only for clang typechecking..
         template <typename T, typename = std::enable_if_t<!std::is_arithmetic_v<T>>>
-        constexpr InterpreterResultValue(const T&)
-            : type(Type(Type::Kind::I32)) {}
+        InterpreterResultValue(const T&)
+            : type(Type(Type::PrimitiveType::I32)) {}
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        constexpr InterpreterResultValue(T value, Type type)
+        InterpreterResultValue(T value, Type type)
             : value(Type::Value(value)), type(type) {}
 
         // same story here
         template <typename T, typename = std::enable_if_t<!std::is_arithmetic_v<T>>>
-        constexpr InterpreterResultValue(const T& , Type type)
+        InterpreterResultValue(const T& , Type type)
             : type(type) {}
         
-        constexpr InterpreterResultValue(Type::Value value, Type type)
+        InterpreterResultValue(Type::Value value, Type type)
             : value(value), type(type) {}
     
     };

@@ -461,6 +461,35 @@ namespace scc
 
     }
 
+    binding::BinderResult<binding::BoundPointerExpression> Binder::bind_pointer_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_pointer_expression);
+        SCC_ASSERT_NODE_SYMBOL(Parser::POINTER_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+        // pointer_expression ==>  &a
+        // └── identifier ==>      a
+
+        auto identifier = node.first_named_child();
+        if (identifier.symbol() != Parser::IDENTIFIER_SYMBOL)
+        {
+            // unreachable?
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+        }
+
+        Type* type_ptr = m_scope_stack.get_from_scopestack(identifier.value());
+
+        if (not type_ptr)
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
+            error.add_diagnostic("Unknown identifier: " + identifier.value());
+            return error;
+        }
+
+        Type type = *type_ptr;
+        type.modifiers.push_back(Type::Pointer{});
+        return std::make_unique<binding::BoundPointerExpression>(identifier.value(), type);
+    }
+
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
         // okay, this function actually becomes redundat, because TreeSitter is so inconsistent
@@ -485,6 +514,8 @@ namespace scc
             return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::CALL_EXPRESSION_SYMBOL:
             return bind_call_expression(node).add_location_to_value_if_ok(node.location());
+        case Parser::POINTER_EXPRESSION_SYMBOL:
+            return bind_pointer_expression(node).add_location_to_value_if_ok(node.location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
@@ -599,7 +630,9 @@ namespace scc
             return error;
         }
 
-        type.value().pointer_depth = pointer_depth;
+        // type.value().pointer_depth = pointer_depth;
+        // TODOOOOOOOOOOOOOOOOOOOOOOOO: Arrays??? 
+       type.value().modifiers = std::vector<Type::Modifier>(pointer_depth, Type::Pointer{});
 
         return std::make_unique<binding::BoundCastExpression>(bound_expression.release_value(), type.value());
     }
@@ -760,11 +793,12 @@ namespace scc
                     }
                 
                     // now we know its a number, or unknown size
-                    long long array_size = we_know_the_size ? std::stoll(node.named_child(identifier_index).named_child(1).value()) : 0;
+                    size_t array_size = we_know_the_size ? std::stoll(node.named_child(identifier_index).named_child(1).value()) : 0;
 
                     SCC_ASSERT_EQ(node.named_child(identifier_index).first_named_child().symbol(), Parser::IDENTIFIER_SYMBOL);
                     std::string identifier = node.named_child(identifier_index).first_named_child().value();
-                    type.value().pointer_depth = 1;
+                    // type.value().pointer_depth = 1;
+                    type.value().modifiers.push_back(Type::Array{array_size});
 
                     if(!type_scope.create_variable(identifier, type.value()))
                         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
@@ -787,7 +821,8 @@ namespace scc
                     }
 
                     std::string identifier = current_node.value();
-                    type.value().pointer_depth = pointer_depth;
+                    // type.value().pointer_depth = pointer_depth;
+                    type.value().modifiers = std::vector<Type::Modifier>(pointer_depth, Type::Pointer{});
 
                     if(!type_scope.create_variable(identifier, type.value()))
                         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
@@ -971,7 +1006,7 @@ namespace scc
         BUBBLE_ERROR(condition_expr);
         
         // we will cast the condition to bool
-        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::Kind::Bool));
+        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::PrimitiveType::Bool));
 
         auto then_statement_result = bind_impl(node.named_child(1));
         BUBBLE_ERROR(then_statement_result);
@@ -1012,7 +1047,7 @@ namespace scc
         BUBBLE_ERROR(condition_expr);
         
         // we will cast the condition to bool
-        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::Kind::Bool));
+        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::PrimitiveType::Bool));
 
         auto body_statement_result = bind_impl(node.named_child(1));
         BUBBLE_ERROR(body_statement_result);
@@ -1054,7 +1089,7 @@ namespace scc
         BUBBLE_ERROR(condition_expr);
 
         // we will cast the condition to bool
-        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::Kind::Bool));
+        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::PrimitiveType::Bool));
 
         return std::make_unique<binding::BoundDoStatement>(std::move(condition), std::move(body_statement));
     }
@@ -1141,7 +1176,8 @@ namespace scc
         }
 
         auto return_type = return_type_opt.value();
-        return_type.pointer_depth = pointer_depth;
+        // return_type.pointer_depth = pointer_depth;
+        return_type.modifiers = std::vector<Type::Modifier>(pointer_depth, Type::Pointer{});
 
         TreeNode declarator = node.named_child_with_symbol_BFS(Parser::FUNCTION_DECLARATOR_SYMBOL).value();
 
@@ -1230,7 +1266,7 @@ namespace scc
                                                                 , m_current_function.value().get().return_type));
         }
 
-        if (m_current_function.value().get().return_type != Type(Type::Kind::Void))
+        if (m_current_function.value().get().return_type != Type(Type::PrimitiveType::Void))
         {
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReturnStatementMissingExpressionError, node));
             return error;
@@ -1314,7 +1350,7 @@ namespace scc
         BUBBLE_ERROR(condition_expr);
 
         // we will cast the condition to bool
-        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::Kind::Bool));
+        auto condition = std::make_unique<binding::BoundCastExpression>(condition_expr.release_value(), Type(Type::PrimitiveType::Bool));
 
         auto increment_result = bind_expression(node.named_child(2));
         BUBBLE_ERROR(increment_result);

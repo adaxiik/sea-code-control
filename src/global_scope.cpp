@@ -18,8 +18,9 @@ namespace scc
         m_scope.ref_scopes()
                .emplace(name,Variable{type, current_address, is_constant});
         
+        type.modifiers.push_back(Type::Pointer{});
 
-        return InterpreterResult::ok(static_cast<unsigned long long>(current_address));
+        return InterpreterResult::ok(InterpreterResultValue(current_address, type));
     }
 
     Variable *GlobalScope::get_variable(const std::string &name)

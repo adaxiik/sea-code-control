@@ -1,31 +1,38 @@
 Sorted TODO list:
 
-src/binder.cpp:702:             // TODOOOOOOOOOOOOO: custom types
-src/debug.cpp:191:         // TODOOOOOOOOOO: convert it into multiple functions for each node type
-src/export.cpp:88:         // TODOOOOOOOOOO: after having proper way of expressing struct, pointers and arrays with scc:Type, please fix this, and all bellow :)
-src/binder.cpp:1187:         // TODOOOOOOOOO: check for missing return statement
+src/binder.cpp:634:         // TODOOOOOOOOOOOOOOOOOOOOOOOO: Arrays??? 
+src/binder.cpp:735:             // TODOOOOOOOOOOOOO: custom types
+src/export.cpp:92:         // TODOOOOOOOOOO: after having proper way of expressing struct, pointers and arrays with scc:Type, please fix this, and all bellow :)
+src/binder.cpp:1229:         // TODOOOOOOOOO: check for missing return statement
+src/binder.cpp:790:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
 src/binder.cpp:368:         // TODOOOOOOO: might be a macro?
-src/binder.cpp:757:                             // TODOOOOOOO: in int x[y]; y must be number_literal or macro identifier.. we dont want to support vla?
-scc_tests/tests.cpp:595:     // TODOOOOOO: fix no return statement error.. 
-src/binder.cpp:897:                                     // TODOOOOO: what if its custom type? investigate or @help
-src/include/scc/type.hpp:271:             // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
-scc_tests/tests.cpp:405:     // TODOOO: hook on assert
+scc_tests/tests.cpp:601:     // TODOOOOOO: fix no return statement error.. 
+src/binder.cpp:932:                                     // TODOOOOO: what if its custom type? investigate or @help
+src/type.cpp:64:         // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
+src/include/scc/type.hpp:276:     //         // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
 src/binder.cpp:311:             // TODOOO: 
-src/binder.cpp:712:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/binder.cpp:916:                 // TODOOO: investigate other initializers
-src/binder.cpp:687:         // TODOOO: int a, b, c; 
-src/binder.cpp:394:         // TODOOO: int* a;
-src/binder.cpp:1155:             // TODOOO: It doesnt have to have a name, but idc for now
+src/binder.cpp:720:         // TODOOO: int a, b, c; 
+src/include/scc/variable.hpp:93:                 // TODOOO: implement struct variables
+src/include/scc/variable.hpp:67:                 // TODOOO: implement struct variables
+src/binder.cpp:745:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binder.cpp:1197:             // TODOOO: It doesnt have to have a name, but idc for now
 src/binder.cpp:126:                 // TODOOO: UNREACHABLE???
-scc_tests/tests.cpp:259:         // TODOO: complex types
-scc_tests/tests.cpp:251:         // TODOO: multiple declarations
+src/binder.cpp:951:                 // TODOOO: investigate other initializers
+src/lowering/cast_instruction.cpp:19:             // TODOOO: casting for structs
+src/binder.cpp:394:         // TODOOO: int* a;
+src/type.cpp:116:             // TODOOO: Handle arrays and pointers
+scc_tests/tests.cpp:411:     // TODOOO: hook on assert
 src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
 src/include/scc/binding/binder_result.hpp:30:                 // TODOO: Variable already exists / Variable does not exist
-src/debug.cpp:730:                     ss << "PushLiteral"; // TODOO: Get value
+src/debug.cpp:719:                     ss << "PushLiteral"; // TODOO: Get value
+scc_tests/tests.cpp:260:         // TODOO: multiple initializers
+scc_tests/tests.cpp:257:         // TODOO: multiple declarations
+src/binder.cpp:775:                     // TODOO: int x[1][2];  multi dimensional arrays
+src/binder.cpp:1156:         // TODOO: custom types
 src/binder.cpp:115:             // TODOO: REMOVE THIS LATER!
-src/binder.cpp:742:                     // TODOO: int x[1][2];  multi dimensional arrays
-src/binder.cpp:1115:         // TODOO: custom types
-scc_tests/tests.cpp:254:         // TODOO: multiple initializers
-scc_tests/tests.cpp:257:         // TODO: 2d arrays 
+scc_tests/tests.cpp:265:         // TODOO: complex types
 src/export.cpp:66:             // {"is_constant", variable.is_constant}, // TODO: do I care? 
-src/include/scc/binding/bound_pointer_expression.hpp:18:                 // TODO: Change this
+src/include/scc/binding/bound_pointer_expression.hpp:17:                 // TODO: Change this
+src/include/scc/type.hpp:337:                 // TODO: maybe check fields too?
+scc_tests/tests.cpp:263:         // TODO: 2d arrays 
+src/wasm/index.html:195:                         // TODO: make compileStreaming work. It needs the server to use the
