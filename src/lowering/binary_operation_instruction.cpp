@@ -10,7 +10,7 @@ namespace scc
     namespace lowering
     {
         template <class LEFT_CAST, class RIGHT_CAST, class PERFORM_OP> 
-        InterpreterResult binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth, PERFORM_OP perform_op, const InterpreterResult& left_result, const InterpreterResult& right_result)
+        static InterpreterResult binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth, PERFORM_OP perform_op, const InterpreterResult& left_result, const InterpreterResult& right_result)
         {
             if (left_pointer_depth > 0)
             {
@@ -73,7 +73,7 @@ namespace scc
             }
 
             if (left_result.get_value().type.primitive_type().value() == Type::PrimitiveType::Void
-                || right_result.get_value().type.primitive_type().value() == Type::PrimitiveType::Void)
+                or right_result.get_value().type.primitive_type().value() == Type::PrimitiveType::Void)
             {
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
             }
@@ -94,9 +94,7 @@ namespace scc
             } \
             else \
             { \
-                return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, [](LEFT_CAST l, RIGHT_CAST r){ \
-                    return OperationResult::perform_ ## FN_NAME(l,r); \
-                }, left_result, right_result); \
+                return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<LEFT_CAST,RIGHT_CAST>, left_result, right_result); \
             } \
             }while(0)
 
