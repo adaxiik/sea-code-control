@@ -830,4 +830,5 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("_scc_assert(*a == 1);");
     SCC_TEST_IS_OK("_scc_assert(*b == 2);");
     SCC_TEST_IS_OK("_scc_assert(*(&a_val) == 1);");
+    SCC_TEST_IS_ERROR("*(int*)0;"); // invalid memory access
 }
