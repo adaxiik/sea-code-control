@@ -39,6 +39,21 @@ namespace scc
                     return Type::Value(value.value()); \
                 } \
                 break;
+            
+            if (m_type.is_struct())
+            {
+                // TODOOO: implement struct variables
+                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
+                std::abort();
+            }
+
+            if (m_type.is_pointer())
+            {
+                auto value = get_value<Type::Primitive::U64>(memory);
+                if (not value.has_value())
+                    return std::nullopt;
+                return Type::Value(value.value());
+            }
 
             static_assert(std::variant_size_v<Type::BaseType> == 2);
             if (std::holds_alternative<Type::PrimitiveType>(type.base_type))
@@ -94,6 +109,9 @@ namespace scc
                 std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::abort();
             }
+
+            if (m_type.is_pointer())
+                return set_value<Type::Primitive::U64>(memory, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
 
             switch (std::get<Type::PrimitiveType>(m_type.base_type))
             {

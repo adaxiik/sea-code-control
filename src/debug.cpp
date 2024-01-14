@@ -597,7 +597,7 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 20, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 21, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:
@@ -659,6 +659,9 @@ namespace scc
                     break;
                 case InterpreterError::BreakpointReachedError:
                     ss << "Breakpoint reached error";
+                    break;
+                case InterpreterError::AssertionFailedError:
+                    ss << "Assertion failed error";
                     break;
                 default:
                     ss << "Unknown error";

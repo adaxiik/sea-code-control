@@ -29,6 +29,7 @@ namespace scc
                 LogicalOr,
 
                 // comparison
+                // NOTE: order is important, because we use this enum to check if the operator is comparison operator
                 Equals,
                 NotEquals,
                 LessThan,
@@ -52,6 +53,11 @@ namespace scc
             }
 
             static std::optional<Type> deduce_type(Type left, Type right, OperatorKind op_kind);
+
+            constexpr static bool is_comparison(OperatorKind kind)
+            {
+                return (kind >= OperatorKind::Equals) and (kind <= OperatorKind::GreaterThanOrEqual);
+            }
 
             virtual BoundNodeKind bound_node_kind() const override
             {

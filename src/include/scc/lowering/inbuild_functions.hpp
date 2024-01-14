@@ -18,7 +18,7 @@ namespace scc::lowering::inbuild
 
     InterpreterResult puti(InterpreterState &state);
     InterpreterResult putc(InterpreterState &state);
-
+    InterpreterResult assert(InterpreterState &state);
     // math.h
     // https://en.cppreference.com/w/c/numeric/math
     InterpreterResult sinf(InterpreterState &state);
@@ -33,5 +33,6 @@ namespace scc::lowering::inbuild
         {"_scc_cosf", {cosf, Type(Type::PrimitiveType::F32), {Type(Type::PrimitiveType::F32)}}},
         {"_scc_sin", {sin, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
         {"_scc_cos", {cos, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
+        {"_scc_assert", {assert, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::Bool)}}},
     };
 }

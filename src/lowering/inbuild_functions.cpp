@@ -49,6 +49,28 @@ namespace scc::lowering::inbuild
         return InterpreterError::None;  
     }
 
+    InterpreterResult assert(InterpreterState &state)
+    {
+        InterpreterResult value = state.result_stack.top();
+        state.result_stack.pop();
+
+        if (not value.is_ok_and_has_value())
+            return value;
+
+        if (value.get_value().type != Type(Type::PrimitiveType::Bool))
+            return InterpreterError::ReachedUnreachableError;
+        
+        if (not std::holds_alternative<Type::Primitive::Bool>(value.get_value().value.primitive_value().value()))
+            return InterpreterError::ReachedUnreachableError;
+        
+        Type::Primitive::Bool val = std::get<Type::Primitive::Bool>(value.get_value().value.primitive_value().value());
+        
+        if (not val)
+            return InterpreterError::AssertionFailedError;
+    
+        return InterpreterError::None;  
+    }
+
     InterpreterResult sinf(InterpreterState &state)
     {
         InterpreterResult value = state.result_stack.top();

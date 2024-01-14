@@ -21,7 +21,7 @@ namespace scc
             if (not value)
                 return InterpreterError::VariableNotInitializedError; // or memory error??
 
-            return InterpreterResult::ok(InterpreterResultValue(value.value()));
+            return InterpreterResult::ok(InterpreterResultValue(value.value(), variable->type()));
         }
     }
 }

@@ -83,6 +83,29 @@ namespace scc
 
     }
 
+    void Lowerer::lower(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration_statement)
+    {
+        using CVFlags = lowering::CreateValueVariableInstruction::Flags;
+        m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
+            variable_pointer_declaration_statement.variable_name,
+            variable_pointer_declaration_statement.type,
+            CVFlags::None 
+            | ((variable_pointer_declaration_statement.initializer != nullptr or variable_pointer_declaration_statement.is_global) ? CVFlags::HasInitializer : CVFlags::None)
+            | (variable_pointer_declaration_statement.is_global ? CVFlags::IsGlobal : CVFlags::None)
+            | (variable_pointer_declaration_statement.is_constant ? CVFlags::IsConst : CVFlags::None)
+        ), variable_pointer_declaration_statement.location));
+
+        if (variable_pointer_declaration_statement.initializer)
+        {
+            m_to_lower.push(variable_pointer_declaration_statement.initializer.get());
+        }
+        else if (variable_pointer_declaration_statement.is_global)
+        {
+            m_to_lower.push(std::make_pair(lowering::CastInstruction(variable_pointer_declaration_statement.type), variable_pointer_declaration_statement.location));
+            m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(Type::PrimitiveType::I32, 0), variable_pointer_declaration_statement.location));
+        }
+    }
+
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)
     {
         switch (variable_declaration_statement.variable_declaration_statement_kind())
@@ -90,6 +113,12 @@ namespace scc
             using DeclarationType = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
         case DeclarationType::Value:
             lower(*static_cast<const binding::BoundVariableValueDeclarationStatement*>(&variable_declaration_statement));
+            break;
+        case DeclarationType::Pointer:
+            lower(*static_cast<const binding::BoundVariablePointerDeclarationStatement*>(&variable_declaration_statement));
+            break;
+        case DeclarationType::StaticArray:
+            SCC_NOT_IMPLEMENTED("Static array variable declaration");
             break;
         default:
             SCC_NOT_IMPLEMENTED("BoundVariableDeclarationStatement");

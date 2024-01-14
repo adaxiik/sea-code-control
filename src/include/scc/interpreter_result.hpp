@@ -26,6 +26,7 @@ namespace scc
         MissingReturnStatementError,
         MissingReturnValueError,
         BreakpointReachedError,
+        AssertionFailedError,
         COUNT
     };
 

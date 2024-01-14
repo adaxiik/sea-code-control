@@ -61,11 +61,39 @@ namespace scc
             InterpreterResult right_result{state.result_stack.top()};
             state.result_stack.pop();
 
+
+            using Operator = binding::BoundBinaryExpression::OperatorKind;
             if (left_result.get_value().type.is_pointer()
                 and right_result.get_value().type.is_pointer())
             {
-                return InterpreterResult::error(InterpreterError::InvalidOperationError);
+                #define DO_OP_PTR(OP) do {                                                     \
+                    return InterpreterResult::ok(                                              \
+                            InterpreterResultValue(                                            \
+                                std::get<Type::Primitive::PTR>(                                \
+                                    left_result.get_value().value.primitive_value().value()    \
+                                )                                                              \
+                                OP                                                             \
+                                std::get<Type::Primitive::PTR>(                                \
+                                    right_result.get_value().value.primitive_value().value()   \
+                                )                                                              \
+                            )                                                                  \
+                        );                                                                     \
+                } while(0)
+
+                switch (operator_kind)
+                {
+                    case Operator::Equals: DO_OP_PTR(==);
+                    case Operator::NotEquals: DO_OP_PTR(!=);
+                    case Operator::LessThan: DO_OP_PTR(<);
+                    case Operator::GreaterThan: DO_OP_PTR(>);
+                    case Operator::LessThanOrEqual: DO_OP_PTR(<=);
+                    case Operator::GreaterThanOrEqual: DO_OP_PTR(>=);
+                    default:
+                        return InterpreterResult::error(InterpreterError::InvalidOperationError);
+                        
+                }
             }
+            
 
             if (not left_result.get_value().type.is_primitive() or not right_result.get_value().type.is_primitive())
             {
@@ -78,19 +106,16 @@ namespace scc
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
             }
 
-            using Operator = binding::BoundBinaryExpression::OperatorKind;
-        
+
             static_assert(static_cast<int>(Operator::COUNT) == 18, "Update this code");
             static_assert(static_cast<int>(Type::PrimitiveType::COUNT) == 13, "Update this code");
 
             // I'm so sorry
 
-            Type result_type (Type::PrimitiveType::COUNT);
-
             #define DO_CASTED_OP(FN_NAME, STRUCT_NAME, LEFT_CAST, RIGHT_CAST, LEFT_PTR_DEPTH,RIGHT_PTR_DEPTH) do{ \
             if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,RIGHT_CAST>::type, OperationResult::InvalidOperation>) \
             { \
-                    return InterpreterResult::error(InterpreterError::InvalidOperationError); \
+                return InterpreterResult::error(InterpreterError::InvalidOperationError); \
             } \
             else \
             { \

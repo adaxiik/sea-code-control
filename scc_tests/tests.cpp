@@ -205,6 +205,11 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE_PTR(I32, 1, (int*)1 + 2);
         SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)1);
         SCC_TEST_IS_ERROR("(int*)1 + (int*)1;");
+        SCC_TEST_INTERPRET_RESULT(bool, true, "(int*)1 == (int*)1;");
+        SCC_TEST_INTERPRET_RESULT(bool, false,"(int*)1 != (int*)1;");
+        SCC_TEST_INTERPRET_RESULT(bool, true, "(int*)1 <  (int*)2;");
+        SCC_TEST_INTERPRET_RESULT(bool, false,"(int*)2 <  (int*)1;");
+        SCC_TEST_INTERPRET_RESULT(bool, true, "(int*)1 <= (int*)1;");
 
     }
 
@@ -789,4 +794,36 @@ TEST_CASE("Breakpoints")
         CHECK(ss.str() == "34\n0\n"); // it breaks again in the function
         CHECK(ss_err.str() == "");
     }
+}
+
+TEST_CASE("Assertions")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+    SCC_TEST_IS_OK("_scc_assert(1);");
+    SCC_TEST_IS_ERROR("_scc_assert(0);");
+}
+
+TEST_CASE("Pointers")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("int* a;");
+    SCC_TEST_IS_OK("int* b;");
+    SCC_TEST_IS_OK("int a_val = 1;");
+    SCC_TEST_IS_OK("int b_val = 2;");
+    SCC_TEST_IS_OK("a = &a_val;");
+    SCC_TEST_IS_OK("b = &b_val;");
+    SCC_TEST_IS_OK("_scc_assert(a == &a_val);");
+    SCC_TEST_IS_OK("_scc_assert(b == &b_val);");
 }
