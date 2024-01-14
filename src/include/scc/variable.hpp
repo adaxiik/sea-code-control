@@ -20,69 +20,12 @@ namespace scc
         , m_initialized(false)
         , m_is_parameter(is_parameter) {}
 
-        template <typename T>
-        std::optional<T> get_value(const Memory& memory) const
+        std::optional<Type::Value> get_value(const Memory& memory) const
         {
-            if (!m_initialized)
+            if (not m_initialized)
                 return std::nullopt;
-            
-            return memory.read<T>(m_address);
-        }
 
-        std::optional<Type::Value> get_value(const Memory& memory, Type type) const
-        {
-            #define CASE_GET_VALUE(KIND) case Type::PrimitiveType::KIND: \
-                { \
-                    auto value = get_value<Type::Primitive::KIND>(memory); \
-                    if (not value.has_value()) \
-                        return std::nullopt; \
-                    return Type::Value(value.value()); \
-                } \
-                break;
-            
-            if (m_type.is_struct())
-            {
-                // TODOOO: implement struct variables
-                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-                std::abort();
-            }
-
-            if (m_type.is_pointer())
-            {
-                auto value = get_value<Type::Primitive::U64>(memory);
-                if (not value.has_value())
-                    return std::nullopt;
-                return Type::Value(value.value());
-            }
-
-            static_assert(std::variant_size_v<Type::BaseType> == 2);
-            if (std::holds_alternative<Type::PrimitiveType>(type.base_type))
-            {
-                static_assert(static_cast<int>(Type::PrimitiveType::COUNT) == 13);
-                switch (std::get<Type::PrimitiveType>(type.base_type))
-                {
-                    CASE_GET_VALUE(Char)
-                    CASE_GET_VALUE(I8)
-                    CASE_GET_VALUE(U8)
-                    CASE_GET_VALUE(I16)
-                    CASE_GET_VALUE(U16)
-                    CASE_GET_VALUE(I32)
-                    CASE_GET_VALUE(U32)
-                    CASE_GET_VALUE(I64)
-                    CASE_GET_VALUE(U64)
-                    CASE_GET_VALUE(F32)
-                    CASE_GET_VALUE(F64)
-                    CASE_GET_VALUE(Bool)
-                    default:
-                        return std::nullopt;
-                }
-            }
-            else
-            {
-                // TODOOO: implement struct variables
-                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-                std::abort(); 
-            }
+            return memory.read_value(m_address, m_type);
         }
 
         template <typename T>

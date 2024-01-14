@@ -7,6 +7,7 @@
 #include "breakpoints.hpp"
 namespace scc
 {
+    constexpr auto MEMORY_START_OFFSET = 1 * Memory::MEGABYTE;
     constexpr auto STACK_SIZE = 4 * Memory::MEGABYTE;
     constexpr auto GLOBAL_SCOPE_SIZE = 1 * Memory::MEGABYTE;
     constexpr auto MAIN_FUNCTION_NAME = "main";

@@ -51,6 +51,7 @@ namespace scc
  
         std::optional<address_t> find_start_of_chunk(address_t address) const;
 
+        std::optional<Type::Value> read_value(address_t address, Type type) const;
 
         template<typename T>
         std::optional<T> read(address_t address) const

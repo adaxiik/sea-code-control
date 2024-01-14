@@ -28,7 +28,8 @@ namespace scc
             IdentifierExpression,
             AssignmentExpression,
             CallExpression,
-            PointerExpression,
+            ReferenceExpression,
+            DereferenceExpression,
 
 
 

@@ -17,7 +17,7 @@ namespace scc
                 return InterpreterError::VariableNotInitializedError;
         
         
-            auto value = variable->get_value(state.memory, variable->type());
+            auto value = variable->get_value(state.memory);
             if (not value)
                 return InterpreterError::VariableNotInitializedError; // or memory error??
 

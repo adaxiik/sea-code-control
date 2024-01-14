@@ -19,7 +19,8 @@
 #include "binding/bound_return_statement.hpp"
 #include "binding/bound_call_expression.hpp"
 #include "binding/bound_for_statement.hpp"
-#include "binding/bound_pointer_expression.hpp"
+#include "binding/bound_reference_expression.hpp"
+#include "binding/bound_dereference_expression.hpp"
 
 #include "lowering/binary_operation_instruction.hpp"
 #include "lowering/cast_instruction.hpp"
@@ -189,7 +190,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 19, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 20, "Update this switch statement");
                 
                 
                 if (node.location)
@@ -476,10 +477,20 @@ namespace scc
                     }
                     break;
                 }
-                case binding::BoundNodeKind::PointerExpression:
+                case binding::BoundNodeKind::ReferenceExpression:
                 {
-                    auto& pointer_expression = static_cast<const binding::BoundPointerExpression&>(node);
-                    ss << "PointerExpression (" << pointer_expression.type << ") ==> " << pointer_expression.identifier << std::endl;
+                    auto& pointer_expression = static_cast<const binding::BoundReferenceExpression&>(node);
+                    ss << "ReferenceExpression (" << pointer_expression.type << ") ==> " << pointer_expression.identifier << std::endl;
+                    break;
+                }
+                case binding::BoundNodeKind::DereferenceExpression:
+                {
+                    auto& pointer_expression = static_cast<const binding::BoundDereferenceExpression&>(node);
+                    ss << "DereferenceExpression (" << pointer_expression.type << ")" << std::endl;
+                    bound_ast_as_text_tree_impl(*pointer_expression.expression
+                                                , depth + 1
+                                                , true
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
                     break;
                 }
                 case binding::BoundNodeKind::VariableDeclarationStatement:
@@ -597,81 +608,39 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 21, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 23, "Edit this code");
             switch (error)
             {
-                case InterpreterError::None:
-                    ss << "None";
-                    break;
-                case InterpreterError::ParseError:
-                    ss << "Parse error";
-                    break;
-                case InterpreterError::BindError:
-                    ss << "Bind error";
-                    break;
-                case InterpreterError::RuntimeError:
-                    ss << "Runtime error";
-                    break;
-                case InterpreterError::InvalidOperationError:
-                    ss << "Invalid operation error";
-                    break;
-                case InterpreterError::ReachedUnreachableError:
-                    ss << "Reached unreachable error";
-                    break;
-                case InterpreterError::DivisionByZeroError:
-                    ss << "Division by zero error";
-                    break;
-                case InterpreterError::VariableAlreadyExistsError:
-                    ss << "Variable already exists error";
-                    break;
-                case InterpreterError::VariableDoesntExistError:
-                    ss << "Variable doesn't exist error";
-                    break;
-                case InterpreterError::VariableNotInitializedError:
-                    ss << "Variable not initialized error";
-                    break;
-                case InterpreterError::UnhandeledSignalError:
-                    ss << "Unhandeled signal error";
-                    break;
-                case InterpreterError::MissingMainFunctionError:
-                    ss << "Missing main function error";
-                    break;
-                case InterpreterError::FunctionAlreadyDefinedError:
-                    ss << "Function already defined error";
-                    break;
-                case InterpreterError::IncosistentFunctionSignatureError:
-                    ss << "Incosistent function signature error";
-                    break;
-                case InterpreterError::FunctionArgumentCountMismatchError:
-                    ss << "Function argument count mismatch error";
-                    break;
-                case InterpreterError::FunctionNotDeclaredError:
-                    ss << "Function not declared error";
-                    break;
-                case InterpreterError::FunctionNotDefinedError:
-                    ss << "Function not defined error";
-                    break;
-                case InterpreterError::MissingReturnStatementError:
-                    ss << "Missing return statement error";
-                    break;
-                case InterpreterError::MissingReturnValueError:
-                    ss << "Missing return value error";
-                    break;
-                case InterpreterError::BreakpointReachedError:
-                    ss << "Breakpoint reached error";
-                    break;
-                case InterpreterError::AssertionFailedError:
-                    ss << "Assertion failed error";
-                    break;
-                default:
-                    ss << "Unknown error";
-                    break;
+                case InterpreterError::None:                               ss << "None"; break;
+                case InterpreterError::ParseError:                         ss << "Parse error"; break;
+                case InterpreterError::BindError:                          ss << "Bind error"; break;
+                case InterpreterError::RuntimeError:                       ss << "Runtime error"; break;
+                case InterpreterError::InvalidOperationError:              ss << "Invalid operation error"; break;
+                case InterpreterError::ReachedUnreachableError:            ss << "Reached unreachable error"; break;
+                case InterpreterError::DivisionByZeroError:                ss << "Division by zero error"; break;
+                case InterpreterError::VariableAlreadyExistsError:         ss << "Variable already exists error"; break;
+                case InterpreterError::VariableDoesntExistError:           ss << "Variable doesn't exist error"; break;
+                case InterpreterError::VariableNotInitializedError:        ss << "Variable not initialized error"; break;
+                case InterpreterError::UnhandeledSignalError:              ss << "Unhandeled signal error"; break;
+                case InterpreterError::MissingMainFunctionError:           ss << "Missing main function error"; break;
+                case InterpreterError::FunctionAlreadyDefinedError:        ss << "Function already defined error"; break;
+                case InterpreterError::IncosistentFunctionSignatureError:  ss << "Incosistent function signature error"; break;
+                case InterpreterError::FunctionArgumentCountMismatchError: ss << "Function argument count mismatch error"; break;
+                case InterpreterError::FunctionNotDeclaredError:           ss << "Function not declared error"; break;
+                case InterpreterError::FunctionNotDefinedError:            ss << "Function not defined error"; break;
+                case InterpreterError::MissingReturnStatementError:        ss << "Missing return statement error"; break;
+                case InterpreterError::MissingReturnValueError:            ss << "Missing return value error"; break;
+                case InterpreterError::BreakpointReachedError:             ss << "Breakpoint reached error"; break;
+                case InterpreterError::AssertionFailedError:               ss << "Assertion failed error"; break;
+                case InterpreterError::MemoryError:                        ss << "Memory error"; break;
+                case InterpreterError::DereferenceError:                   ss << "Dereference error"; break;
+                default:                                                   ss << "Unknown error"; break;
             }
         }
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 18, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 19, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==> ";
@@ -762,7 +731,11 @@ namespace scc
                 },
                 [&](lowering::ReferenceInstruction reference) {
                     ss << "Reference ==> " << reference.identifier;
+                },
+                [&](lowering::DereferenceInstruction dereference) {
+                    ss << "Dereference ==> " << dereference.type;
                 }
+
             }, instruction);
         }
 

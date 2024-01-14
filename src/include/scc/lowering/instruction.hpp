@@ -20,6 +20,7 @@
 #include "lowering/call_instruction.hpp"
 #include "lowering/call_inbuild_instruction.hpp"
 #include "lowering/reference_instruction.hpp"
+#include "lowering/dereference_instruction.hpp"
 
 namespace scc
 {
@@ -43,7 +44,8 @@ namespace scc
             RegisterFunctionInstruction,
             CallInstruction,
             CallInbuildInstruction,
-            ReferenceInstruction>;
+            ReferenceInstruction,
+            DereferenceInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

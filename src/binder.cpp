@@ -461,9 +461,9 @@ namespace scc
 
     }
 
-    binding::BinderResult<binding::BoundPointerExpression> Binder::bind_pointer_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundReferenceExpression> Binder::bind_reference_expression(const TreeNode &node)
     {
-        SCC_BINDER_RESULT_TYPE(bind_pointer_expression);
+        SCC_BINDER_RESULT_TYPE(bind_reference_expression);
         SCC_ASSERT_NODE_SYMBOL(Parser::POINTER_EXPRESSION_SYMBOL);
         SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
         // pointer_expression ==>  &a
@@ -487,8 +487,34 @@ namespace scc
 
         Type type = *type_ptr;
         type.modifiers.push_back(Type::Pointer{});
-        return std::make_unique<binding::BoundPointerExpression>(identifier.value(), type);
+        return std::make_unique<binding::BoundReferenceExpression>(identifier.value(), type);
     }
+
+    binding::BinderResult<binding::BoundDereferenceExpression> Binder::bind_dereference_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_reference_expression);
+        SCC_ASSERT_NODE_SYMBOL(Parser::POINTER_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+        
+        // pointer_expression ==>  *a
+        // └── identifier ==>      a    // expression 
+
+        auto bound_expression = bind_expression(node.first_named_child());
+        BUBBLE_ERROR(bound_expression);
+
+        auto expression = bound_expression.release_value();
+        if (expression->type.modifiers.size() == 0)
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidOperationError, node));
+            error.add_diagnostic("Cannot dereference non-pointer type");
+            return error;
+        }
+
+        auto type = expression->type;
+        type.modifiers.pop_back();
+        return std::make_unique<binding::BoundDereferenceExpression>(std::move(expression), type);
+    }
+
 
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
@@ -515,7 +541,10 @@ namespace scc
         case Parser::CALL_EXPRESSION_SYMBOL:
             return bind_call_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::POINTER_EXPRESSION_SYMBOL:
-            return bind_pointer_expression(node).add_location_to_value_if_ok(node.location());
+            if (node.value().starts_with('&'))
+                return bind_reference_expression(node).add_location_to_value_if_ok(node.location());
+            else
+                return bind_dereference_expression(node).add_location_to_value_if_ok(node.location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;

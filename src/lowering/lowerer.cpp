@@ -435,9 +435,15 @@ namespace scc
 
     }
 
-    void Lowerer::lower(const binding::BoundPointerExpression &pointer_expression)
+    void Lowerer::lower(const binding::BoundReferenceExpression &reference_expression)
     {
-        m_to_lower.push(std::make_pair(lowering::ReferenceInstruction(pointer_expression.identifier), pointer_expression.location));
+        m_to_lower.push(std::make_pair(lowering::ReferenceInstruction(reference_expression.identifier), reference_expression.location));
+    }
+
+    void Lowerer::lower(const binding::BoundDereferenceExpression &dereference_expression)
+    {
+        m_to_lower.push(std::make_pair(lowering::DereferenceInstruction(dereference_expression.type), dereference_expression.location));
+        m_to_lower.push(dereference_expression.expression.get());
     }
 
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
@@ -507,7 +513,7 @@ namespace scc
                 continue;
             }
 
-            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 19);
+            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 20);
 
             const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
             m_to_lower.pop();
@@ -568,8 +574,11 @@ namespace scc
             case binding::BoundNodeKind::ForStatement:
                 lower(*static_cast<const binding::BoundForStatement *>(current_node));
                 break;
-            case binding::BoundNodeKind::PointerExpression:
-                lower(*static_cast<const binding::BoundPointerExpression *>(current_node));
+            case binding::BoundNodeKind::ReferenceExpression:
+                lower(*static_cast<const binding::BoundReferenceExpression *>(current_node));
+                break;
+            case binding::BoundNodeKind::DereferenceExpression:
+                lower(*static_cast<const binding::BoundDereferenceExpression *>(current_node));
                 break;
             default:
                 SCC_NOT_IMPLEMENTED("Unknown BoundNodeKind in Lowerer::lower");
