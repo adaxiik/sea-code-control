@@ -826,4 +826,8 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("b = &b_val;");
     SCC_TEST_IS_OK("_scc_assert(a == &a_val);");
     SCC_TEST_IS_OK("_scc_assert(b == &b_val);");
+    SCC_TEST_IS_OK("_scc_assert(a != b);");
+    SCC_TEST_IS_OK("_scc_assert(*a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(*b == 2);");
+    SCC_TEST_IS_OK("_scc_assert(*(&a_val) == 1);");
 }
