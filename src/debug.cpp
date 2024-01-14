@@ -21,6 +21,7 @@
 #include "binding/bound_for_statement.hpp"
 #include "binding/bound_reference_expression.hpp"
 #include "binding/bound_dereference_expression.hpp"
+#include "binding/bound_pointer_assignment_expression.hpp"
 
 #include "lowering/binary_operation_instruction.hpp"
 #include "lowering/cast_instruction.hpp"
@@ -190,7 +191,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 20, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21, "Update this switch statement");
                 
                 
                 if (node.location)
@@ -331,6 +332,23 @@ namespace scc
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+                case binding::BoundNodeKind::PointerAssignmentExpression:
+                {
+                    auto& pointer_assignment_expression = static_cast<const binding::BoundPointerAssignmentExpression&>(node);
+                    ss << "PointerAssignmentExpression (" << pointer_assignment_expression.type << ")" << std::endl;
+                    bound_ast_as_text_tree_impl(*pointer_assignment_expression.address_expression
+                                                , depth + 1
+                                                , false
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+
+                    bound_ast_as_text_tree_impl(*pointer_assignment_expression.expression
+                                                , depth + 1
+                                                , true
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+
+                    
                     break;
                 }
                 case binding::BoundNodeKind::IfStatement:

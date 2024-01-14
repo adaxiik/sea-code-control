@@ -378,11 +378,107 @@ namespace scc
         return std::make_unique<binding::BoundIdentifierExpression>(node.value(), *type);
     }
 
+    static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind) 
+    {
+        constexpr auto PLUS_ASSIGNMENT = "+=";
+        constexpr auto MINUS_ASSIGNMENT = "-=";
+        constexpr auto MULTIPLICATION_ASSIGNMENT = "*=";
+        constexpr auto DIVISION_ASSIGNMENT = "/=";
+        constexpr auto MODULO_ASSIGNMENT = "%=";
+        constexpr auto BITWISE_AND_ASSIGNMENT = "&=";
+        constexpr auto BITWISE_OR_ASSIGNMENT = "|=";
+        constexpr auto BITWISE_XOR_ASSIGNMENT = "^=";
+        constexpr auto BITWISE_SHIFT_LEFT_ASSIGNMENT = "<<=";
+        constexpr auto BITWISE_SHIFT_RIGHT_ASSIGNMENT = ">>=";
+
+        if (op_kind == PLUS_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::Addition;
+        else if (op_kind == MINUS_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::Subtraction;
+        else if (op_kind == MULTIPLICATION_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::Multiplication;
+        else if (op_kind == DIVISION_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::Division;
+        else if (op_kind == MODULO_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::Modulo;
+        else if (op_kind == BITWISE_AND_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::BitwiseAnd;
+        else if (op_kind == BITWISE_OR_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::BitwiseOr;
+        else if (op_kind == BITWISE_XOR_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::BitwiseXor;
+        else if (op_kind == BITWISE_SHIFT_LEFT_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::BitwiseShiftLeft;
+        else if (op_kind == BITWISE_SHIFT_RIGHT_ASSIGNMENT)
+            return binding::BoundBinaryExpression::OperatorKind::BitwiseShiftRight;
+
+        return std::nullopt;
+    }
+
+
+    binding::BinderResult<binding::BoundPointerAssignmentExpression> Binder::bind_pointer_assignment_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_pointer_assignment_expression);
+        SCC_ASSERT_NODE_SYMBOL(Parser::ASSIGNMENT_EXPRESSION_SYMBOL);
+        SCC_ASSERT_CHILD_COUNT(node, 3);
+        // assignment_expression ==>       *(&a) = 5
+        // ├── pointer_expression ==>      *(&a)
+        // │   └── parenthesized_expression ==>    (&a)
+        // │       └── pointer_expression ==>      &a
+        // │           └── identifier ==>  a
+        // └── number_literal ==>  5
+
+        // we want to skip dereference
+        auto bound_address_expression = bind_expression(node.child(0).first_named_child());
+        BUBBLE_ERROR(bound_address_expression);
+
+        if (not bound_address_expression.get_value()->type.is_pointer())
+        {
+            auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidOperationError, node));
+            error.add_diagnostic("Cannot dereference non-pointer type");
+            return error;
+        }
+
+        Type target_type = bound_address_expression.get_value()->type;
+        target_type.modifiers.pop_back();
+        
+        auto bound_expression = bind_expression(node.last_child());
+        BUBBLE_ERROR(bound_expression);
+
+        std::string op_kind = node.child(1).value();
+
+        if (op_kind == "=")
+        {
+            auto casted_expression = std::make_unique<binding::BoundCastExpression>(bound_expression.release_value(), target_type);
+            return std::make_unique<binding::BoundPointerAssignmentExpression>(bound_address_expression.release_value(), std::move(casted_expression), target_type);
+        }
+
+
+        auto operator_kind_opt = operation_kind_from_string(op_kind);
+        if (not operator_kind_opt.has_value())
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+
+        auto operator_kind = operator_kind_opt.value();
+        
+        auto binary_expression = std::make_unique<binding::BoundBinaryExpression>(std::make_unique<binding::BoundDereferenceExpression>(bound_address_expression.release_value(), target_type)
+                                                                                , bound_expression.release_value()
+                                                                                , target_type
+                                                                                , operator_kind);
+
+        auto casted_binary_expression = std::make_unique<binding::BoundCastExpression>(std::move(binary_expression), target_type);
+
+        auto addr_bound_again = bind_expression(node.child(0).first_named_child());
+        BUBBLE_ERROR(addr_bound_again);
+
+        return std::make_unique<binding::BoundPointerAssignmentExpression>(addr_bound_again.release_value(), std::move(casted_binary_expression), target_type);
+    }
+
     binding::BinderResult<binding::BoundAssignmentExpression> Binder::bind_assignment_expression(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_assignment_expression);  
         SCC_ASSERT_NODE_SYMBOL(Parser::ASSIGNMENT_EXPRESSION_SYMBOL);
         SCC_ASSERT_CHILD_COUNT(node, 3);
+
         // assignment_expression ==>       a+=9
         // ├── identifier ==>      a
         // ├── += ==>      +=
@@ -397,7 +493,7 @@ namespace scc
 
         const std::string identifier = node.first_child().value();
         Type* type_ptr = m_scope_stack.get_from_scopestack(identifier);
-        if (!type_ptr)
+        if (not type_ptr)
         {
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
             error.add_diagnostic("Unknown identifier: " + identifier);
@@ -412,41 +508,12 @@ namespace scc
             auto casted_expression = std::make_unique<binding::BoundCastExpression>(expression.release_value(), type);
             return std::make_unique<binding::BoundAssignmentExpression>(std::move(identifier), type, std::move(casted_expression));
         }
-        constexpr auto PLUS_ASSIGNMENT = "+=";
-        constexpr auto MINUS_ASSIGNMENT = "-=";
-        constexpr auto MULTIPLICATION_ASSIGNMENT = "*=";
-        constexpr auto DIVISION_ASSIGNMENT = "/=";
-        constexpr auto MODULO_ASSIGNMENT = "%=";
-        constexpr auto BITWISE_AND_ASSIGNMENT = "&=";
-        constexpr auto BITWISE_OR_ASSIGNMENT = "|=";
-        constexpr auto BITWISE_XOR_ASSIGNMENT = "^=";
-        constexpr auto BITWISE_SHIFT_LEFT_ASSIGNMENT = "<<=";
-        constexpr auto BITWISE_SHIFT_RIGHT_ASSIGNMENT = ">>=";
 
-        binding::BoundBinaryExpression::OperatorKind operator_kind;
-        if (op_kind == PLUS_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::Addition;
-        else if (op_kind == MINUS_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::Subtraction;
-        else if (op_kind == MULTIPLICATION_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::Multiplication;
-        else if (op_kind == DIVISION_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::Division;
-        else if (op_kind == MODULO_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::Modulo;
-        else if (op_kind == BITWISE_AND_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseAnd;
-        else if (op_kind == BITWISE_OR_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseOr;
-        else if (op_kind == BITWISE_XOR_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseXor;
-        else if (op_kind == BITWISE_SHIFT_LEFT_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseShiftLeft;
-        else if (op_kind == BITWISE_SHIFT_RIGHT_ASSIGNMENT)
-            operator_kind = binding::BoundBinaryExpression::OperatorKind::BitwiseShiftRight;
-        else
+        auto operator_kind_opt = operation_kind_from_string(op_kind);
+        if (not operator_kind_opt.has_value())
             return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
-                    
+
+        auto operator_kind = operator_kind_opt.value();
         auto expression = bind_expression(node.last_child());
         BUBBLE_ERROR(expression);
         auto binary_expression = std::make_unique<binding::BoundBinaryExpression>(std::make_unique<binding::BoundIdentifierExpression>(identifier, type)
@@ -537,7 +604,10 @@ namespace scc
         case Parser::IDENTIFIER_SYMBOL:
             return bind_identifier_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
-            return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
+            if (node.child(0).symbol() == Parser::POINTER_EXPRESSION_SYMBOL)
+                return bind_pointer_assignment_expression(node).add_location_to_value_if_ok(node.location());
+            else
+                return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::CALL_EXPRESSION_SYMBOL:
             return bind_call_expression(node).add_location_to_value_if_ok(node.location());
         case Parser::POINTER_EXPRESSION_SYMBOL:

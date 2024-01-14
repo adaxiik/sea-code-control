@@ -17,6 +17,7 @@
 #include "binding/bound_assignment_expression.hpp"
 #include "binding/bound_reference_expression.hpp"
 #include "binding/bound_dereference_expression.hpp"
+#include "binding/bound_pointer_assignment_expression.hpp"
 #include "binding/bound_if_statement.hpp"
 #include "binding/bound_while_statement.hpp"
 #include "binding/bound_do_statement.hpp"
@@ -32,7 +33,7 @@ namespace scc
     class Binder
     {
         
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 20, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -53,6 +54,8 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundForStatement>, "ForStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundReferenceExpression>, "ReferenceExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundDereferenceExpression>, "DereferenceExpression must be derived from BoundExpression");
+        static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundPointerAssignmentExpression>, "PointerAssignmentExpression must be derived from BoundExpression");
+
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -117,6 +120,7 @@ namespace scc
         binding::BinderResult<binding::BoundForStatement> bind_for_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundReferenceExpression> bind_reference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundDereferenceExpression> bind_dereference_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_pointer_assignment_expression(const TreeNode &node);
         
     public:
         Binder(): m_current_function(std::nullopt) { m_scope_stack.push();}

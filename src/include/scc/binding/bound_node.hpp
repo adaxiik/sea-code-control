@@ -30,8 +30,7 @@ namespace scc
             CallExpression,
             ReferenceExpression,
             DereferenceExpression,
-
-
+            PointerAssignmentExpression,
 
             COUNT,
         };
