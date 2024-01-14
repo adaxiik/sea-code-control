@@ -121,9 +121,10 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("MissingReturnStatementError", scc::InterpreterError::MissingReturnStatementError)
         .value("MissingReturnValueError", scc::InterpreterError::MissingReturnValueError)
         .value("BreakpointReachedError", scc::InterpreterError::BreakpointReachedError)
+        .value("AssertionFailedError", scc::InterpreterError::AssertionFailedError)
         .value("COUNT", scc::InterpreterError::COUNT);
     
-    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 20);
+    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 21);
 
 
 

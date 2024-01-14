@@ -753,7 +753,7 @@ namespace scc
                 case Parser::IDENTIFIER_SYMBOL:
                 {
                     std::string identifier = node.named_child(identifier_index).value();
-                    if(!type_scope.create_variable(identifier, type.value()))
+                    if(not type_scope.create_variable(identifier, type.value()))
                         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
 
                     return static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(
@@ -824,7 +824,7 @@ namespace scc
                     // type.value().pointer_depth = pointer_depth;
                     type.value().modifiers = std::vector<Type::Modifier>(pointer_depth, Type::Pointer{});
 
-                    if(!type_scope.create_variable(identifier, type.value()))
+                    if(not type_scope.create_variable(identifier, type.value()))
                         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToCreateVariableError, node));
 
                     return  static_cast<std::unique_ptr<binding::BoundVariableDeclarationStatement>>(std::make_unique<binding::BoundVariablePointerDeclarationStatement>(identifier
@@ -896,7 +896,9 @@ namespace scc
                             
                             auto initializer = bind_expression(initializer_node.first_named_child());
                             BUBBLE_ERROR(initializer);
-                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
+                            auto casted_initializer = std::make_unique<binding::BoundCastExpression>(initializer.release_value(), type.value());
+                            
+                            static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(casted_initializer);
                             return declaration;
                         }
                         case DeclarationKind::StaticArray:
@@ -965,7 +967,8 @@ namespace scc
                     {
                         auto initializer = bind_expression(initializer_node);
                         BUBBLE_ERROR(initializer);
-                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
+                        auto casted_initializer = std::make_unique<binding::BoundCastExpression>(initializer.release_value(), type.value());
+                        static_cast<binding::BoundVariablePointerDeclarationStatement*>(declaration.get_value())->initializer = std::move(casted_initializer);        
                         return declaration;
                     }
                     case DeclarationKind::StaticArray:
