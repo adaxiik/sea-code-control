@@ -104,6 +104,31 @@ function initVisualizer(visualizer_id)
     return visualizer;
 }
 
+// I HATE JS AAA
+DataView.prototype.getUint64 = function(byteOffset, littleEndian) {
+    // split 64-bit number into two 32-bit parts
+    const left =  this.getUint32(byteOffset, littleEndian);
+    const right = this.getUint32(byteOffset+4, littleEndian);
+
+    // combine the two 32-bit values
+    const combined = littleEndian? left + 2**32*right : 2**32*left + right;
+
+    if (!Number.isSafeInteger(combined))
+        console.warn(combined, 'exceeds MAX_SAFE_INTEGER. Precision may be lost');
+
+    return combined;
+}
+
+DataView.prototype.getInt64 = function(byteOffset, littleEndian) {
+    // delegate to getUint64
+    const value = this.getUint64(byteOffset, littleEndian);
+
+    // convert to signed and return
+    return littleEndian? 
+        value > 2**63 - 1 ? value - 2**64 : value
+      : value > 2**63 - 1 ? 2**64 - value : value;
+}
+
 function drawExportedSnapshot(visualizer, exportedProgramJson)
 {
     let exportedProgram = JSON.parse(exportedProgramJson);
@@ -111,23 +136,54 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
 
     let programStack = new cvisualizer.DataModelStructures.ProgramStack();
 
+    let isPointer = function(typeIndex) {
+        let type = exportedProgram.types[typeIndex];
+        if (!type) {
+            console.log("ERROR: typeIndex " + typeIndex + " not found");
+            return false;
+        }
+        return (type.kind == "pointer" || type.kind == "array");
+    }
+
+
     let getTypeName = function(typeIndex) {
         let type = exportedProgram.types[typeIndex];
+        if (!type) {
+            return "ERROR";
+        }
+
         if (type.kind == "primitive") {
             return type.name;
+        } else if (type.kind == "pointer") {
+            return getTypeName(type.pointing_to_type_index) + "*";
         }
 
         return "ERROR";
     }
 
+    let variableAddressToName = {};
+
     let variableValueAsString = function(variable) {
-        let typeName = getTypeName(variable.type_index);
         if (!variable.is_initialized) {
             return "uninitialized";
         }
 
         let bytes = new Uint8Array(variable.allocated_place.data);
         let view = new DataView(bytes.buffer);
+
+        if (isPointer(variable.type_index)) {
+            let pointingToAddress = view.getUint64(0, true);
+            if (variableAddressToName[pointingToAddress]) {
+                return variableAddressToName[pointingToAddress];
+            } else {
+                return "0x" + pointingToAddress.toString(16);
+            }
+        }
+
+        let typeName = getTypeName(variable.type_index);
+        
+
+        
 
 
         if (typeName == "bool") {
@@ -161,16 +217,21 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return "ERROR";
     }
 
+
     let globalVariables = new cvisualizer.DataModelStructures.StackFrame();
     globalVariables.frameId = 0;
     globalVariables.functionName = "Global variables";
     globalVariables.isCollapsed = false;
     for (let global of exportedProgram.global_variables) {
+        let address = global.allocated_place.address;
+        variableAddressToName[address] = global.name;
+
         let variable = new cvisualizer.DataModelStructures.Variable();
         variable.variableName = global.name;
         variable.dataTypeString = getTypeName(global.type_index);
         variable.valueString = variableValueAsString(global);
-        globalVariables.functionVariables[variable.variableName] = variable;
+        variable.isPointer = isPointer(global.type_index);
+        globalVariables.functionVariables[global.variableName] = variable;
     }
     programStack.stackFrames[globalVariables.frameId] = globalVariables;
 
@@ -183,25 +244,33 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         stackFrame.isCollapsed = false;
         
         for (let param of exportedStackframe.parameters) {
+            let address = param.allocated_place.address;
+            variableAddressToName[address] = param.name;
+
             let variable = new cvisualizer.DataModelStructures.Variable();
             variable.variableName = param.name;
             variable.dataTypeString = getTypeName(param.type_index);
             variable.valueString = variableValueAsString(param);
-            stackFrame.functionParameters[variable.variableName] = variable;
+            variable.isPointer = isPointer(param.type_index);
+            stackFrame.functionParameters[param.name] = variable;
         }
 
         for (let local of exportedStackframe.variables) {
+            let address = local.allocated_place.address;
+            variableAddressToName[address] = local.name;
+
             let variable = new cvisualizer.DataModelStructures.Variable();
             variable.variableName = local.name;
             variable.dataTypeString = getTypeName(local.type_index);
             variable.valueString = variableValueAsString(local);
-            stackFrame.functionVariables[variable.variableName] = variable;
+            variable.isPointer = isPointer(local.type_index);
+            stackFrame.functionVariables[local.name] = variable;
         }
 
         programStack.stackFrames[stackFrame.frameId] = stackFrame;
     }
 
     programStack.heap = new cvisualizer.DataModelStructures.Heap();
-
+    console.log(variableAddressToName);
     visualizer.drawProgramStack(programStack);
 }

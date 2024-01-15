@@ -86,29 +86,11 @@ namespace scc::export_format
             {"anonymous_allocations", snapshot.anonymous_allocations}
         }.dump(4);
     }
-
-    static void snapshot_type(ProgramSnapshot& snapshot, const scc::Type& type)
+    
+    static scc::export_format::PrimitiveType primitive_t_to_export_primitive_t(scc::Type::PrimitiveType primitive_type)
     {
-        // TODOOOOOOOOOO: after having proper way of expressing struct, pointers and arrays with scc:Type, please fix this, and all bellow :)
-
-    }
-
-    static scc::export_format::PrimitiveType type_to_export_type(const scc::Type& type)
-    {
-        if (type.is_pointer())
-        {
-            std::cerr << "type_to_export_type: pointer type is not supported yet" << std::endl;
-            std::abort();
-        }
-
-        if (type.is_struct())
-        {
-            std::cerr << "type_to_export_type: struct type is not supported yet" << std::endl;
-            std::abort();
-        }
-
         static_assert(static_cast<int>(scc::Type::PrimitiveType::COUNT) == 13);
-        switch (type.primitive_type().value())
+        switch (primitive_type)
         {
         case scc::Type::PrimitiveType::Char: return scc::export_format::PrimitiveType{scc::export_format::CharType{}};
         case scc::Type::PrimitiveType::I8:   return scc::export_format::PrimitiveType{scc::export_format::I8Type{}};
@@ -123,13 +105,13 @@ namespace scc::export_format
         case scc::Type::PrimitiveType::F64:  return scc::export_format::PrimitiveType{scc::export_format::F64Type{}};
         case scc::Type::PrimitiveType::Bool: return scc::export_format::PrimitiveType{scc::export_format::BoolType{}};
         default:
-            std::cerr << "type_to_export_type: unknown type kind: " << static_cast<int>(type.primitive_type().value()) << std::endl;
+            std::cerr << "type_to_export_type: unknown type kind: " << static_cast<int>(primitive_type) << std::endl;
             std::abort();
             break;
         }
     }
 
-    static void snapshot_global_variables(ProgramSnapshot& snapshot, const InterpreterState& state, std::function<TypeIndex(const Type&)> get_type_index_of)
+    static void snapshot_global_variables(ProgramSnapshot& snapshot, const InterpreterState& state, std::function<scc::export_format::TypeIndex(const scc::Type&)>  get_type_index_of)
     {
         for (const auto& [name, variable] : state.global_scope)
         {
@@ -147,14 +129,14 @@ namespace scc::export_format
                     .size_bytes = variable.type().size_bytes(),
                     .data = data
                 },
-                .type_index = get_type_index_of(type_to_export_type(variable.type())),
+                .type_index = get_type_index_of(variable.type()),
                 .name = name,
                 .is_initialized = variable.is_initialized()
             });
         }
     }
 
-    static void snapshot_stackframes(ProgramSnapshot& snapshot, const InterpreterState& state, std::function<TypeIndex(const Type&)> get_type_index_of)
+    static void snapshot_stackframes(ProgramSnapshot& snapshot, const InterpreterState& state, std::function<scc::export_format::TypeIndex(const scc::Type&)>  get_type_index_of)
     {
         auto call_stack_copy = state.call_stack.copy_call_stack();
         while (not call_stack_copy.empty())
@@ -184,7 +166,7 @@ namespace scc::export_format
                             .size_bytes = variable.type().size_bytes(),
                             .data = data
                         },
-                        .type_index = get_type_index_of(type_to_export_type(variable.type())),
+                        .type_index = get_type_index_of(variable.type()),
                         .name = name,
                         .is_initialized = variable.is_initialized()
                     };
@@ -207,18 +189,45 @@ namespace scc::export_format
     ProgramSnapshot make_snapshot(const InterpreterState& state)
     {
         ProgramSnapshot snapshot;
-        std::unordered_map<scc::export_format::Type, scc::export_format::TypeIndex> type_to_type_index;
-        auto get_type_index_of([&type_to_type_index, &snapshot](const scc::export_format::Type& type) -> scc::export_format::TypeIndex {
+        std::unordered_map<scc::Type, scc::export_format::TypeIndex> type_to_type_index;
+
+        std::function<scc::export_format::TypeIndex(const scc::Type&)> get_type_index_of;
+        get_type_index_of =[&type_to_type_index, &snapshot, &get_type_index_of](const scc::Type& type) -> scc::export_format::TypeIndex {
+
             auto it = type_to_type_index.find(type);
             if (it != type_to_type_index.end())
                 return it->second;
 
             auto type_index = type_to_type_index.size();
             type_to_type_index.insert({type, type_index});
-            snapshot.types.push_back(type);
+
+            if (type.is_struct())
+            {
+                std::cerr << "type_to_export_type: struct type is not supported yet" << std::endl;
+                std::abort();
+            }
+
+            if (type.is_pointer())
+            {
+                // well.. rekurzivní typy by přecejen byly fajn xd
+                auto type_copy = type;
+
+                scc::Type::Modifier last_modifier = type.modifiers.back();
+                type_copy.modifiers.pop_back();
+                export_format::TypeIndex pointing_to_type_index = get_type_index_of(type_copy);
+                
+                std::visit(overloaded{
+                    [&](const scc::Type::Pointer) { snapshot.types.push_back(PointerType{pointing_to_type_index}); },
+                    [&](const scc::Type::Array array) { snapshot.types.push_back(ArrayType{pointing_to_type_index, array.size}); },
+                }, last_modifier);
+
+                return type_index;
+            }
+
+            snapshot.types.push_back(primitive_t_to_export_primitive_t(type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT)));
 
             return type_index;
-        });
+        };
 
         snapshot_global_variables(snapshot, state, get_type_index_of);
         snapshot_stackframes(snapshot, state, get_type_index_of);

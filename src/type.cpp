@@ -121,3 +121,40 @@ namespace scc
     }
 
 }
+
+
+
+size_t std::hash<scc::Type::StructType>::operator()(const scc::Type::StructType &struct_type) const
+{
+    size_t vector_hash = 0;
+    for (const auto &field : struct_type.fields)
+        vector_hash ^= std::hash<std::string>()(field.first) ^ std::hash<scc::Type>()(field.second);
+
+    return std::hash<std::string>()(struct_type.name) ^ (vector_hash << 1);
+}
+
+size_t std::hash<scc::Type::BaseType>::operator()(const scc::Type::BaseType &base_type) const
+{
+    return std::visit(overloaded{
+        [](const scc::Type::PrimitiveType primitive_type) { return std::hash<scc::Type::PrimitiveType>()(primitive_type); },
+        [](const scc::Type::StructType struct_type) { return std::hash<scc::Type::StructType>()(struct_type); },
+    }, base_type);
+}
+
+size_t std::hash<scc::Type::Modifier>::operator()(const scc::Type::Modifier &modifier) const
+{
+    return ~std::visit(overloaded{
+        [](const scc::Type::Pointer) { return std::hash<uint64_t>()(0); },
+        [](const scc::Type::Array array) { return std::hash<uint64_t>()(array.size); },
+    }, modifier);
+}
+
+
+size_t std::hash<scc::Type>::operator()(const scc::Type &type) const
+{
+    size_t vector_hash = 0;
+    for (const auto &modifier : type.modifiers)
+        vector_hash ^= std::hash<scc::Type::Modifier>()(modifier);
+
+    return std::hash<scc::Type::BaseType>()(type.base_type) ^ vector_hash;
+}

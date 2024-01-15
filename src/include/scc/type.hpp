@@ -281,8 +281,8 @@ namespace scc
             else
                 return std::nullopt;
         }
-
     };
+
     struct Type::Value {
         Type type;
         std::variant<PrimitiveValue, StructValue> value;
@@ -305,5 +305,29 @@ namespace scc
                 return std::nullopt;
         }
     };
-
 }
+
+template <>
+struct std::hash<scc::Type>
+{
+    size_t operator()(const scc::Type &type) const;
+};
+
+
+template <>
+struct std::hash<scc::Type::StructType>
+{
+    size_t operator()(const scc::Type::StructType &struct_type) const;
+};
+
+template <>
+struct std::hash<scc::Type::BaseType>
+{
+    size_t operator()(const scc::Type::BaseType &base_type) const;
+};
+
+template <>
+struct std::hash<scc::Type::Modifier>
+{
+    size_t operator()(const scc::Type::Modifier &modifier) const;
+};
