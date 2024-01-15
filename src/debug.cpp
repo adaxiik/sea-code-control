@@ -658,7 +658,7 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 19, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 20, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==> ";
@@ -752,8 +752,10 @@ namespace scc
                 },
                 [&](lowering::DereferenceInstruction dereference) {
                     ss << "Dereference ==> " << dereference.type;
+                },
+                [&](lowering::PointerAssignmentInstruction pointer_assignment) {
+                    ss << "PointerAssignment ==> " << pointer_assignment.target_type;
                 }
-
             }, instruction);
         }
 

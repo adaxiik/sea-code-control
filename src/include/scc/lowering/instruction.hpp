@@ -21,6 +21,7 @@
 #include "lowering/call_inbuild_instruction.hpp"
 #include "lowering/reference_instruction.hpp"
 #include "lowering/dereference_instruction.hpp"
+#include "lowering/pointer_assignment_instruction.hpp"
 
 namespace scc
 {
@@ -45,7 +46,8 @@ namespace scc
             CallInstruction,
             CallInbuildInstruction,
             ReferenceInstruction,
-            DereferenceInstruction>;
+            DereferenceInstruction,
+            PointerAssignmentInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

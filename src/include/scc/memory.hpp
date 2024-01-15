@@ -53,6 +53,17 @@ namespace scc
 
         std::optional<Type::Value> read_value(address_t address, Type type) const;
 
+        /**
+         * @brief write value to memory
+         * 
+         * @param address 
+         * @param value 
+         * @param type 
+         * @return true if value was written successfully
+         * @return false if address was not found
+         */
+        bool write_value(address_t address, Type::Value value, Type type);
+
         template<typename T>
         std::optional<T> read(address_t address) const
         {

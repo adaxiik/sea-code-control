@@ -28,53 +28,16 @@ namespace scc
             return memory.read_value(m_address, m_type);
         }
 
-        template <typename T>
-        bool set_value(Memory& memory, T value)
+        bool set_value(Memory& memory, Type::Value value)
         {
             if (m_is_constant)
                 return false;
 
-            if (!memory.write<T>(m_address, value))
+            if (not memory.write_value(m_address, value, m_type))
                 return false;
                 
             m_initialized = true;
             return true;
-        }
-
-        bool set_value(Memory& memory, Type::Value value)
-        {
-            #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
-                return set_value<Type::Primitive::KIND>(memory, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
-
-            if (m_type.is_struct())
-            {
-                // TODOOO: implement struct variables
-                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-                std::abort();
-            }
-
-            if (m_type.is_pointer())
-                return set_value<Type::Primitive::U64>(memory, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
-
-            switch (std::get<Type::PrimitiveType>(m_type.base_type))
-            {
-                CASE_SET_VALUE(Char)
-                CASE_SET_VALUE(I8)
-                CASE_SET_VALUE(U8)
-                CASE_SET_VALUE(I16)
-                CASE_SET_VALUE(U16)
-                CASE_SET_VALUE(I32)
-                CASE_SET_VALUE(U32)
-                CASE_SET_VALUE(I64)
-                CASE_SET_VALUE(U64)
-                CASE_SET_VALUE(F32)
-                CASE_SET_VALUE(F64)
-                CASE_SET_VALUE(Bool)
-
-                case Type::PrimitiveType::COUNT:
-                default:
-                    return false;
-            }
         }
 
         Type type() const { return m_type; }

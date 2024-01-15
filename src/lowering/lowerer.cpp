@@ -448,8 +448,9 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundPointerAssignmentExpression &pointer_assignment_expression)
     {
-        // m_to_lower.push(std::make_pair(lowering::PointerAssignmentInstruction(pointer_assignment_expression.identifier), pointer_assignment_expression.location));
-        // m_to_lower.push(pointer_assignment_expression.expression.get());
+        m_to_lower.push(std::make_pair(lowering::PointerAssignmentInstruction(pointer_assignment_expression.type), pointer_assignment_expression.location));
+        m_to_lower.push(pointer_assignment_expression.expression.get());
+        m_to_lower.push(pointer_assignment_expression.address_expression.get());
     }
 
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)

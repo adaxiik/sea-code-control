@@ -11,7 +11,8 @@ namespace scc
         struct PointerAssignmentInstruction
         {
             Type target_type;
-            PointerAssignmentInstruction(Type target_type);
+            PointerAssignmentInstruction(Type target_type)
+                : target_type(target_type) {}
             InterpreterResult execute(InterpreterState &state) const;
         };
     }

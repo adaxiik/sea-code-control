@@ -818,17 +818,45 @@ TEST_CASE("Pointers")
 
     SCC_TEST_IS_OK("void _scc_assert(bool b);");
 
-    SCC_TEST_IS_OK("int* a;");
-    SCC_TEST_IS_OK("int* b;");
+    SCC_TEST_IS_OK("int* a_ptr;");
+    SCC_TEST_IS_OK("int* b_ptr;");
     SCC_TEST_IS_OK("int a_val = 1;");
     SCC_TEST_IS_OK("int b_val = 2;");
-    SCC_TEST_IS_OK("a = &a_val;");
-    SCC_TEST_IS_OK("b = &b_val;");
-    SCC_TEST_IS_OK("_scc_assert(a == &a_val);");
-    SCC_TEST_IS_OK("_scc_assert(b == &b_val);");
-    SCC_TEST_IS_OK("_scc_assert(a != b);");
-    SCC_TEST_IS_OK("_scc_assert(*a == 1);");
-    SCC_TEST_IS_OK("_scc_assert(*b == 2);");
+    SCC_TEST_IS_OK("a_ptr = &a_val;");
+    SCC_TEST_IS_OK("b_ptr = &b_val;");
+    SCC_TEST_IS_OK("_scc_assert(a_ptr == &a_val);");
+    SCC_TEST_IS_OK("_scc_assert(b_ptr == &b_val);");
+    SCC_TEST_IS_OK("_scc_assert(a_ptr != b_ptr);");
+    SCC_TEST_IS_OK("_scc_assert(*a_ptr == 1);");
+    SCC_TEST_IS_OK("_scc_assert(*b_ptr == 2);");
     SCC_TEST_IS_OK("_scc_assert(*(&a_val) == 1);");
     SCC_TEST_IS_ERROR("*(int*)0;"); // invalid memory access
+    SCC_TEST_IS_OK("*a_ptr = 3;");
+    SCC_TEST_IS_OK("_scc_assert(*a_ptr == 3);");
+    SCC_TEST_IS_OK("_scc_assert(a_val == 3);");
+    SCC_TEST_IS_OK("_scc_assert(*(&a_val) == 3);");
+    SCC_TEST_IS_OK("_scc_assert(*b_ptr == 2);");
+    SCC_TEST_IS_OK("_scc_assert(b_val == 2);");
+    SCC_TEST_IS_OK("*(&b_val) = 4;");
+    SCC_TEST_IS_OK("_scc_assert(*b_ptr == 4);");
+    SCC_TEST_IS_OK("_scc_assert(b_val == 4);");
+    SCC_TEST_IS_OK("_scc_assert(*(&b_val) == 4);");
+
+    SCC_TEST_IS_OK("int* c_ptr = a_ptr;");
+    SCC_TEST_IS_OK("_scc_assert(c_ptr == a_ptr);");
+    SCC_TEST_IS_OK("_scc_assert(c_ptr == &a_val);");
+    SCC_TEST_IS_OK("_scc_assert(*c_ptr == 3);");
+    SCC_TEST_IS_OK("_scc_assert(*c_ptr == a_val);");
+    SCC_TEST_IS_OK("_scc_assert(*c_ptr == *a_ptr);");
+
+    SCC_TEST_IS_OK("float* d_ptr;");
+    SCC_TEST_IS_OK("float d_val = 1.5f;");
+    SCC_TEST_IS_OK("d_ptr = &d_val;");
+    SCC_TEST_IS_OK("_scc_assert(d_ptr == &d_val);");
+    SCC_TEST_IS_OK("_scc_assert(*d_ptr == 1.5f);");
+
+    SCC_TEST_IS_OK("long e_val = 123456;");
+    SCC_TEST_IS_OK("long* e_ptr = &e_val;");
+    SCC_TEST_IS_OK("_scc_assert(e_ptr == &e_val);");
+    SCC_TEST_IS_OK("_scc_assert(*e_ptr == 123456);");
 }

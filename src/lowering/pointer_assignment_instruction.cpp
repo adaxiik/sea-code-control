@@ -9,18 +9,32 @@ namespace scc
             if (state.result_stack.size() < 2)
                 return InterpreterError::RuntimeError;
 
-            // auto result = state.result_stack.top();
-            // state.result_stack.pop();
+            auto result_to_assign = state.result_stack.top();
+            state.result_stack.pop();
 
-            // auto variable = state.call_stack.scope_stack().get_from_scopestack(variable_name);
-            // if (!variable)
-            //     variable = state.global_scope.get_variable(variable_name);
+            auto pointer = state.result_stack.top();
+            state.result_stack.pop();
 
-            // if (!variable)
-            //     return InterpreterError::VariableDoesntExistError;
+            if (not pointer.has_value())
+                return InterpreterResult::error(InterpreterError::RuntimeError);
 
-            // if (variable->set_value(state.memory, result.get_value().value))
-            //     return result;
+            // this is already checked in binder
+            if (not pointer.get_value().type.is_pointer())
+                return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
+            
+            if (not std::holds_alternative<Type::PrimitiveValue>(pointer.get_value().value.value))
+                return InterpreterResult::error(InterpreterError::DereferenceError);
+
+
+            auto primitive_val = std::get<Type::PrimitiveValue>(pointer.get_value().value.value);
+            if (not std::holds_alternative<Type::Primitive::PTR>(primitive_val))
+                return InterpreterResult::error(InterpreterError::DereferenceError);
+            
+            auto address_value = std::get<Type::Primitive::PTR>(primitive_val);
+
+            if (state.memory.write_value(address_value, result_to_assign.get_value().value, result_to_assign.get_value().type))
+                return result_to_assign;
+
 
             return InterpreterError::RuntimeError;
         }

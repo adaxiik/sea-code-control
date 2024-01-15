@@ -138,4 +138,40 @@ namespace scc
             std::abort(); 
         }
     }
+
+    bool Memory::write_value(address_t address, Type::Value value, Type type)
+    {
+        #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
+            return write<Type::Primitive::KIND>(address, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
+
+        if (type.is_struct())
+        {
+            // TODOOO: implement struct variables
+            std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
+            std::abort();
+        }
+
+        if (type.is_pointer())
+            return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
+
+        switch (std::get<Type::PrimitiveType>(type.base_type))
+        {
+            CASE_SET_VALUE(Char)
+            CASE_SET_VALUE(I8)
+            CASE_SET_VALUE(U8)
+            CASE_SET_VALUE(I16)
+            CASE_SET_VALUE(U16)
+            CASE_SET_VALUE(I32)
+            CASE_SET_VALUE(U32)
+            CASE_SET_VALUE(I64)
+            CASE_SET_VALUE(U64)
+            CASE_SET_VALUE(F32)
+            CASE_SET_VALUE(F64)
+            CASE_SET_VALUE(Bool)
+
+            case Type::PrimitiveType::COUNT:
+            default:
+                return false;
+        }
+    }
 }
