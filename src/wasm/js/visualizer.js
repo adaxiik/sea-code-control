@@ -119,6 +119,7 @@ DataView.prototype.getUint64 = function(byteOffset, littleEndian) {
     return combined;
 }
 
+// https://stackoverflow.com/questions/53103695/how-to-read-64-bit-integer-from-an-arraybuffer-dataview-in-javascript
 DataView.prototype.getInt64 = function(byteOffset, littleEndian) {
     // delegate to getUint64
     const value = this.getUint64(byteOffset, littleEndian);

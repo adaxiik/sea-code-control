@@ -859,4 +859,55 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("long* e_ptr = &e_val;");
     SCC_TEST_IS_OK("_scc_assert(e_ptr == &e_val);");
     SCC_TEST_IS_OK("_scc_assert(*e_ptr == 123456);");
+
+    SCC_TEST_IS_OK("long long_value = 123456;");
+    SCC_TEST_IS_OK("long* long_ptr = &long_value;");
+    SCC_TEST_IS_OK("_scc_assert(long_ptr == &long_value);");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 123456);");
+    SCC_TEST_IS_OK("*long_ptr += 1;");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 123457);");
+    SCC_TEST_IS_OK("_scc_assert(long_value == 123457);");
+    SCC_TEST_IS_OK("*long_ptr -= 1;");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 123456);");
+    SCC_TEST_IS_OK("*long_ptr *= 2;");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 246912);");
+    SCC_TEST_IS_OK("_scc_assert(long_value == 246912);");
+    SCC_TEST_IS_OK("*long_ptr /= 2;");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 123456);");
+    SCC_TEST_IS_OK("_scc_assert(long_value == 123456);");
+    SCC_TEST_IS_OK("*long_ptr %= 2;");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr == 0);");
+    SCC_TEST_IS_OK("_scc_assert(long_value == 0);");
+
+    SCC_TEST_IS_OK("float float_value = 1.5f;");
+    SCC_TEST_IS_OK("float* float_ptr = &float_value;");
+    SCC_TEST_IS_OK("_scc_assert(float_ptr == &float_value);");
+    SCC_TEST_IS_OK("_scc_assert(*float_ptr == 1.5f);");
+    SCC_TEST_IS_OK("*float_ptr += 1.5f;");
+    SCC_TEST_IS_OK("_scc_assert(*float_ptr == 3.0f);");
+    SCC_TEST_IS_OK("_scc_assert(float_value == 3.0f);");
+    SCC_TEST_IS_OK("*float_ptr -= 1.5f;");
+    SCC_TEST_IS_OK("_scc_assert(*float_ptr == 1.5f);");
+    SCC_TEST_IS_OK("*float_ptr *= 2.0f;");
+    SCC_TEST_IS_OK("_scc_assert(*float_ptr == 1.5f * 2.0f);");
+    SCC_TEST_IS_OK("_scc_assert(float_value == 1.5f * 2.0f);");
+    
+
+    SCC_TEST_IS_OK("long long_value1 = 1;");
+    SCC_TEST_IS_OK("long long_value2 = 2;");
+    SCC_TEST_IS_OK("long* long_ptr1 = &long_value1;");
+    SCC_TEST_IS_OK("long* long_ptr2 = &long_value2;");
+    SCC_TEST_IS_OK("long** long_ptr_ptr = &long_ptr1;");
+    SCC_TEST_IS_OK("_scc_assert(long_ptr_ptr == &long_ptr1);");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr_ptr == long_ptr1);");
+    SCC_TEST_IS_OK("_scc_assert(**long_ptr_ptr == 1);");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr_ptr == &long_value1);");
+    SCC_TEST_IS_OK("long_ptr_ptr = &long_ptr2;");
+    SCC_TEST_IS_OK("_scc_assert(long_ptr_ptr == &long_ptr2);");
+    SCC_TEST_IS_OK("_scc_assert(*long_ptr_ptr == long_ptr2);");
+    SCC_TEST_IS_OK("_scc_assert(**long_ptr_ptr == 2);");
+    SCC_TEST_IS_OK("**long_ptr_ptr = 3;");
+    SCC_TEST_IS_OK("_scc_assert(**long_ptr_ptr == 3);");
+    SCC_TEST_IS_OK("_scc_assert(long_value2 == 3);");
+    
 }

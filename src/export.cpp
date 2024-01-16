@@ -134,6 +134,8 @@ namespace scc::export_format
                 .is_initialized = variable.is_initialized()
             });
         }
+
+        std::sort(snapshot.global_variables.begin(), snapshot.global_variables.end(), [](const auto& a, const auto& b) { return a.allocated_place.address > b.allocated_place.address; });
     }
 
     static void snapshot_stackframes(ProgramSnapshot& snapshot, const InterpreterState& state, std::function<scc::export_format::TypeIndex(const scc::Type&)>  get_type_index_of)
@@ -176,6 +178,9 @@ namespace scc::export_format
                     else
                         snapshot.stackframes.back().variables.push_back(std::move(exported_variable));
                 }
+
+                std::sort(snapshot.stackframes.back().variables.begin(), snapshot.stackframes.back().variables.end(), [](const auto& a, const auto& b) { return a.allocated_place.address > b.allocated_place.address; });
+                std::sort(snapshot.stackframes.back().parameters.begin(), snapshot.stackframes.back().parameters.end(), [](const auto& a, const auto& b) { return a.allocated_place.address > b.allocated_place.address; });
             }
 
             call_stack_copy.pop();
