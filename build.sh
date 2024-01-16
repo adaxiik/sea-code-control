@@ -85,9 +85,9 @@ build_wasm() {
     npm run build --prefix $C_VISUALIZER_PATH
     print_green "Copying files to web folder"
     
-    cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/c-visualizer.js
     cp -r $CLANG_WASM_PATH $BUILD_WASM_FOLDER/web
-    cp $PROJECT_PATH/src/wasm/*.{js,css,html} $BUILD_WASM_FOLDER/web
+    cp -r $PROJECT_PATH/src/wasm/{js,css} $BUILD_WASM_FOLDER/web
+    cp $C_VISUALIZER_PATH/dist/bundle.js $BUILD_WASM_FOLDER/web/js/c-visualizer.js
     cp -r $PROJECT_PATH/src/wasm/examples-web $BUILD_WASM_FOLDER/web
     cp $BUILD_WASM_FOLDER/scc.{wasm,js} $BUILD_WASM_FOLDER/web
     cd "$PROJECT_PATH"
