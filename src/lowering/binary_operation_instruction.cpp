@@ -21,7 +21,7 @@ namespace scc
                 {
                     auto result_type = Type::deduce_type<LEFT_CAST>();
                     result_type.modifiers = std::vector<Type::Modifier>(left_pointer_depth, Type::Pointer{});
-                    return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::PTR>(result.value()), result_type));
                 }
             }
             else if (right_pointer_depth > 0)
@@ -33,7 +33,7 @@ namespace scc
                 {
                     auto result_type = Type::deduce_type<RIGHT_CAST>();
                     result_type.modifiers = std::vector<Type::Modifier>(right_pointer_depth, Type::Pointer{});
-                    return InterpreterResult::ok(InterpreterResultValue(result.value(), result_type));
+                    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::PTR>(result.value()), result_type));
                 }
             }
             else
@@ -119,7 +119,14 @@ namespace scc
             } \
             else \
             { \
-                return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<LEFT_CAST,RIGHT_CAST>, left_result, right_result); \
+                if (LEFT_PTR_DEPTH > 0 and RIGHT_PTR_DEPTH > 0) \
+                    return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<Type::Primitive::PTR,Type::Primitive::PTR>, left_result, right_result); \
+                else if (LEFT_PTR_DEPTH > 0) \
+                    return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<Type::Primitive::PTR,RIGHT_CAST>, left_result, right_result); \
+                else if (RIGHT_PTR_DEPTH > 0) \
+                    return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<LEFT_CAST,Type::Primitive::PTR>, left_result, right_result); \
+                else \
+                    return binary_operation_result<LEFT_CAST,RIGHT_CAST>(LEFT_PTR_DEPTH, RIGHT_PTR_DEPTH, OperationResult::perform_ ## FN_NAME<LEFT_CAST,RIGHT_CAST>, left_result, right_result); \
             } \
             }while(0)
 

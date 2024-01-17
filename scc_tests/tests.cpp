@@ -204,6 +204,10 @@ TEST_CASE("Single Expressions")
         
         SCC_TEST_TYPE_PTR(I32, 1, (int*)1 + 2);
         SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)1);
+        SCC_TEST_TYPE_PTR(Char, 1, (char*)2 - 1);
+        SCC_TEST_TYPE_PTR(Char, 1, 2 - (char*)1);
+        SCC_TEST_TYPE_PTR(F64, 1, (double*)1 + 2);
+        SCC_TEST_TYPE_PTR(F64, 1, 2 + (double*)1);
         SCC_TEST_IS_ERROR("(int*)1 + (int*)1;");
         SCC_TEST_INTERPRET_RESULT(bool, true, "(int*)1 == (int*)1;");
         SCC_TEST_INTERPRET_RESULT(bool, false,"(int*)1 != (int*)1;");
