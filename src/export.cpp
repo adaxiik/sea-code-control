@@ -203,8 +203,7 @@ namespace scc::export_format
             if (it != type_to_type_index.end())
                 return it->second;
 
-            auto type_index = type_to_type_index.size();
-            type_to_type_index.insert({type, type_index});
+            
 
             if (type.is_struct())
             {
@@ -226,11 +225,15 @@ namespace scc::export_format
                     [&](const scc::Type::Array array) { snapshot.types.push_back(ArrayType{pointing_to_type_index, array.size}); },
                 }, last_modifier);
 
+                auto type_index = type_to_type_index.size();
+                type_to_type_index.insert({type, type_index});
                 return type_index;
             }
 
             snapshot.types.push_back(primitive_t_to_export_primitive_t(type.primitive_type().value_or(scc::Type::PrimitiveType::COUNT)));
 
+            auto type_index = type_to_type_index.size();
+            type_to_type_index.insert({type, type_index});
             return type_index;
         };
 

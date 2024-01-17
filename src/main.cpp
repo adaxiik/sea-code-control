@@ -63,8 +63,10 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    auto running_interpreter = running_intepreter_result.value();
+    scc::RunningInterpreter running_interpreter = running_intepreter_result.value();
+    // running_interpreter.breakpoints().add(29);
     auto interpret_result = running_interpreter.continue_execution();
+    // scc::export_format::make_snapshot(running_interpreter.state());
     
 
     if (interpret_result.is_error())
