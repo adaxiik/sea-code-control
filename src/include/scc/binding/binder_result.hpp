@@ -28,6 +28,7 @@ namespace scc
                 UnsupportedForStatementError,
                 ParserError, // Tree sitter error
                 // TODOO: Variable already exists / Variable does not exist
+                FailedToIncludeError,
                 COUNT
             };
 

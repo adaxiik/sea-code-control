@@ -30,7 +30,7 @@ namespace scc
 
         bool set_value(Memory& memory, Type::Value value)
         {
-            if (m_is_constant)
+            if (m_is_constant and m_initialized)
                 return false;
 
             if (not memory.write_value(m_address, value, m_type))

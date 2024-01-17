@@ -1,9 +1,9 @@
-#include <stdio.h>
+#include <math.h>
 
 void _scc_puti(int x);
 void _scc_putc(char x);
-float _scc_sinf(float x);
-float PI = 3.14159f;
+
+const float M_PI = 3.14159f;
 
 
 void print_hello(); // defined later
@@ -46,8 +46,8 @@ void draw_sin_wave(int height, int width)
     float center = width / 2.0f;
     for (int y = 0; y < height; y += 1)
     {
-        float sin_progress = (float)y / (float)height * 2.0f * PI;
-        float sin_value = _scc_sinf(sin_progress);
+        float sin_progress = (float)y / (float)height * 2.0f * M_PI;
+        float sin_value = sinf(sin_progress);
         int x = (int)(center + sin_value * center);
         for (int i = 0; i < x; i += 1)
         {

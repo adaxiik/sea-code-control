@@ -8,6 +8,13 @@
 #include <iomanip>
 #include <algorithm>
 
+
+// libc
+#include "binding/libc/stdio.h"
+#include "binding/libc/stdlib.h"
+#include "binding/libc/math.h"
+#include "binding/libc/unistd.h"
+
         
 #define SCC_ASSERT(x)                                                        \
     do                                                                       \
@@ -80,6 +87,54 @@ namespace scc
     // std::unique_ptr<(\w*::\w*)> Binder
     // binding::BinderResult<$1> Binder
 
+    /**
+     * @brief Adds included files to the binder
+     * 
+     * @param block_statement 
+     * @param node 
+     * @return true on success
+     * @return false on error
+     */
+    bool Binder::add_prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::PREPROC_INCLUDE_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+
+        auto include_node = node.first_named_child();
+        if (include_node.symbol() != Parser::SYSTEM_LIB_STRING_SYMBOL)
+            return false;
+
+        const char* lib = nullptr;
+        if (include_node.value() == "<stdio.h>")
+            lib = binding::libc::stdio_h;
+        else if (include_node.value() == "<stdlib.h>")
+            lib = binding::libc::stdlib_h;
+        else if (include_node.value() == "<math.h>")
+            lib = binding::libc::math_h;
+        else if (include_node.value() == "<unistd.h>")
+            lib = binding::libc::unistd_h;
+        else
+            return false;
+
+        auto lib_tree = Parser().parse(lib);
+        if (lib_tree.has_error())
+            return false;
+        
+        auto lib_bind_result = bind(lib_tree.root_node());
+        if (lib_bind_result.is_error())
+            return false;
+
+        std::unique_ptr<binding::BoundBlockStatement> lib_block_statement = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(lib_bind_result.release_value().release()));
+        for (auto& statement : lib_block_statement->statements)
+        {
+            statements.push_back(std::move(statement));
+        }
+
+        lib_block_statement->statements.clear();
+
+        return true;
+    }
+
     binding::BinderResult<binding::BoundBlockStatement> Binder::bind_block_statement(const TreeNode &node)
     {
         // SCC_ASSERT_NODE_SYMBOL(Parser::TRANSLATION_UNIT_SYMBOL);
@@ -87,12 +142,22 @@ namespace scc
         SCC_ASSERT(node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL || node.symbol() == Parser::COMPOUND_STATEMENT_SYMBOL);
 
         auto block_statement = std::make_unique<binding::BoundBlockStatement>();
-        if (node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL && node.named_child_count() == 1)
+        if (
+            node.symbol() == Parser::TRANSLATION_UNIT_SYMBOL
+            and node.named_child_count() == 1
+        )
         {
-            // return bind_impl(node.first_named_child());
+            if (node.first_named_child().symbol() == Parser::PREPROC_INCLUDE_SYMBOL)
+            {
+                if (not add_prepoc_include(block_statement->statements, node.first_named_child()))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToIncludeError, node));
+
+                return binding::BinderResult<ResultType>::ok(std::move(block_statement));
+            }
+
             auto result = bind_impl(node.first_named_child());
             BUBBLE_ERROR(result);
-            if (!result.get_value()->is_statement())
+            if (not result.get_value()->is_statement())
             {
                 SCC_UNREACHABLE();
             }
@@ -111,17 +176,18 @@ namespace scc
             if (child.symbol() == Parser::COMMENT_SYMBOL)
                 continue;
 
-            // ====================================================
-            // TODOO: REMOVE THIS LATER!
             if (child.symbol() == Parser::PREPROC_INCLUDE_SYMBOL)
+            {
+                if (not add_prepoc_include(block_statement->statements, child))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToIncludeError, node));
                 continue;
-            // ====================================================
+            }
 
 
             auto binded = bind_impl(child);
             BUBBLE_ERROR(binded);
 
-            if(!binded.get_value()->is_statement())
+            if(not binded.get_value()->is_statement())
             {
                 // TODOOO: UNREACHABLE???
                 SCC_UNREACHABLE();                
@@ -1505,6 +1571,8 @@ namespace scc
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
             // bind_expression already adds location.. so no need to add it again
             return bind_expression(node); 
+        case Parser::PREPROC_INCLUDE_SYMBOL:    // this should be handled in bind_block_statement
+            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));

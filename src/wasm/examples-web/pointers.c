@@ -1,10 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 void _scc_puti(int x);
 void _scc_putc(char x);
-long _scc_write(int fd, const void* data, unsigned long count);
-void* _scc_malloc(unsigned long size);
-void _scc_free(void* ptr);
+
 
 
 int g;
@@ -26,14 +26,14 @@ int main()
     _scc_puti(**ptr);
 
     // heap
-    char* data = _scc_malloc(4);
+    char* data = malloc(4);
     *(data + 0) = 'l';
     *(data + 1) = 'o';
     *(data + 2) = 'l';
     *(data + 3) = '\n';
-    _scc_write(1, data, 4);
+    write(stdout, data, 4);
 
-    _scc_free(data);
+    free(data);
 
     return 0;
 }
