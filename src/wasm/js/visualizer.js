@@ -232,7 +232,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         variable.dataTypeString = getTypeName(global.type_index);
         variable.valueString = variableValueAsString(global);
         variable.isPointer = isPointer(global.type_index);
-        globalVariables.functionVariables[global.variableName] = variable;
+        globalVariables.functionVariables[global.name] = variable;
     }
     programStack.stackFrames[globalVariables.frameId] = globalVariables;
 
