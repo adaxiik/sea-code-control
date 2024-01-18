@@ -20,9 +20,10 @@ namespace scc
         std::string m_code;
         TSTreePtr m_tree;
         const Parser& m_parser;
+        bool m_want_to_remove_location;
 
     public:
-        ParserResult(const std::string &code, TSTreePtr tree, const Parser& parser);
+        ParserResult(const std::string &code, TSTreePtr tree, const Parser& parser, bool want_to_remove_location);
         ParserResult(const ParserResult&);
         ~ParserResult() = default;
 
@@ -30,6 +31,7 @@ namespace scc
         bool has_error() const;
         const std::string &code() const;
         const Parser& parser() const;
+        bool want_to_remove_location() const;
     };
 
 
@@ -44,7 +46,7 @@ namespace scc
         ~Parser() = default;
         std::string get_symbol_name(TSSymbol symbol) const;
 
-        ParserResult parse(const std::string &code);
+        ParserResult parse(const std::string &code, bool want_to_remove_location = false);
 
         
 

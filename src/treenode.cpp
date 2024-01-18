@@ -78,6 +78,15 @@ namespace scc
         return Location{start_point.row, start_point.column};
     }
 
+    std::optional<Location> TreeNode::maybe_location() const
+    {
+        if (m_parser_result->want_to_remove_location())
+            return std::nullopt;
+
+        TSPoint start_point = ts_node_start_point(m_node);
+        return Location{start_point.row, start_point.column};
+    }
+
     std::optional<TreeNode> TreeNode::named_child_with_symbol_BFS(TSSymbol symbol, SearchDepth max_depth) const
     {
         // BFS, depth 0 is infinite

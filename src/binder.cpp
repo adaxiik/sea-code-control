@@ -116,7 +116,7 @@ namespace scc
         else
             return false;
 
-        auto lib_tree = Parser().parse(lib);
+        auto lib_tree = Parser().parse(lib, true);
         if (lib_tree.has_error())
             return false;
         
@@ -126,9 +126,7 @@ namespace scc
 
         std::unique_ptr<binding::BoundBlockStatement> lib_block_statement = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(lib_bind_result.release_value().release()));
         for (auto& statement : lib_block_statement->statements)
-        {
             statements.push_back(std::move(statement));
-        }
 
         lib_block_statement->statements.clear();
 
@@ -658,29 +656,29 @@ namespace scc
         switch (node.symbol())
         {
         case Parser::BINARY_EXPRESSION_SYMBOL:
-            return bind_binary_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_binary_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::CAST_EXPRESSION_SYMBOL:
-            return bind_cast_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_cast_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
-            return bind_parenthesized_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_parenthesized_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::STRING_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
-            return bind_literal_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_literal_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::IDENTIFIER_SYMBOL:
-            return bind_identifier_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_identifier_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
             if (node.child(0).symbol() == Parser::POINTER_EXPRESSION_SYMBOL)
-                return bind_pointer_assignment_expression(node).add_location_to_value_if_ok(node.location());
+                return bind_pointer_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else
-                return bind_assignment_expression(node).add_location_to_value_if_ok(node.location());
+                return bind_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::CALL_EXPRESSION_SYMBOL:
-            return bind_call_expression(node).add_location_to_value_if_ok(node.location());
+            return bind_call_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::POINTER_EXPRESSION_SYMBOL:
             if (node.value().starts_with('&'))
-                return bind_reference_expression(node).add_location_to_value_if_ok(node.location());
+                return bind_reference_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else
-                return bind_dereference_expression(node).add_location_to_value_if_ok(node.location());
+                return bind_dereference_expression(node).add_location_to_value_if_ok(node.maybe_location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
@@ -1543,29 +1541,29 @@ namespace scc
         switch (node.symbol())
         {
         case Parser::TRANSLATION_UNIT_SYMBOL:
-            return bind_block_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_block_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::EXPRESSION_STATEMENT_SYMBOL:
-            return bind_expression_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_expression_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::COMPOUND_STATEMENT_SYMBOL:
-            return bind_block_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_block_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::DECLARATION_SYMBOL:
-            return bind_declaration(node).add_location_to_value_if_ok(node.location());
+            return bind_declaration(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::IF_STATEMENT_SYMBOL:
-            return bind_if_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_if_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::WHILE_STATEMENT_SYMBOL:
-            return bind_while_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_while_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::DO_STATEMENT_SYMBOL:
-            return bind_do_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_do_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::BREAK_STATEMENT_SYMBOL:
-            return bind_break_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_break_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::CONTINUE_STATEMENT_SYMBOL:
-            return bind_continue_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_continue_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::FUNCTION_DEFINITION_SYMBOL:
-            return bind_function(node).add_location_to_value_if_ok(node.location());
+            return bind_function(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::RETURN_STATEMENT_SYMBOL:
-            return bind_return_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_return_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::FOR_STATEMENT_SYMBOL:
-            return bind_for_statement(node).add_location_to_value_if_ok(node.location());
+            return bind_for_statement(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::IDENTIFIER_SYMBOL:
         case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:

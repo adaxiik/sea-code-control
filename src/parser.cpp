@@ -5,9 +5,9 @@
 #include <set>
 namespace scc
 {
-    Parser::Parser() : m_parser(std::unique_ptr<TSParser, decltype(&ts_parser_delete)>(ts_parser_new(), ts_parser_delete))
-                     , m_language(tree_sitter_c())
-
+    Parser::Parser() 
+    : m_parser(std::unique_ptr<TSParser, decltype(&ts_parser_delete)>(ts_parser_new(), ts_parser_delete))
+    , m_language(tree_sitter_c())
     {
         ts_parser_set_language(m_parser.get(), m_language);
     }
@@ -18,7 +18,7 @@ namespace scc
     }
 
 
-    ParserResult Parser::parse(const std::string &code)
+    ParserResult Parser::parse(const std::string &code, bool want_to_remove_location)
     {
         return ParserResult(code, std::unique_ptr<TSTree, decltype(&ts_tree_delete)>(
             ts_parser_parse_string(
@@ -27,17 +27,20 @@ namespace scc
                 code.c_str(),
                 code.size())
             , ts_tree_delete)
-            , *this);
+            , *this
+            , want_to_remove_location);
     }
 
 
     // =======================
     ParserResult::ParserResult(const std::string &code
                              , TSTreePtr tree
-                             , const Parser& parser)
+                             , const Parser& parser
+                             , bool want_to_remove_location)
         : m_code(code)
         , m_tree(std::move(tree))
         , m_parser(parser)
+        , m_want_to_remove_location(want_to_remove_location)
     {
     }
 
@@ -47,6 +50,7 @@ namespace scc
             ts_tree_copy(other.m_tree.get())
             , ts_tree_delete))
         , m_parser(other.m_parser)
+        , m_want_to_remove_location(other.m_want_to_remove_location)
     {
     }
 
@@ -73,6 +77,11 @@ namespace scc
         return m_code;
     }
 
+    bool ParserResult::want_to_remove_location() const
+    {
+        return m_want_to_remove_location;
+    }
+    
     // std::string ParserResult::get_node_value(TSNode node) const
     // {
     //     return m_code.substr(ts_node_start_byte(node), ts_node_end_byte(node) - ts_node_start_byte(node));

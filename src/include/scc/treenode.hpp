@@ -55,6 +55,7 @@ namespace scc
         TreeNode last_child() const;
         TreeNode last_named_child() const;
         Location location() const;
+        std::optional<Location> maybe_location() const;
 
         enum SearchDepth
         {

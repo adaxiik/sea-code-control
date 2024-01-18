@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <optional>
 
 #include "location.hpp"
 #include "binding/bound_node.hpp"
@@ -121,10 +122,10 @@ namespace scc
             void add_diagnostic(const std::string& diagnostic) { m_diagnostics.push_back(diagnostic); }
             const std::vector<std::string>& get_diagnostics() const { return m_diagnostics; }
 
-            BinderResult&& add_location_to_value_if_ok(Location loc)
+            BinderResult&& add_location_to_value_if_ok(std::optional<Location> loc)
             {
-                if (this->is_ok())
-                    m_value->add_location(loc);
+                if (this->is_ok() and loc.has_value())
+                    m_value->add_location(loc.value());
 
                 return std::move(*this);
             }

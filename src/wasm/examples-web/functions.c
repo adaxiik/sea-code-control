@@ -3,8 +3,6 @@
 void _scc_puti(int x);
 void _scc_putc(char x);
 
-const float M_PI = 3.14159f;
-
 
 void print_hello(); // defined later
 
