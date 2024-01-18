@@ -4,6 +4,40 @@ namespace scc
 {
     namespace binding
     {
+        
+        template <typename OP_RESULT_TYPE_PR, typename OP_RESULT_TYPE_LP, typename OP_RESULT_TYPE_LR, typename LEFT_CAST, typename RIGHT_CAST>
+        std::optional<Type> binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth)
+        {
+            if (left_pointer_depth > 0)                                                                                                                                          \
+            {                                                                                                                                                                      \
+                if constexpr (std::is_same_v<typename OP_RESULT_TYPE_PR::type, OperationResult::InvalidOperation>)
+                    return std::nullopt;
+                else
+                {
+                    auto result_type = Type::deduce_type<LEFT_CAST>();
+                    result_type.modifiers = std::vector<Type::Modifier>(left_pointer_depth, Type::Pointer{});
+                    return result_type;
+                }
+            }
+            else if (right_pointer_depth > 0)
+            {
+                if constexpr (std::is_same_v<typename OP_RESULT_TYPE_LP::type, OperationResult::InvalidOperation>)
+                    return std::nullopt;
+                else
+                {
+                    auto result_type = Type::deduce_type<RIGHT_CAST>();
+                    result_type.modifiers = std::vector<Type::Modifier>(right_pointer_depth, Type::Pointer{});
+                    return result_type;
+                }
+            }
+            else
+            {
+                if constexpr (std::is_same_v<typename OP_RESULT_TYPE_LR::type, OperationResult::InvalidOperation>)
+                    return std::nullopt;
+                else
+                    return Type::deduce_type<typename OP_RESULT_TYPE_LR::type>();
+            }       
+        }
 
         std::optional<Type> BoundBinaryExpression::deduce_type(Type left, Type right, OperatorKind op_kind)
         {
@@ -14,38 +48,10 @@ namespace scc
                 return std::nullopt;
 
 
-        #define DO_CASTED_OP(STRUCT_NAME, LEFT_CAST, RIGHT_CAST) do {                                                                                                              \
-            if (left.pointer_depth() > 0)                                                                                                                                          \
-            {                                                                                                                                                                      \
-                if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <Type::Primitive::PTR,RIGHT_CAST>::type, OperationResult::InvalidOperation>) \
-                    return std::nullopt;                                                                                                                                           \
-                else                                                                                                                                                               \
-                {                                                                                                                                                                  \
-                    auto result_type = Type::deduce_type<LEFT_CAST>();                                                                                                             \
-                    result_type.modifiers = std::vector<Type::Modifier>(left.pointer_depth(), Type::Pointer{});                                                                    \
-                    return result_type;                                                                                                                                            \
-                }                                                                                                                                                                  \
-            }                                                                                                                                                                      \
-            else if (right.pointer_depth() > 0)                                                                                                                                    \
-            {                                                                                                                                                                      \
-                if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,Type::Primitive::PTR>::type, OperationResult::InvalidOperation>)  \
-                    return std::nullopt;                                                                                                                                           \
-                else                                                                                                                                                               \
-                {                                                                                                                                                                  \
-                    auto result_type = Type::deduce_type<RIGHT_CAST>();                                                                                                            \
-                    result_type.modifiers = std::vector<Type::Modifier>(right.pointer_depth(), Type::Pointer{});                                                                   \
-                    return result_type;                                                                                                                                            \
-                }                                                                                                                                                                  \
-            }                                                                                                                                                                      \
-            else                                                                                                                                                                   \
-            {                                                                                                                                                                      \
-                if constexpr (std::is_same_v<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,RIGHT_CAST>::type, OperationResult::InvalidOperation>)            \
-                    return std::nullopt;                                                                                                                                           \
-                else                                                                                                                                                               \
-                    return Type::deduce_type<typename OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST,RIGHT_CAST>::type>();                                             \
-            }                                                                                                                                                                      \
-        } while (0)                                                                                                                                                                \
-        
+        #define DO_CASTED_OP(STRUCT_NAME, LEFT_CAST, RIGHT_CAST) return binary_operation_result< \
+            OperationResult::STRUCT_NAME ## OperationResult <Type::Primitive::PTR, RIGHT_CAST>,  \
+            OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST, Type::Primitive::PTR>,   \
+            OperationResult::STRUCT_NAME ## OperationResult <LEFT_CAST, RIGHT_CAST>, LEFT_CAST, RIGHT_CAST>(left.pointer_depth(), right.pointer_depth())
 
         #define RIGHT_CASE(STRUCT_NAME, LEFT_CAST, TYPE, CTYPE) \
             case Type::PrimitiveType::TYPE:                     \
@@ -54,7 +60,7 @@ namespace scc
         #define DO_OP_RIGHT(STRUCT_NAME, LEFT_CAST)                                                      \
             do                                                                                           \
             {                                                                                            \
-                switch (std::get<Type::PrimitiveType>(right.base_type))                                  \
+                switch (std::get<Type::PrimitiveType>(right.base_type))                               \
                 {                                                                                        \
                     RIGHT_CASE(STRUCT_NAME, LEFT_CAST, Char, char);                                      \
                     RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U8, unsigned char);                               \
