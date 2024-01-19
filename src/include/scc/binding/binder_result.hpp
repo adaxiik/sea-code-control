@@ -35,6 +35,7 @@ namespace scc
                 DefineMacroUnsupportedError,
                 FailedToDeduceTypeFromTypeDescriptorError,
                 SizeOfError,
+                InvalidSubscriptExpressionError,
                 COUNT
             };
 

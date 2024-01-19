@@ -122,6 +122,7 @@ namespace scc
         binding::BinderResult<binding::BoundForStatement> bind_for_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundReferenceExpression> bind_reference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundDereferenceExpression> bind_dereference_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundDereferenceExpression> bind_subscript_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_pointer_assignment_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundLiteralExpression> bind_sizeof_expression(const TreeNode &node);
 

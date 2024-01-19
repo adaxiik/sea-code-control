@@ -202,12 +202,12 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR("1.0/0.0;");
         SCC_TEST_IS_ERROR("1.0%0.0;");
         
-        SCC_TEST_TYPE_PTR(I32, 1, (int*)1 + 2);
-        SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)1);
+        SCC_TEST_TYPE_PTR(I32, 1, (int*)0 + 2);
+        SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)0);
         SCC_TEST_TYPE_PTR(Char, 1, (char*)2 - 1);
         SCC_TEST_TYPE_PTR(Char, 1, 2 - (char*)1);
-        SCC_TEST_TYPE_PTR(F64, 1, (double*)1 + 2);
-        SCC_TEST_TYPE_PTR(F64, 1, 2 + (double*)1);
+        SCC_TEST_TYPE_PTR(F64, 1, (double*)0 + 2);
+        SCC_TEST_TYPE_PTR(F64, 1, 2 + (double*)0);
         SCC_TEST_IS_ERROR("(int*)1 + (int*)1;");
         SCC_TEST_INTERPRET_RESULT(bool, true, "(int*)1 == (int*)1;");
         SCC_TEST_INTERPRET_RESULT(bool, false,"(int*)1 != (int*)1;");
@@ -913,7 +913,22 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("**long_ptr_ptr = 3;");
     SCC_TEST_IS_OK("_scc_assert(**long_ptr_ptr == 3);");
     SCC_TEST_IS_OK("_scc_assert(long_value2 == 3);");
-    
+
+
+    SUBCASE("Pointer Arithmetic")
+    {
+        SCC_TEST_IS_OK("_scc_assert((int*)0 + 1 == 4);");
+        SCC_TEST_IS_OK("_scc_assert((long*)0 + 1 == 8);");
+        SCC_TEST_IS_OK("_scc_assert((double*)0 + 1 == 8);");
+        SCC_TEST_IS_OK("_scc_assert(1 + (int*)0 == 4);");
+        SCC_TEST_IS_OK("_scc_assert(1 + (long*)0 == 8);");
+        SCC_TEST_IS_OK("_scc_assert(1 + (double*)0 == 8);");
+        SCC_TEST_IS_OK("_scc_assert((int*)8 - 1 == 4);");
+        SCC_TEST_IS_OK("_scc_assert((long*)16 - 1 == 8);");
+        SCC_TEST_IS_OK("_scc_assert((double*)16 - 1 == 8);");
+        SCC_TEST_IS_OK("_scc_assert(1 + (short*)8 == 10);");
+    }
+
 }
 
 TEST_CASE("Include libc"){
@@ -986,4 +1001,25 @@ TEST_CASE("sizeof") {
     SCC_TEST_IS_OK("_scc_assert(sizeof(A) == 8);");
     
     // SCC_TEST_IS_OK("_scc_assert(sizeof(int*) == 8);"); TODOO: sizeof pointer
+}
+
+TEST_CASE("Subscript expression")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("#include <stdlib.h>\n");
+
+    SCC_TEST_IS_OK("char* data = malloc(4);");
+    SCC_TEST_IS_OK("*(data + 0) = 'a';");
+    SCC_TEST_IS_OK("_scc_assert(data[0] == 'a');");
+    // SCC_TEST_IS_OK("data[1] = 'b';");
+    // SCC_TEST_IS_OK("_scc_assert(data[1] == 'b');");
+    // SCC_TEST_IS_OK("_scc_assert(*(data + 1) == 'b');");
+
+    // SCC_TEST_IS_OK("_scc_assert(1[data] == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(0[data] == 'a');");
+
 }

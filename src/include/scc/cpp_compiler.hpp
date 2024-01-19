@@ -61,6 +61,15 @@
 #define SCC_SUPPRESS_WARNING_POP                                                 \
     SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
 
+#define SCC_SUPPRESS_WARNING_PUSH_INT_IN_BOOL_CONTEXT                                           \
+    SCC_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wint-in-bool-context")                               \
+    SCC_GCC_SUPPRESS_WARNING_WITH_PUSH("-Wint-in-bool-context")                                 \
+    SCC_MSVC_SUPPRESS_WARNING_WITH_PUSH(4800)
+
+#define SCC_SUPPRESS_WARNING_POP_INT_IN_BOOL_CONTEXT                                            \
+    SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
+
+
 
 
 
