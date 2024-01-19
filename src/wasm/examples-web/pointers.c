@@ -31,7 +31,7 @@ int main()
     *(data + 1) = 'o';
     *(data + 2) = 'l';
     *(data + 3) = '\n';
-    write(stdout, data, 4);
+    write(STDOUT_FILENO, data, 4);
 
     free(data);
 

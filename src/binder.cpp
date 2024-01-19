@@ -14,6 +14,7 @@
 #include "binding/libc/stdlib.h"
 #include "binding/libc/math.h"
 #include "binding/libc/unistd.h"
+#include "binding/libc/string.h"
 
         
 #define SCC_ASSERT(x)                                                        \
@@ -113,6 +114,8 @@ namespace scc
             lib = binding::libc::math_h;
         else if (include_node.value() == "<unistd.h>")
             lib = binding::libc::unistd_h;
+        else if (include_node.value() == "<string.h>")
+            lib = binding::libc::string_h;
         else
             return false;
 
