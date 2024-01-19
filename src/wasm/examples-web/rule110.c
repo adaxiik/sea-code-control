@@ -69,6 +69,6 @@ int main()
 
     free(row);
     free(next_row);
-    
+
     return 0;
 }
