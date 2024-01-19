@@ -5,7 +5,7 @@ namespace scc::binding::libc
 
 constexpr auto math_h = R"(
 
-const float M_PI = 3.14159f;
+#define M_PI 3.14159f
 
 
 float _scc_sinf(float x);

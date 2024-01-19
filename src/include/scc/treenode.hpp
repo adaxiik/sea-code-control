@@ -11,6 +11,7 @@
 namespace scc
 {
     class ParserResult;
+    class Parser;
     class TreeNode
     {
         TSNode m_node;

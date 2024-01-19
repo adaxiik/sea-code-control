@@ -95,7 +95,7 @@ namespace scc
      * @return true on success
      * @return false on error
      */
-    bool Binder::add_prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node)
+    bool Binder::prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::PREPROC_INCLUDE_SYMBOL);
         SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
@@ -147,8 +147,15 @@ namespace scc
         {
             if (node.first_named_child().symbol() == Parser::PREPROC_INCLUDE_SYMBOL)
             {
-                if (not add_prepoc_include(block_statement->statements, node.first_named_child()))
+                if (not prepoc_include(block_statement->statements, node.first_named_child()))
                     return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToIncludeError, node));
+
+                return binding::BinderResult<ResultType>::ok(std::move(block_statement));
+            }
+            else if (node.first_named_child().symbol() == Parser::PREPROC_DEF_SYMBOL)
+            {
+                if (not prepoc_define(node.first_named_child()))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::DefineMacroError, node));
 
                 return binding::BinderResult<ResultType>::ok(std::move(block_statement));
             }
@@ -176,8 +183,14 @@ namespace scc
 
             if (child.symbol() == Parser::PREPROC_INCLUDE_SYMBOL)
             {
-                if (not add_prepoc_include(block_statement->statements, child))
+                if (not prepoc_include(block_statement->statements, child))
                     return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::FailedToIncludeError, node));
+                continue;
+            }
+            else if (child.symbol() == Parser::PREPROC_DEF_SYMBOL)
+            {
+                if (not prepoc_define(child))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::DefineMacroError, node));
                 continue;
             }
 
@@ -425,21 +438,48 @@ namespace scc
       
     }
 
-    binding::BinderResult<binding::BoundIdentifierExpression> Binder::bind_identifier_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundExpression> Binder::bind_identifier_expression(const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::IDENTIFIER_SYMBOL);
         SCC_ASSERT_CHILD_COUNT(node, 0);
-        // TODOOOOOOO: might be a macro?
+        SCC_BINDER_RESULT_TYPE(bind_identifier_expression);  
+
+        if (m_macros.find(node.value()) != m_macros.end())
+        {
+            const std::string& macro_value = m_macros[node.value()];
+            Parser parser = Parser();
+            ParserResult parser_result = parser.parse(macro_value, true);
+            if (parser_result.has_error())
+            {
+                SCC_BINDER_RESULT_TYPE(bind_identifier_expression);  
+                auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::DefineMacroParseError, node));
+                error.add_diagnostic("Failed to parse macro value: " + macro_value);
+                return error;
+            }
+            auto binded = bind(parser_result.root_node());
+            BUBBLE_ERROR(binded);
+            auto translation_unit = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(binded.release_value().release()));
+
+            if (translation_unit->statements.front()->bound_node_kind() != binding::BoundNodeKind::ExpressionStatement)
+                return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::DefineMacroUnsupportedError, node));
+            
+            auto expression_statement = std::unique_ptr<binding::BoundExpressionStatement>(static_cast<binding::BoundExpressionStatement*>(translation_unit->statements.front().release()));
+            return std::move(expression_statement->expression);
+        }
+
+
        
         Type* type = m_scope_stack.get_from_scopestack(node.value());
-        if (!type)
+        if (not type)
         {
-            SCC_BINDER_RESULT_TYPE(bind_identifier_expression);  
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
             error.add_diagnostic("Unknown identifier: " + node.value());
             return error;
         }
-        return std::make_unique<binding::BoundIdentifierExpression>(node.value(), *type);
+
+        auto bound_expression = std::make_unique<binding::BoundIdentifierExpression>(node.value(), *type);
+        
+        return std::unique_ptr<binding::BoundExpression>(std::move(bound_expression));
     }
 
     static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind) 
@@ -555,7 +595,22 @@ namespace scc
         // a = 5; // error .. to pointers I dont want to allow literal assignment
         // or we can check it in interpreter?
 
-        const std::string identifier = node.first_child().value();
+        std::string identifier = node.first_child().value();
+        if (m_macros.find(identifier) != m_macros.end())
+        {
+            const std::string& macro_value = m_macros[identifier];
+            Parser parser = Parser();
+            ParserResult parser_result = parser.parse(macro_value, true);
+            if (parser_result.has_error())
+            {
+                SCC_BINDER_RESULT_TYPE(bind_assignment_expression);  
+                auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::DefineMacroParseError, node));
+                error.add_diagnostic("Failed to parse macro value: " + macro_value);
+                return error;
+            }
+            identifier = parser_result.root_node().first_named_child().value();
+        }
+
         Type* type_ptr = m_scope_stack.get_from_scopestack(identifier);
         if (not type_ptr)
         {
@@ -1535,6 +1590,32 @@ namespace scc
         return std::make_unique<binding::BoundForStatement>(initializer_result.release_value(), std::move(condition), std::move(increment), std::move(body_statement));        
     }
 
+    bool Binder::prepoc_define(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::PREPROC_DEF_SYMBOL);
+        // preproc_def ==>     #define a ...
+        // ├── identifier ==>  a
+        // └── preproc_arg ==>  5
+
+        if (node.named_child_count() != 2)
+            return false;
+
+        std::string identifier = node.first_named_child().value();
+        if (m_macros.find(identifier) != m_macros.end())
+        {
+            // redefinition
+            return false;
+        }
+        std::string value = node.named_child(1).value();
+        
+        // for further parsing we need to add a semicolon
+        if (not value.ends_with(';'))
+            value += ';';
+
+        m_macros.insert({identifier, value});
+        return true;
+    }
+
     binding::BinderResult<binding::BoundNode> Binder::bind_impl(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_impl);
@@ -1570,6 +1651,8 @@ namespace scc
             // bind_expression already adds location.. so no need to add it again
             return bind_expression(node); 
         case Parser::PREPROC_INCLUDE_SYMBOL:    // this should be handled in bind_block_statement
+            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+        case Parser::PREPROC_DEF_SYMBOL:       // this should be handled in bind_block_statement as well
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
         default:
             std::cerr << "Binder::bind_impl: Unhandled symbol: " << std::quoted(node.symbol_name()) << std::endl;

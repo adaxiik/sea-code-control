@@ -111,6 +111,10 @@ namespace scc
             {
                 m_output_stream << RED << "Bind error" << RESET << std::endl;
                 m_output_stream << static_cast<int>(bind_result.get_error().kind) << std::endl;
+                for (auto& diag : bind_result.get_diagnostics())
+                {
+                    m_output_stream << diag << std::endl;
+                }
 
                 continue;
             }

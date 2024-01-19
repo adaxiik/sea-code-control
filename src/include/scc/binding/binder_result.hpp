@@ -30,6 +30,9 @@ namespace scc
                 ParserError, // Tree sitter error
                 // TODOO: Variable already exists / Variable does not exist
                 FailedToIncludeError,
+                DefineMacroError,
+                DefineMacroParseError,
+                DefineMacroUnsupportedError,
                 COUNT
             };
 

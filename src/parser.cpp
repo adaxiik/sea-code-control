@@ -18,7 +18,7 @@ namespace scc
     }
 
 
-    ParserResult Parser::parse(const std::string &code, bool want_to_remove_location)
+    ParserResult Parser::parse(const std::string &code, bool want_to_remove_location) const
     {
         return ParserResult(code, std::unique_ptr<TSTree, decltype(&ts_tree_delete)>(
             ts_parser_parse_string(

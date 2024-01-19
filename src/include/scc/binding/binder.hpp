@@ -94,6 +94,7 @@ namespace scc
         };
 
         std::map<std::string, FunctionDeclaration> m_functions;
+        std::map<std::string, std::string> m_macros;
         std::optional<std::reference_wrapper<const FunctionDeclaration>> m_current_function;
         
         binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
@@ -106,7 +107,8 @@ namespace scc
         binding::BinderResult<binding::BoundLiteralExpression> bind_literal_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundLiteralExpression> bind_number_literal(const TreeNode &node);
         binding::BinderResult<binding::BoundVariableDeclarationStatement> bind_variable_declaration(const TreeNode &node);
-        binding::BinderResult<binding::BoundIdentifierExpression> bind_identifier_expression(const TreeNode &node);
+        // might return a BoundIdentifierExpression or macro value
+        binding::BinderResult<binding::BoundExpression> bind_identifier_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundAssignmentExpression> bind_assignment_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundIfStatement> bind_if_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundWhileStatement> bind_while_statement(const TreeNode &node);
@@ -121,8 +123,8 @@ namespace scc
         binding::BinderResult<binding::BoundReferenceExpression> bind_reference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundDereferenceExpression> bind_dereference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_pointer_assignment_expression(const TreeNode &node);
-        bool add_prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
-
+        bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
+        bool prepoc_define(const TreeNode &node);
     public:
         Binder(): m_current_function(std::nullopt) { m_scope_stack.push();}
         ~Binder() = default;

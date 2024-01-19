@@ -46,7 +46,7 @@ namespace scc
         ~Parser() = default;
         std::string get_symbol_name(TSSymbol symbol) const;
 
-        ParserResult parse(const std::string &code, bool want_to_remove_location = false);
+        ParserResult parse(const std::string &code, bool want_to_remove_location = false) const;
 
         
 

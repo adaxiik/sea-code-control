@@ -915,3 +915,42 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("_scc_assert(long_value2 == 3);");
     
 }
+
+TEST_CASE("Include libc"){
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+
+    SCC_TEST_IS_OK("#include <math.h>\n");
+    SCC_TEST_IS_OK("M_PI;");
+    
+    SCC_TEST_IS_OK("#include <stdlib.h>\n");
+    SCC_TEST_IS_OK("#include <unistd.h>\n");
+
+    SCC_TEST_IS_OK("char* data = malloc(4);");
+    SCC_TEST_IS_OK("*(data + 0) = 'l';");
+    SCC_TEST_IS_OK("*(data + 1) = 'o';");
+    SCC_TEST_IS_OK("*(data + 2) = 'l';");
+    SCC_TEST_IS_OK("*(data + 3) = '\\n';");
+    SCC_TEST_IS_OK("write(1, data, 4);");
+    SCC_TEST_IS_OK("free(data);");
+
+}
+
+
+TEST_CASE("Define") {
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("#define A 1\n");
+    SCC_TEST_IS_OK("int b = A;");
+    SCC_TEST_IS_OK("_scc_assert(b == 1);");
+
+    SCC_TEST_IS_OK("#define TRIPLE_A A+A+A\n");
+    SCC_TEST_IS_OK("_scc_assert(TRIPLE_A == 3);");
+
+    SCC_TEST_IS_OK("#define POW3_A TRIPLE_A*TRIPLE_A*TRIPLE_A\n");
+    SCC_TEST_IS_OK("_scc_assert(POW3_A == 27);");
+}
