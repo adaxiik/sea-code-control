@@ -123,6 +123,10 @@ namespace scc
         binding::BinderResult<binding::BoundReferenceExpression> bind_reference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundDereferenceExpression> bind_dereference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_pointer_assignment_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundLiteralExpression> bind_sizeof_expression(const TreeNode &node);
+
+        std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
+
         bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
         bool prepoc_define(const TreeNode &node);
     public:

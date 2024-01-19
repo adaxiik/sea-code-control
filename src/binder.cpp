@@ -216,6 +216,24 @@ namespace scc
         return binding::BinderResult<ResultType>::ok(std::move(block_statement));
     }
 
+    std::optional<Type> Binder::deduce_type_from_type_descriptor(const TreeNode &node)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::TYPE_DESCRIPTOR_SYMBOL);
+        if (
+            node.named_child_count() == 1 
+            and (
+                node.first_named_child().symbol() == Parser::PRIMITIVE_TYPE_SYMBOL 
+                or node.first_named_child().symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL
+            )
+        )
+        {
+            return Type::from_string(node.first_named_child().value());
+        }
+
+        return std::nullopt;
+    }
+
+
     binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_number_literal(const TreeNode &node)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::NUMBER_LITERAL_SYMBOL);
@@ -704,6 +722,38 @@ namespace scc
         return std::make_unique<binding::BoundDereferenceExpression>(std::move(expression), type);
     }
 
+    binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_sizeof_expression(const TreeNode &node)
+    {
+        SCC_BINDER_RESULT_TYPE(bind_sizeof_expression);
+        SCC_ASSERT_NODE_SYMBOL(Parser::SIZEOF_EXPRESSION_SYMBOL);
+        SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
+
+        if (node.first_named_child().symbol() == Parser::PARENTHESIZED_EXPRESSION_SYMBOL)
+        {
+            auto binded = bind_parenthesized_expression(node.first_named_child());
+            BUBBLE_ERROR(binded);
+            size_t size = binded.get_value()->type.size_bytes();
+            return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(size));
+        }
+        else if (node.first_named_child().symbol() == Parser::TYPE_DESCRIPTOR_SYMBOL)
+        {
+            auto deduced_type = deduce_type_from_type_descriptor(node.first_named_child());
+            if (not deduced_type.has_value())
+            {
+                auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::FailedToDeduceTypeFromTypeDescriptorError, node));
+                error.add_diagnostic("Failed to deduce type from type descriptor \"" + node.first_named_child().value() + "\"");
+                return error;
+            }
+
+            size_t size = deduced_type.value().size_bytes();
+            return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(size));
+        }
+
+        auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+        error.add_diagnostic("Unknown sizeof expression \"" + node.first_named_child().value() + "\"");
+        return error;
+    }
+
 
     binding::BinderResult<binding::BoundExpression> Binder::bind_expression(const TreeNode &node)
     {
@@ -737,6 +787,8 @@ namespace scc
                 return bind_reference_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else
                 return bind_dereference_expression(node).add_location_to_value_if_ok(node.maybe_location());
+        case Parser::SIZEOF_EXPRESSION_SYMBOL:
+            return bind_sizeof_expression(node).add_location_to_value_if_ok(node.maybe_location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;

@@ -954,3 +954,36 @@ TEST_CASE("Define") {
     SCC_TEST_IS_OK("#define POW3_A TRIPLE_A*TRIPLE_A*TRIPLE_A\n");
     SCC_TEST_IS_OK("_scc_assert(POW3_A == 27);");
 }
+
+TEST_CASE("sizeof") {
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+    using SizeOfType = scc::Type::Primitive::U64;
+
+    SCC_TEST_INTERPRET_RESULT(SizeOfType, 4, "sizeof(int);");
+
+    SCC_TEST_IS_OK("_scc_assert(sizeof(int) == 4);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(long) == 8);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(float) == 4);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(double) == 8);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(short) == 2);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(char) == 1);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(bool) == 1);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(34+35) == 4);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(69.69f) == 4);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(420.0) == 8);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(123ll) == 8);");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(123456l) == 8);");
+
+    SCC_TEST_IS_OK("int a_int;");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(a_int) == 4);");
+    SCC_TEST_IS_OK("long a_long;");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(a_long) == 8);");
+
+    SCC_TEST_IS_OK("#define A 1l\n");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(A) == 8);");
+    
+    // SCC_TEST_IS_OK("_scc_assert(sizeof(int*) == 8);"); TODOO: sizeof pointer
+}

@@ -33,6 +33,8 @@ namespace scc
                 DefineMacroError,
                 DefineMacroParseError,
                 DefineMacroUnsupportedError,
+                FailedToDeduceTypeFromTypeDescriptorError,
+                SizeOfError,
                 COUNT
             };
 
