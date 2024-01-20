@@ -1027,3 +1027,50 @@ TEST_CASE("Subscript expression")
     SCC_TEST_IS_OK("_scc_assert(*data == 'b');");
     SCC_TEST_IS_OK("_scc_assert(data[1] == 'b');");
 }
+
+TEST_CASE("Update expression")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("#include <stdlib.h>\n");
+
+    SCC_TEST_IS_OK("int a = 1;");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+    SCC_TEST_IS_OK("a++;");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("a--;");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+    SCC_TEST_IS_OK("++a;");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("--a;");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+
+    SCC_TEST_IS_OK("_scc_assert(a++ == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a-- == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(++a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(--a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+
+    SCC_TEST_IS_OK("int* p = &a;");
+    SCC_TEST_IS_OK("_scc_assert(*p == 1);");
+    SCC_TEST_IS_OK("_scc_assert(++*p == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(--*p == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+
+    SCC_TEST_IS_OK("_scc_assert(p[0] == 1);");
+    SCC_TEST_IS_OK("_scc_assert(++p[0] == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(--p[0] == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(p[0]++ == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(p[0]-- == 2);");
+    SCC_TEST_IS_OK("_scc_assert(a == 1);");
+}

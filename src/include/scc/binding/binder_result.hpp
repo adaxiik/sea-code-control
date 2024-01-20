@@ -36,6 +36,7 @@ namespace scc
                 FailedToDeduceTypeFromTypeDescriptorError,
                 SizeOfError,
                 InvalidSubscriptExpressionError,
+                InvalidUpdateExpression,
                 COUNT
             };
 

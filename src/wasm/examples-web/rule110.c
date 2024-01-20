@@ -50,8 +50,8 @@ int main()
     const int width = 40;
     const int height = 40;
     const char symbol = '#';
+    const unsigned char rule = 110;
 
-    unsigned char rule = 110;
     unsigned char *row = (unsigned char *)malloc(width * SIZE_OF_CHAR); 
     unsigned char *next_row = (unsigned char *)malloc(width * SIZE_OF_CHAR);
 
