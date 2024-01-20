@@ -1015,11 +1015,15 @@ TEST_CASE("Subscript expression")
     SCC_TEST_IS_OK("char* data = malloc(4);");
     SCC_TEST_IS_OK("*(data + 0) = 'a';");
     SCC_TEST_IS_OK("_scc_assert(data[0] == 'a');");
-    // SCC_TEST_IS_OK("data[1] = 'b';");
-    // SCC_TEST_IS_OK("_scc_assert(data[1] == 'b');");
-    // SCC_TEST_IS_OK("_scc_assert(*(data + 1) == 'b');");
+    SCC_TEST_IS_OK("data[1] = 'b';");
+    SCC_TEST_IS_OK("_scc_assert(data[1] == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(*(data + 1) == 'b');");
 
-    // SCC_TEST_IS_OK("_scc_assert(1[data] == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(1[data] == 'b');");
     SCC_TEST_IS_OK("_scc_assert(0[data] == 'a');");
 
+    SCC_TEST_IS_OK("data[0] += 1;");
+    SCC_TEST_IS_OK("_scc_assert(data[0] == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(*data == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(data[1] == 'b');");
 }

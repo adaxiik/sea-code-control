@@ -25,6 +25,8 @@ namespace scc
         case Parser::ASSIGNMENT_EXPRESSION_SYMBOL:
             if (node.child(0).symbol() == Parser::POINTER_EXPRESSION_SYMBOL)
                 return bind_pointer_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
+            else if(node.child(0).symbol() == Parser::SUBSCRIPT_EXPRESSION_SYMBOL)
+                return bind_subscript_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else
                 return bind_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::CALL_EXPRESSION_SYMBOL:

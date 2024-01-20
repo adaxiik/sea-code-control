@@ -31,7 +31,7 @@ namespace scc
         auto bound_expression = bind_expression(node.last_child());
         BUBBLE_ERROR(bound_expression);
 
-        std::string op_kind = node.child(1).value();
+        const std::string op_kind = node.child(1).value();
 
         if (op_kind == "=")
         {

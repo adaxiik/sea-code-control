@@ -57,46 +57,50 @@ namespace scc
             case Type::PrimitiveType::TYPE:                     \
                 DO_CASTED_OP(STRUCT_NAME, LEFT_CAST, CTYPE)
 
-        #define DO_OP_RIGHT(STRUCT_NAME, LEFT_CAST)                                                      \
-            do                                                                                           \
-            {                                                                                            \
-                switch (std::get<Type::PrimitiveType>(right.base_type))                               \
-                {                                                                                        \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, Char, char);                                      \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U8, unsigned char);                               \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I8, signed char);                                 \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U32, unsigned int);                               \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I32, int);                                        \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U64, unsigned long long);                         \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I64, long long);                                  \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, F32, float);                                      \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, F64, double);                                     \
-                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, Bool, bool);                                      \
-                default:                                                                                 \
-                    std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;          \
-                    return left;                                                                         \
-                }                                                                                        \
+        #define DO_OP_RIGHT(STRUCT_NAME, LEFT_CAST)                                                       \
+            do                                                                                            \
+            {                                                                                             \
+                switch (std::get<Type::PrimitiveType>(right.base_type))                                   \
+                {                                                                                         \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, Char, char);                                       \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U8, unsigned char);                                \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I8, signed char);                                  \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U16, signed char);                                 \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I16, signed char);                                 \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U32, unsigned int);                                \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I32, int);                                         \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, U64, unsigned long long);                          \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, I64, long long);                                   \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, F32, float);                                       \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, F64, double);                                      \
+                    RIGHT_CASE(STRUCT_NAME, LEFT_CAST, Bool, bool);                                       \
+                default:                                                                                  \
+                    std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;           \
+                    return left;                                                                          \
+                }                                                                                         \
             } while (0)
 
         #define LEFT_CASE(STRUCT_NAME, TYPE, CTYPE) \
             case Type::PrimitiveType::TYPE:         \
                 DO_OP_RIGHT(STRUCT_NAME, CTYPE)
 
-        #define DO_OP_LEFT(STRUCT_NAME)                                                      \
+        #define DO_OP_LEFT(STRUCT_NAME)                                                         \
             do                                                                                  \
             {                                                                                   \
                 switch(std::get<Type::PrimitiveType>(left.base_type))                           \
                 {                                                                               \
-                    LEFT_CASE(STRUCT_NAME, Char, char);                                      \
-                    LEFT_CASE(STRUCT_NAME, U8, unsigned char);                               \
-                    LEFT_CASE(STRUCT_NAME, I8, signed char);                                 \
-                    LEFT_CASE(STRUCT_NAME, U32, unsigned int);                               \
-                    LEFT_CASE(STRUCT_NAME, I32, int);                                        \
-                    LEFT_CASE(STRUCT_NAME, U64, unsigned long long);                         \
-                    LEFT_CASE(STRUCT_NAME, I64, long long);                                  \
-                    LEFT_CASE(STRUCT_NAME, F32, float);                                      \
-                    LEFT_CASE(STRUCT_NAME, F64, double);                                     \
-                    LEFT_CASE(STRUCT_NAME, Bool, bool);                                      \
+                    LEFT_CASE(STRUCT_NAME, Char, char);                                         \
+                    LEFT_CASE(STRUCT_NAME, U8, unsigned char);                                  \
+                    LEFT_CASE(STRUCT_NAME, I8, signed char);                                    \
+                    LEFT_CASE(STRUCT_NAME, U16, signed char);                                   \
+                    LEFT_CASE(STRUCT_NAME, I16, signed char);                                   \
+                    LEFT_CASE(STRUCT_NAME, U32, unsigned int);                                  \
+                    LEFT_CASE(STRUCT_NAME, I32, int);                                           \
+                    LEFT_CASE(STRUCT_NAME, U64, unsigned long long);                            \
+                    LEFT_CASE(STRUCT_NAME, I64, long long);                                     \
+                    LEFT_CASE(STRUCT_NAME, F32, float);                                         \
+                    LEFT_CASE(STRUCT_NAME, F64, double);                                        \
+                    LEFT_CASE(STRUCT_NAME, Bool, bool);                                         \
                 default:                                                                        \
                     std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl; \
                     return left;                                                                \

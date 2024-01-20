@@ -126,6 +126,7 @@ namespace scc
         binding::BinderResult<binding::BoundDereferenceExpression> bind_subscript_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_pointer_assignment_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundLiteralExpression> bind_sizeof_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_subscript_assignment_expression(const TreeNode &node);
 
         std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
         static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
