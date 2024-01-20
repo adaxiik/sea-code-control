@@ -4,7 +4,7 @@ void _scc_puti(int x);  // print integer with newline
 
 int main()
 {
-    for (int i = 0; i < 10; i += 1)
+    for (int i = 0; i < 10; ++i)
     {
         putchar('=');
     }
@@ -17,7 +17,7 @@ int main()
         break;
     }
 
-    for (int i = 0; i < 10; i += 1)
+    for (int i = 0; i < 10; ++i)
     {
         if (i % 2 == 0)
             continue;

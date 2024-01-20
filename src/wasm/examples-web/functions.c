@@ -23,13 +23,13 @@ float lerp(float a, float b, float t)
 
 void print_pyramid(int height)
 {
-    for (int i = 0; i < height; i += 1)
+    for (int i = 0; i < height; ++i)
     {
-        for (int j = 0; j < height - i; j += 1)
+        for (int j = 0; j < height - i; ++j)
         {
             putchar(' ');
         }
-        for (int j = 0; j < i * 2 + 1; j += 1)
+        for (int j = 0; j < i * 2 + 1; ++j)
         {
             putchar('*');
         }
@@ -42,12 +42,12 @@ void print_pyramid(int height)
 void draw_sin_wave(int height, int width)
 {
     float center = width / 2.0f;
-    for (int y = 0; y < height; y += 1)
+    for (int y = 0; y < height; ++y)
     {
         float sin_progress = (float)y / (float)height * 2.0f * M_PI;
         float sin_value = sinf(sin_progress);
         int x = (int)(center + sin_value * center);
-        for (int i = 0; i < x; i += 1)
+        for (int i = 0; i < x; ++i)
         {
             putchar(' ');
         }

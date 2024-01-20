@@ -9,7 +9,7 @@ void _scc_puti(int i);
 
 void next_generation(unsigned char *last_row, unsigned char* new_row, int width, unsigned char rule)
 {
-    for (int i = 0; i < width; i+=1)
+    for (int i = 0; i < width; ++i)
     {
         unsigned char left = last_row[(i - 1) % width];
         unsigned char me = last_row[i];
@@ -24,7 +24,7 @@ void next_generation(unsigned char *last_row, unsigned char* new_row, int width,
 void print_row(unsigned char *row, int width, char symbol)
 {
     // TODO: implement buffering with static array
-    for (int i = 0; i < width; i+=1)
+    for (int i = 0; i < width; ++i)
     {
         char c = ' ';
 
@@ -63,7 +63,7 @@ int main()
     // first generation
     print_row(row, width, symbol);
 
-    for (int i = 0; i < height; i+=1)
+    for (int i = 0; i < height; ++i)
     {
         next_generation(row, next_row, width, rule);
         print_row(next_row, width, symbol);
