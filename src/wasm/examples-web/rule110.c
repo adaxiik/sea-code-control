@@ -11,13 +11,13 @@ void next_generation(unsigned char *last_row, unsigned char* new_row, int width,
 {
     for (int i = 0; i < width; i+=1)
     {
-        unsigned char left = *(last_row + (i - 1) % width);
-        unsigned char me = *(last_row + i);
-        unsigned char right = *(last_row + (i + 1) % width);
+        unsigned char left = last_row[(i - 1) % width];
+        unsigned char me = last_row[i];
+        unsigned char right = last_row[(i + 1) % width];
 
         int index = (left << 2) | (me << 1) | right;
         unsigned char true_or_false = (rule >> index) & 1;
-        *(new_row + i) = true_or_false;
+        new_row[i] = true_or_false;
     }
 }
 
@@ -27,7 +27,8 @@ void print_row(unsigned char *row, int width, char symbol)
     for (int i = 0; i < width; i+=1)
     {
         char c = ' ';
-        if (*(row + i))
+
+        if (row[i])
             c = symbol;
 
         putchar(c);
@@ -55,7 +56,9 @@ int main()
     unsigned char *next_row = (unsigned char *)malloc(width * SIZE_OF_CHAR);
 
     memset(row, 0, width * SIZE_OF_CHAR);
-    *(row + width - 1) = 1;
+
+    // we will set our starting state
+    row[width - 1] = 1;
 
     // first generation
     print_row(row, width, symbol);

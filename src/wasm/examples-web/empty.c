@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 void _scc_puti(int x);  // print integer with newline
-void _scc_putc(char x); // print character
+void _scc_putc(char x); // print character.. or you can use putchar from stdio.h
 
 int main()
 {

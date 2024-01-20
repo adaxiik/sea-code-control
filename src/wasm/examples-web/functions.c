@@ -1,7 +1,7 @@
 #include <math.h>
+#include <stdio.h>
 
 void _scc_puti(int x);
-void _scc_putc(char x);
 
 
 void print_hello(); // defined later
@@ -27,13 +27,13 @@ void print_pyramid(int height)
     {
         for (int j = 0; j < height - i; j += 1)
         {
-            _scc_putc(' ');
+            putchar(' ');
         }
         for (int j = 0; j < i * 2 + 1; j += 1)
         {
-            _scc_putc('*');
+            putchar('*');
         }
-        _scc_putc('\n');
+        putchar('\n');
     }
 }
 
@@ -49,10 +49,10 @@ void draw_sin_wave(int height, int width)
         int x = (int)(center + sin_value * center);
         for (int i = 0; i < x; i += 1)
         {
-            _scc_putc(' ');
+            putchar(' ');
         }
-        _scc_putc('*');
-        _scc_putc('\n');
+        putchar('*');
+        putchar('\n');
     }
 }
 
@@ -69,7 +69,7 @@ int main()
 
     print_pyramid(5);
     
-    _scc_putc('\n');
+    putchar('\n');
     
     draw_sin_wave(15, 20);
     draw_sin_wave(15, 20);
@@ -79,17 +79,17 @@ int main()
 
 void print_hello()
 {
-    _scc_putc('H');
-    _scc_putc('e');
-    _scc_putc('l');
-    _scc_putc('l');
-    _scc_putc('o');
-    _scc_putc(' ');
-    _scc_putc('W');
-    _scc_putc('o');
-    _scc_putc('r');
-    _scc_putc('l');
-    _scc_putc('d');
-    _scc_putc('!');
-    _scc_putc('\n');
+    putchar('H');
+    putchar('e');
+    putchar('l');
+    putchar('l');
+    putchar('o');
+    putchar(' ');
+    putchar('W');
+    putchar('o');
+    putchar('r');
+    putchar('l');
+    putchar('d');
+    putchar('!');
+    putchar('\n');
 }

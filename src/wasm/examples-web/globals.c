@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 void _scc_puti(int x);
-void _scc_putc(char x);
 
 int g_a = 34;
 int g_b = 35;
@@ -19,9 +18,9 @@ int main()
 
     // =====
     for (int i = 0; i < 10; i+=1) {
-        _scc_putc('=');
+        putchar('=');
     }
-    _scc_putc('\n');
+    putchar('\n');
     // =====
 
 

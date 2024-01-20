@@ -1,20 +1,19 @@
 #include <stdio.h>
 
 void _scc_puti(int x);  // print integer with newline
-void _scc_putc(char x); // print character
 
 int main()
 {
     for (int i = 0; i < 10; i += 1)
     {
-        _scc_putc('=');
+        putchar('=');
     }
-    _scc_putc('\n');
+    putchar('\n');
 
     for (;;)
     {
-        _scc_putc('x');
-        _scc_putc('\n');
+        putchar('x');
+        putchar('\n');
         break;
     }
 

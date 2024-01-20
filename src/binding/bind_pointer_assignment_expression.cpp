@@ -42,7 +42,7 @@ namespace scc
 
         auto operator_kind_opt = Binder::operation_kind_from_string(op_kind);
         if (not operator_kind_opt.has_value())
-            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
+            return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::InvalidOperationError, node));
 
         auto operator_kind = operator_kind_opt.value();
         
