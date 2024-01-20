@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include "treenode.hpp"
+#include "parser.hpp"
 #include "binding/binder_scope.hpp"
 
 #include "binding/binder_result.hpp"
@@ -127,6 +128,7 @@ namespace scc
         binding::BinderResult<binding::BoundLiteralExpression> bind_sizeof_expression(const TreeNode &node);
 
         std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
+        static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
 
         bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
         bool prepoc_define(const TreeNode &node);
@@ -136,3 +138,73 @@ namespace scc
         binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
     };  
 }
+
+#include <iomanip>
+
+
+#define SCC_ASSERT(x)                                                        \
+    do                                                                       \
+    {                                                                        \
+        if (!(x))                                                            \
+        {                                                                    \
+            std::cerr << "==============================" << std::endl;      \
+            std::cerr << "Assertion failed: " << #x << std::endl;            \
+            std::cerr << "At: " << __FILE__ << ":" << __LINE__ << std::endl; \
+            std::cerr << "==============================" << std::endl;      \
+            std::exit(1);                                             \
+        }                                                                    \
+    } while (0)
+
+#define SCC_ASSERT_EQ(x, y) SCC_ASSERT((x) == (y))
+#define SCC_ASSERT_NAMED_CHILD_COUNT(x, y) SCC_ASSERT_EQ((x).named_child_count(), (y))
+#define SCC_ASSERT_CHILD_COUNT(x, y) SCC_ASSERT_EQ((x).child_count(), (y))
+
+#define SCC_UNIMPLEMENTED()                                                         \
+    do                                                                              \
+    {                                                                               \
+        std::cerr << "==============================" << std::endl;                 \
+        std::cerr << "Unimplemented: " << __FILE__ << ":" << __LINE__ << std::endl; \
+        std::cerr << "==============================" << std::endl;                 \
+        std::exit(1);                                                               \
+    } while (0)
+
+#define SCC_ASSERT_NODE_SYMBOL(x) SCC_ASSERT_EQ(node.symbol(), (x))
+
+#define SCC_NOT_IMPLEMENTED(x)                                           \
+    do                                                                   \
+    {                                                                    \
+        std::cerr << "==============================" << std::endl;      \
+        std::cerr << "Not implemented: " << std::quoted(x) << std::endl; \
+        std::cerr << "At: " << __FILE__ << ":" << __LINE__ << std::endl; \
+        std::cerr << "==============================" << std::endl;      \
+        std::exit(1);                                             \
+    } while (0)
+
+#define SCC_NOT_IMPLEMENTED_WARN(x)                                      \
+    do                                                                   \
+    {                                                                    \
+        std::cerr << "==============================" << std::endl;      \
+        std::cerr << "Not implemented: " << std::quoted(x) << std::endl; \
+        std::cerr << "At: " << __FILE__ << ":" << __LINE__ << std::endl; \
+        std::cerr << "==============================" << std::endl;      \
+    } while (0)
+#define SCC_UNREACHABLE() SCC_ASSERT(false)
+
+#define SCC_BINDER_RESULT_TYPE(x) using ResultType = decltype(x(std::declval<const TreeNode&>()))::type
+
+constexpr bool TRACE_BINDER = false;
+
+// #define BUBBLE_ERROR(x) if ((x).is_error()) return (x)
+
+#define SOURCE_LOCATION_STR std::string("at ") + std::string( __FILE__) + ":" + std::to_string(__LINE__)
+
+#define BUBBLE_ERROR(x) do{ \
+    if ((x).is_error()) \
+    { \
+        if constexpr (TRACE_BINDER) \
+            (x).add_diagnostic(std::string(__func__) + " " + SOURCE_LOCATION_STR); \
+        return (x); \
+    } \
+} while(0)
+
+using ErrorKind = scc::binding::BinderError::BinderErrorKind;
