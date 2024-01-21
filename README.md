@@ -16,7 +16,7 @@
 - [Golden layout](https://golden-layout.com/)
 - [Jquery](https://jquery.com/)
 - [anevrly/VisualizerBP](https://github.com/anevrly/VisualizerBP)
-- [wasm-clang)](https://github.com/binji/wasm-clang)
+- [wasm-clang](https://github.com/binji/wasm-clang)
 
 # Used tools
 - bash (for build script, but can be done manually)

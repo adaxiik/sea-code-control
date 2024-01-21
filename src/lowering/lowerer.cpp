@@ -106,6 +106,11 @@ namespace scc
         }
     }
 
+    void Lowerer::lower(const binding::BoundVariableStaticArrayDeclarationStatement &variable_static_array_declaration_statement)
+    {
+        SCC_NOT_IMPLEMENTED("BoundVariableStaticArrayDeclarationStatement");
+    }
+
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)
     {
         switch (variable_declaration_statement.variable_declaration_statement_kind())
@@ -118,7 +123,7 @@ namespace scc
             lower(*static_cast<const binding::BoundVariablePointerDeclarationStatement*>(&variable_declaration_statement));
             break;
         case DeclarationType::StaticArray:
-            SCC_NOT_IMPLEMENTED("Static array variable declaration");
+            lower(*static_cast<const binding::BoundVariableStaticArrayDeclarationStatement*>(&variable_declaration_statement));
             break;
         default:
             SCC_NOT_IMPLEMENTED("BoundVariableDeclarationStatement");

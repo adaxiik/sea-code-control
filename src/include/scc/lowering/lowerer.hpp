@@ -85,6 +85,7 @@ namespace scc
         void lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression);
         void lower(const binding::BoundReferenceExpression &pointer_expression);
         void lower(const binding::BoundVariablePointerDeclarationStatement &variable_pointer_declaration_statement);
+        void lower(const binding::BoundVariableStaticArrayDeclarationStatement &variable_pointer_declaration_statement);
         void lower(const binding::BoundDereferenceExpression &pointer_expression);
         void lower(const binding::BoundPointerAssignmentExpression &pointer_assignment_expression);
 

@@ -6,7 +6,7 @@ namespace scc
     {
         
         template <typename OP_RESULT_TYPE_PR, typename OP_RESULT_TYPE_LP, typename OP_RESULT_TYPE_LR, typename LEFT_CAST, typename RIGHT_CAST>
-        std::optional<Type> binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth)
+        static std::optional<Type> binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth)
         {
             if (left_pointer_depth > 0)                                                                                                                                          \
             {                                                                                                                                                                      \

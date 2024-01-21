@@ -552,7 +552,7 @@ namespace scc
                         {
                             ss << "VariableStaticArrayDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "") << variable_declaration_statement.type << " " ;
                             auto& vsads = static_cast<const binding::BoundVariableStaticArrayDeclarationStatement&>(variable_declaration_statement);
-                            ss << variable_declaration_statement.variable_name << " [" << vsads.array_size << "])" << std::endl;
+                            ss << variable_declaration_statement.variable_name << " -> size " << vsads.array_size << ")" << std::endl;
 
                             for(size_t i = 0; i < vsads.initializers.size(); i++)
                             {
