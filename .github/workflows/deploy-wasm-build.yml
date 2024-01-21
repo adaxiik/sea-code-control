@@ -27,13 +27,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Emscripten toolchain
-        uses: mymindstorm/setup-emsdk@v12
-      
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
+
+      - name: Setup Emscripten toolchain
+        uses: mymindstorm/setup-emsdk@v13
 
       - name: Build wasm
         run: ./build.sh wasm
