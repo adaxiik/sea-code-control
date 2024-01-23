@@ -417,7 +417,11 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::GotoInstruction(restart_label), for_statement.location));
 
         if (for_statement.increment)
+        {
+            // we need to drop after expression
+            m_to_lower.push(std::make_pair(lowering::DropInstruction(), for_statement.location));
             m_to_lower.push(for_statement.increment.get());
+        }
         
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), for_statement.location));
         

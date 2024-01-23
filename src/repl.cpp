@@ -4,7 +4,7 @@
 #include "overloaded.hpp"
 
 constexpr auto RED = "\033[0;31m";
-constexpr auto GREEN = "\033[0;32m";
+// constexpr auto GREEN = "\033[0;32m";
 constexpr auto RESET = "\033[0m";
 
 
