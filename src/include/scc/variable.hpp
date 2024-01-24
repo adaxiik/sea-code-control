@@ -24,6 +24,11 @@ namespace scc
         {
             if (not m_initialized)
                 return std::nullopt;
+            
+            // int a[5];
+            // a == &a
+            if (m_type.is_array())
+                return Type::Value(static_cast<Type::Primitive::PTR>(m_address));
 
             return memory.read_value(m_address, m_type);
         }

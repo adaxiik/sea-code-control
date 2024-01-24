@@ -23,6 +23,7 @@ namespace scc::lowering::inbuild
     InterpreterResult malloc(InterpreterState &state);
     InterpreterResult free(InterpreterState &state);
     InterpreterResult write(InterpreterState &state);
+    InterpreterResult read(InterpreterState &state);
 
     // math.h
     // https://en.cppreference.com/w/c/numeric/math
@@ -43,6 +44,18 @@ namespace scc::lowering::inbuild
         {"_scc_free", {free, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::Void, std::vector<Type::Modifier>{Type::Pointer{}})}}},
         {"_scc_write", {
             write,
+            Type(Type::PrimitiveType::I64),
+            {
+                Type(Type::PrimitiveType::I32),
+                Type(
+                    Type::PrimitiveType::Void,
+                    std::vector<Type::Modifier>{Type::Pointer{}}
+                ),
+                Type(Type::PrimitiveType::U64)
+            }
+        }},
+        {"_scc_read", {
+            read, 
             Type(Type::PrimitiveType::I64),
             {
                 Type(Type::PrimitiveType::I32),

@@ -108,7 +108,15 @@ namespace scc
 
     void Lowerer::lower(const binding::BoundVariableStaticArrayDeclarationStatement &variable_static_array_declaration_statement)
     {
-        SCC_NOT_IMPLEMENTED("BoundVariableStaticArrayDeclarationStatement");
+        using CAFlags = lowering::CreateArrayVariableInstruction::Flags;
+        m_to_lower.push(std::make_pair(lowering::CreateArrayVariableInstruction(
+            variable_static_array_declaration_statement.variable_name,
+            variable_static_array_declaration_statement.type,
+            CAFlags::None 
+            | ((variable_static_array_declaration_statement.initializers.size() > 0 or variable_static_array_declaration_statement.is_global) ? CAFlags::HasInitializer : CAFlags::None)
+            | (variable_static_array_declaration_statement.is_global ? CAFlags::IsGlobal : CAFlags::None)
+            | (variable_static_array_declaration_statement.is_constant ? CAFlags::IsConst : CAFlags::None)
+        ), variable_static_array_declaration_statement.location));
     }
 
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)

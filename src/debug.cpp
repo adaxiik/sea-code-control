@@ -658,7 +658,7 @@ namespace scc
     
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 20, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 21, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) { 
                     ss << "BinaryOperation ==> ";
@@ -755,6 +755,16 @@ namespace scc
                 },
                 [&](lowering::PointerAssignmentInstruction pointer_assignment) {
                     ss << "PointerAssignment ==> " << pointer_assignment.target_type;
+                },
+                [&](lowering::CreateArrayVariableInstruction create_array_variable) {
+                    using CAVFlags = lowering::CreateArrayVariableInstruction::Flags;
+                    ss << "CreateArrayVariable ==> "<< (create_array_variable.flags & CAVFlags::IsGlobal ? "global " : "") \
+                    << (create_array_variable.flags & CAVFlags::IsConst ? "const " : "") \
+                    << create_array_variable.variable_type \
+                    << " " << create_array_variable.variable_name;
+                },
+                [&](auto) {
+                    ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
                 }
             }, instruction);
         }

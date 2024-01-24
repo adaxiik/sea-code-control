@@ -105,7 +105,13 @@ async function runProgram() {
     try {
         buffered_stdout = "";
         interpreter = new Module.Interpreter();
-        let running_interpreter_creation_result = interpreter.interpret_string(editor.getValue());
+        // let running_interpreter_creation_result = interpreter.interpret_string(editor.getValue()); // long running operation
+        let running_interpreter_creation_result = await new Promise(resolve => {
+            setTimeout(() => {
+                resolve(interpreter.interpret_string(editor.getValue()));
+            }, 0);
+        });
+
         if (running_interpreter_creation_result.is_error()) {
             throw "Error creating interpreter";
         }
@@ -124,17 +130,20 @@ async function runProgram() {
     }
 }
 
-function run() {
+async function run() {
     if (document.getElementById("precompile").checked) {
-        precompile(editor.getValue())
-            .then((result) => {
-                if (result) {       // compilation successful
-                    runProgram();
-                }
-            });
+        // precompile(editor.getValue())
+        //     .then((result) => {
+        //         if (result) {       // compilation successful
+        //             runProgram();
+        //         }
+        //     });
+        let result = await precompile(editor.getValue());
+        if (result) {
+            await runProgram();
+        }
     } else {
-        runProgram();
-
+        await runProgram();
     }
 }
 

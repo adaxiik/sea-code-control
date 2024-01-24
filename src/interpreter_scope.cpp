@@ -44,8 +44,8 @@ namespace  scc
         const std::string &name,
         Type type,
         size_t size_bytes,
-        bool is_constant = false,
-        bool is_parameter = false
+        bool is_constant,
+        bool is_parameter
     )
     {
         if (m_scopes.empty()) // This should be unreachable, but you never know

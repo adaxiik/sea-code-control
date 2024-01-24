@@ -39,8 +39,8 @@ namespace scc
             const std::string &name,
             Type type,
             size_t size_bytes,
-            bool is_constant,
-            bool is_parameter
+            bool is_constant = false,
+            bool is_parameter = false
         );
         std::vector<InterpreterScope> &ref_scopes();
         Memory::address_t current_address() const;

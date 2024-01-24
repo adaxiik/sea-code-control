@@ -8,6 +8,8 @@ function initTerminal(terminal_id)
     term.loadAddon(fitAddon);
     term.open(document.getElementById(terminal_id));
 
+
+
     term.fit = fitAddon.fit.bind(fitAddon);
     term.fit();
     return term;

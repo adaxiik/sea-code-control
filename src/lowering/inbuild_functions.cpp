@@ -247,7 +247,13 @@ namespace scc::lowering::inbuild
         else
             return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(-1)));
             
-    return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(count_val)));
+        return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(count_val)));
     }
+
+    InterpreterResult read(InterpreterState &)
+    {
+        return InterpreterError::None;
+    }
+
 }
 
