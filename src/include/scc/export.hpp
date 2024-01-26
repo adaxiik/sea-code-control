@@ -21,7 +21,7 @@ namespace scc
 
             bool operator==(const StructField& other) const
             {
-                return offset_bytes == other.offset_bytes && type_index == other.type_index && name == other.name;
+                return offset_bytes == other.offset_bytes and type_index == other.type_index and name == other.name;
             }
         };
 
@@ -33,7 +33,7 @@ namespace scc
 
             bool operator==(const StructType& other) const
             {
-                return name == other.name && fields == other.fields && size_bytes == other.size_bytes;
+                return name == other.name and fields == other.fields and size_bytes == other.size_bytes;
             }
         };
 
@@ -43,7 +43,7 @@ namespace scc
             { \
                 return true; \
             }
-            
+
         #define SCC_PRIMITIVE_TYPE(TYPE, NAME, SIZE_BYTES) \
             struct TYPE \
             { \
@@ -97,12 +97,15 @@ namespace scc
         {
             TypeIndex element_type_index;
             uint64_t size_bytes;
+            uint64_t element_count;
 
             bool operator==(const ArrayType& other) const
             {
-                return element_type_index == other.element_type_index && size_bytes == other.size_bytes;
+                return element_type_index == other.element_type_index
+                    and size_bytes == other.size_bytes
+                    and element_count == other.element_count;
             }
-        }; 
+        };
 
         using Type = std::variant<PrimitiveType, StructType, PointerType, ArrayType>;
 
@@ -200,7 +203,7 @@ struct std::hash<scc::export_format::ArrayType>
 {
     size_t operator()(const scc::export_format::ArrayType& type) const
     {
-        return std::hash<scc::export_format::TypeIndex>()(type.element_type_index) ^ std::hash<uint64_t>()(type.size_bytes);
+        return std::hash<scc::export_format::TypeIndex>()(type.element_type_index) ^ std::hash<uint64_t>()(type.size_bytes) ^ std::hash<uint64_t>()(type.element_count);
     }
 };
 

@@ -47,7 +47,10 @@ namespace scc::export_format
         std::visit(overloaded{
             [&j](const PrimitiveType& primitive_type) { j["name"] = std::visit(GetNameOfPrimitiveType{}, primitive_type); },
             [&j](const StructType& struct_type) { j["name"] = struct_type.name; j["fields"] = struct_type.fields; },
-            [&j](const ArrayType& array_type) { j["element_type_index"] = array_type.element_type_index; },
+            [&j](const ArrayType& array_type) {
+                j["element_type_index"] = array_type.element_type_index;
+                j["element_count"] = array_type.element_count;
+            },
             [&j](const PointerType& pointer_type) { j["pointing_to_type_index"] = pointer_type.pointing_to_type_index; },
         }, type);
     }
@@ -63,7 +66,7 @@ namespace scc::export_format
             {"allocated_place", variable.allocated_place},
             {"type_index", variable.type_index},
             {"name", variable.name},
-            // {"is_constant", variable.is_constant}, // TODO: do I care? 
+            // {"is_constant", variable.is_constant}, // TODO: do I care?
             {"is_initialized", variable.is_initialized}
         };
     }
@@ -86,7 +89,7 @@ namespace scc::export_format
             {"anonymous_allocations", snapshot.anonymous_allocations}
         }.dump(4);
     }
-    
+
     static scc::export_format::PrimitiveType primitive_t_to_export_primitive_t(scc::Type::PrimitiveType primitive_type)
     {
         static_assert(static_cast<int>(scc::Type::PrimitiveType::COUNT) == 13);
@@ -120,7 +123,7 @@ namespace scc::export_format
             if (variable.is_initialized())
             {
                 data.resize(variable.type().size_bytes());
-                state.memory.read_into(variable.address(), data.data(), data.size()); 
+                state.memory.read_into(variable.address(), data.data(), data.size());
             }
 
             snapshot.global_variables.push_back({
@@ -159,7 +162,7 @@ namespace scc::export_format
                     if (variable.is_initialized())
                     {
                         data.resize(variable.type().size_bytes());
-                        state.memory.read_into(variable.address(), data.data(), data.size()); 
+                        state.memory.read_into(variable.address(), data.data(), data.size());
                     }
 
                     export_format::Variable exported_variable{
@@ -203,7 +206,7 @@ namespace scc::export_format
             if (it != type_to_type_index.end())
                 return it->second;
 
-            
+
 
             if (type.is_struct())
             {
@@ -219,10 +222,10 @@ namespace scc::export_format
                 scc::Type::Modifier last_modifier = type.modifiers.back();
                 type_copy.modifiers.pop_back();
                 export_format::TypeIndex pointing_to_type_index = get_type_index_of(type_copy);
-                
+
                 std::visit(overloaded{
                     [&](const scc::Type::Pointer) { snapshot.types.push_back(PointerType{pointing_to_type_index}); },
-                    [&](const scc::Type::Array array) { snapshot.types.push_back(ArrayType{pointing_to_type_index, array.size}); },
+                    [&](const scc::Type::Array array) { snapshot.types.push_back(ArrayType{pointing_to_type_index, type.size_bytes(), array.size}); },
                 }, last_modifier);
 
                 auto type_index = type_to_type_index.size();

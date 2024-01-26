@@ -125,7 +125,7 @@ DataView.prototype.getInt64 = function(byteOffset, littleEndian) {
     const value = this.getUint64(byteOffset, littleEndian);
 
     // convert to signed and return
-    return littleEndian? 
+    return littleEndian?
         value > 2**63 - 1 ? value - 2**64 : value
       : value > 2**63 - 1 ? 2**64 - value : value;
 }
@@ -143,8 +143,18 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
             console.log("ERROR: typeIndex " + typeIndex + " not found");
             return false;
         }
-        return (type.kind == "pointer" || type.kind == "array");
+        return type.kind == "pointer";
     }
+
+    let isArray = function(typeIndex) {
+        let type = exportedProgram.types[typeIndex];
+        if (!type) {
+            console.log("ERROR: typeIndex " + typeIndex + " not found");
+            return false;
+        }
+        return type.kind == "array";
+    }
+
 
 
     let getTypeName = function(typeIndex) {
@@ -158,35 +168,16 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         } else if (type.kind == "pointer") {
             return getTypeName(type.pointing_to_type_index) + "*";
         }
+        else if (type.kind == "array") {
+            return getTypeName(type.element_type_index) + "[" + type.size_bytes / exportedProgram.types[type.element_type_index].size_bytes + "]";
+        }
 
         return "ERROR";
     }
 
     let variableAddressToName = {};
 
-    let variableValueAsString = function(variable) {
-        if (!variable.is_initialized) {
-            return "uninitialized";
-        }
-
-        let bytes = new Uint8Array(variable.allocated_place.data);
-        let view = new DataView(bytes.buffer);
-
-        if (isPointer(variable.type_index)) {
-            let pointingToAddress = view.getUint64(0, true);
-            if (variableAddressToName[pointingToAddress]) {
-                return variableAddressToName[pointingToAddress];
-            } else {
-                return "0x" + pointingToAddress.toString(16);
-            }
-        }
-
-        let typeName = getTypeName(variable.type_index);
-        
-
-        
-
-
+    let getDataValueFromView = function(view, typeName) {
         if (typeName == "bool") {
             return (view.getUint8(0) == 1) ? "true" : "false";
         } else if (typeName == "char") {
@@ -216,6 +207,75 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         }
 
         return "ERROR";
+
+
+    }
+
+
+    let variableValueAsString = function(variable) {
+        if (!variable.is_initialized) {
+            return "uninitialized";
+        }
+
+        let bytes = new Uint8Array(variable.allocated_place.data);
+        let view = new DataView(bytes.buffer);
+
+        if (isPointer(variable.type_index)) {
+            let pointingToAddress = view.getUint64(0, true);
+            if (variableAddressToName[pointingToAddress]) {
+                return variableAddressToName[pointingToAddress];
+            } else {
+                return "0x" + pointingToAddress.toString(16);
+            }
+        }
+
+        let typeName = getTypeName(variable.type_index);
+        return getDataValueFromView(view, typeName);
+    }
+
+    let addVariableToStackFrame = function(stackFrame, variable) {
+        let address = variable.allocated_place.address;
+        variableAddressToName[address] = variable.name;
+
+        let variableData = new cvisualizer.DataModelStructures.Variable();
+        variableData.variableName = variable.name;
+        variableData.dataTypeString = getTypeName(variable.type_index);
+        variableData.isPointer = isPointer(variable.type_index);
+        variableData.valueString = variableValueAsString(variable).toString();
+        stackFrame.functionVariables[variable.name] = variableData;
+    }
+
+    let addArrayToStackFrame = function(stackFrame, variable) {
+        let address = variable.allocated_place.address;
+        variableAddressToName[address] = variable.name;
+
+        let arrayData = new cvisualizer.DataModelStructures.Array();
+        arrayData.variableName = variable.name;
+        arrayData.isCollapsed = true;
+        let myType = exportedProgram.types[variable.type_index];
+        let underlyingType = exportedProgram.types[myType.element_type_index];
+        arrayData.size = myType.element_count;
+        arrayData.dataTypeString = getTypeName(myType.element_type_index);
+
+        let bytes = new Uint8Array(variable.allocated_place.data);
+
+        for (let i = 0; i < arrayData.size; i++) {
+            let dataSlice = bytes.slice(i * underlyingType.size_bytes, (i + 1) * underlyingType.size_bytes);
+            let viewSlice = new DataView(dataSlice.buffer);
+            let element = new cvisualizer.DataModelStructures.Variable();
+            element.valueString = getDataValueFromView(viewSlice, getTypeName(myType.element_type_index)).toString();
+            arrayData.elements[i] = element;
+        }
+
+        stackFrame.functionVariables[variable.name] = arrayData;
+    }
+
+    let addToStackFrame = function(stackFrame, variable) {
+        if (isArray(variable.type_index)) {
+            addArrayToStackFrame(stackFrame, variable);
+        } else {
+            addVariableToStackFrame(stackFrame, variable);
+        }
     }
 
 
@@ -224,15 +284,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
     globalVariables.functionName = "Global variables";
     globalVariables.isCollapsed = false;
     for (let global of exportedProgram.global_variables) {
-        let address = global.allocated_place.address;
-        variableAddressToName[address] = global.name;
-
-        let variable = new cvisualizer.DataModelStructures.Variable();
-        variable.variableName = global.name;
-        variable.dataTypeString = getTypeName(global.type_index);
-        variable.valueString = variableValueAsString(global);
-        variable.isPointer = isPointer(global.type_index);
-        globalVariables.functionVariables[global.name] = variable;
+        addToStackFrame(globalVariables, global);
     }
     programStack.stackFrames[globalVariables.frameId] = globalVariables;
 
@@ -243,7 +295,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         stackFrame.frameId = i + 1; // +1 for global variables
         stackFrame.functionName = exportedStackframe.function_name;
         stackFrame.isCollapsed = false;
-        
+
         for (let param of exportedStackframe.parameters) {
             let address = param.allocated_place.address;
             variableAddressToName[address] = param.name;
@@ -257,15 +309,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         }
 
         for (let local of exportedStackframe.variables) {
-            let address = local.allocated_place.address;
-            variableAddressToName[address] = local.name;
-
-            let variable = new cvisualizer.DataModelStructures.Variable();
-            variable.variableName = local.name;
-            variable.dataTypeString = getTypeName(local.type_index);
-            variable.valueString = variableValueAsString(local);
-            variable.isPointer = isPointer(local.type_index);
-            stackFrame.functionVariables[local.name] = variable;
+            addToStackFrame(stackFrame, local);
         }
 
         programStack.stackFrames[stackFrame.frameId] = stackFrame;
