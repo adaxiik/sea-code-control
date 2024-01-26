@@ -152,7 +152,7 @@ TEST_CASE("Single Expressions")
         SCC_TEST_TYPE_AUTO(0777ul);
         SCC_TEST_TYPE_AUTO(0777ll);
         SCC_TEST_TYPE_AUTO(0777ull);
-        
+
         SCC_TEST_IS_ERROR("0x;");
         SCC_TEST_IS_ERROR("0b;");
         SCC_TEST_IS_ERROR("0o;");
@@ -165,7 +165,7 @@ TEST_CASE("Single Expressions")
         // if I really want to, I could probably bypass it, but I don't think it's worth it right now :)
         // Im not sure if this syntax is actually valid in C99 (but it is in C++17)
         // @help
-        // SCC_TEST_INTERPRET_RESULT(int, 7, "0B111;"); 
+        // SCC_TEST_INTERPRET_RESULT(int, 7, "0B111;");
         SCC_TEST_INTERPRET_RESULT(int, 255, "0xFF;");
         // SCC_TEST_INTERPRET_RESULT(int, 255, "0Xff;");
 
@@ -201,7 +201,7 @@ TEST_CASE("Single Expressions")
         SCC_TEST_IS_ERROR("1.0%0;");
         SCC_TEST_IS_ERROR("1.0/0.0;");
         SCC_TEST_IS_ERROR("1.0%0.0;");
-        
+
         SCC_TEST_TYPE_PTR(I32, 1, (int*)0 + 2);
         SCC_TEST_TYPE_PTR(I32, 1, 2 + (int*)0);
         SCC_TEST_TYPE_PTR(Char, 1, (char*)2 - 1);
@@ -235,7 +235,7 @@ TEST_CASE("Single Expressions")
 
         SCC_TEST_TYPE(Char, (char)69);
 
-        
+
         SCC_TEST_INTERPRET_RESULT(char, 'E', "(char)69;");
         SCC_TEST_INTERPRET_RESULT(int, 420, "(int)420.69f;");
         SCC_TEST_INTERPRET_RESULT(short, 420, "(short)420.69f;");
@@ -264,19 +264,19 @@ TEST_CASE("Single Expressions")
         SCC_TEST_BINDER("int a;");
         SCC_TEST_BINDER("int* a;");
         // TODOO: multiple declarations
-        // SCC_TEST_BINDER("int a, b;"); 
+        // SCC_TEST_BINDER("int a, b;");
         SCC_TEST_BINDER("int a = 1;");
         // TODOO: multiple initializers
-        // SCC_TEST_BINDER("int a = 1, b = 2;"); 
+        // SCC_TEST_BINDER("int a = 1, b = 2;");
         SCC_TEST_BINDER("int a[1];");
-        // TODO: 2d arrays 
+        // TODO: 2d arrays
         // SCC_TEST_BINDER("int a[1][2];");
         // TODOO: complex types
         // SCC_TEST_BINDER("int **a[2][2];");
         SCC_TEST_BINDER("int a[1] = {1};");
-        SCC_TEST_BINDER_ERROR("int a[1] = {1, 2};"); 
+        SCC_TEST_BINDER_ERROR("int a[1] = {1, 2};");
         SCC_TEST_BINDER("int a = {1};");
-        SCC_TEST_BINDER_ERROR("int a = {1, 2};"); 
+        SCC_TEST_BINDER_ERROR("int a = {1, 2};");
 
     }
 }
@@ -339,7 +339,7 @@ TEST_CASE("Memory alloc and free")
     SCC_TEST_MEMORY_CHUNK(chunk4, 40, 49, 10);
     SCC_TEST_MEMORY_EXPECT_CHUNK_COUNT(3);
     SCC_TEST_MEMORY_EXPECT_ALLOCATED_SIZE(30);
-    
+
     // Chunk 2 [20, 29] (10)  used
     // Chunk 4 [40, 49] (10)  used
     SCC_TEST_MEMORY_FREE(chunk0, true);
@@ -370,7 +370,7 @@ TEST_CASE("Memory alloc and free")
 
     // Chunk 4 [40, 49] (10)  used
     CHECK(memory.write<uint64_t>(chunk4, 0xffeeddccbbaa9988));
-    
+
     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4, 0xffeeddccbbaa9988, uint64_t);
     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 0, 0x88, uint8_t);
     SCC_TEST_MEMORY_EXPECT_VALUE(chunk4 + 1, 0x99, uint8_t);
@@ -440,7 +440,7 @@ TEST_CASE("Assignments")
     SCC_TEST_IS_OK("double b = 1.5;");
     SCC_TEST_INTERPRET_RESULT(double, 1.5, "b;");
     SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b += 1.6;");
-    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b;");    
+    SCC_TEST_INTERPRET_RESULT(double, 1.5 + 1.6, "b;");
     SCC_TEST_INTERPRET_RESULT(int, 3, "a = b;"); // implicit cast
     SCC_TEST_INTERPRET_RESULT(int, 3, "a;"); // implicit cast
 
@@ -457,7 +457,7 @@ TEST_CASE("If statement")
         SCC_TEST_IS_OK("int a = 0;");
         SCC_TEST_IS_OK("int b = 0;");
 
-        SCC_TEST_IS_OK("if (0) { b = 1; }");       
+        SCC_TEST_IS_OK("if (0) { b = 1; }");
         SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
         SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
 
@@ -497,7 +497,7 @@ TEST_CASE("If statement")
     {
         auto interpreter = scc::Interpreter();
         auto running_interpreter = scc::RunningInterpreter({});
-        
+
         SCC_TEST_IS_OK("int a = 10;");
         SCC_TEST_IS_OK("if (1) { int a = 20; }");
         SCC_TEST_INTERPRET_RESULT(int, 10, "a;");
@@ -512,7 +512,7 @@ TEST_CASE("While and Do statements")
     SCC_TEST_IS_OK("int a = 0;");
     SCC_TEST_IS_OK("int b = 0;");
 
-    SCC_TEST_IS_OK("while (0) { b = 1; }");       
+    SCC_TEST_IS_OK("while (0) { b = 1; }");
     SCC_TEST_INTERPRET_RESULT(int, 0, "a;");
     SCC_TEST_INTERPRET_RESULT(int, 0, "b;");
 
@@ -592,7 +592,7 @@ TEST_CASE("Functions")
     SCC_TEST_INTERPRET_RESULT(int, 2, "factorial(2);");
     SCC_TEST_INTERPRET_RESULT(int, 6, "factorial(3);");
     SCC_TEST_INTERPRET_RESULT(int, 24, "factorial(4);");
-    SCC_TEST_INTERPRET_RESULT(int, 120, "factorial(5);"); 
+    SCC_TEST_INTERPRET_RESULT(int, 120, "factorial(5);");
 
     SCC_TEST_IS_OK("int var = 420;");
     SCC_TEST_IS_OK("int fn_e() { int var = 1; return var; }");
@@ -607,7 +607,7 @@ TEST_CASE("Functions")
     SCC_TEST_IS_ERROR("void fn_h() { int x; x; } fn_h();"); // local variable not initialized
     SCC_TEST_IS_ERROR("void fn_i() { int x = x; } fn_i();"); // local variable not initialized
 
-    // TODOOOOOO: fix no return statement error.. 
+    // TODOOOOOO: fix no return statement error..
     // SCC_TEST_IS_ERROR("int fn_j() { int x = 1; } fn_j();"); // no return statement
 
 }
@@ -779,7 +779,7 @@ TEST_CASE("Breakpoints")
         CHECK(ss.str() == "34\n0\n69\n0\n69\n69\n");
         CHECK(ss_err.str() == "");
     }
-    
+
     SUBCASE("Stepping")
     {
         running_interpreter.breakpoints().add(3);
@@ -895,7 +895,7 @@ TEST_CASE("Pointers")
     SCC_TEST_IS_OK("*float_ptr *= 2.0f;");
     SCC_TEST_IS_OK("_scc_assert(*float_ptr == 1.5f * 2.0f);");
     SCC_TEST_IS_OK("_scc_assert(float_value == 1.5f * 2.0f);");
-    
+
 
     SCC_TEST_IS_OK("long long_value1 = 1;");
     SCC_TEST_IS_OK("long long_value2 = 2;");
@@ -938,7 +938,7 @@ TEST_CASE("Include libc"){
 
     SCC_TEST_IS_OK("#include <math.h>\n");
     SCC_TEST_IS_OK("M_PI;");
-    
+
     SCC_TEST_IS_OK("#include <stdlib.h>\n");
     SCC_TEST_IS_OK("#include <unistd.h>\n");
 
@@ -999,7 +999,7 @@ TEST_CASE("sizeof") {
 
     SCC_TEST_IS_OK("#define A 1l\n");
     SCC_TEST_IS_OK("_scc_assert(sizeof(A) == 8);");
-    
+
     // SCC_TEST_IS_OK("_scc_assert(sizeof(int*) == 8);"); TODOO: sizeof pointer
 }
 
@@ -1073,4 +1073,64 @@ TEST_CASE("Update expression")
     SCC_TEST_IS_OK("_scc_assert(a == 2);");
     SCC_TEST_IS_OK("_scc_assert(p[0]-- == 2);");
     SCC_TEST_IS_OK("_scc_assert(a == 1);");
+}
+
+TEST_CASE("Static arrays")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("int a[4];");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(a) == 4 * sizeof(int));");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(a) == 16);");
+
+    for (int i = 0; i < 4; i++)
+    {
+        // its global so its initialized to 0
+        SCC_TEST_IS_OK("_scc_assert(a[" + std::to_string(i) + "] == 0);");
+    }
+
+    SCC_TEST_IS_OK("a[3] = 1;");
+    SCC_TEST_IS_OK("_scc_assert(a[3] == 1);");
+    SCC_TEST_IS_OK("_scc_assert(a[2] == 0);");
+
+    SCC_TEST_IS_OK("int b[4] = {1, 2, 3, 4};");
+
+    for (int i = 0; i < 4; i++)
+    {
+        SCC_TEST_IS_OK("_scc_assert(b[" + std::to_string(i) + "] == " + std::to_string(i + 1) + ");");
+    }
+
+    SCC_TEST_IS_OK("int c[10] = {1, 2};");
+
+    for (int i = 0; i < 10; i++)
+    {
+        int expected_value = i < 2 ? i + 1 : 0;
+        SCC_TEST_IS_OK("_scc_assert(c[" + std::to_string(i) + "] == " + std::to_string(expected_value) + ");");
+    }
+
+    SCC_TEST_IS_OK("int d[] = {1, 2, 3, 4, 5};");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(d) == 5 * sizeof(int));");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(d) == 20);");
+
+    for (int i = 0; i < 5; i++)
+    {
+        SCC_TEST_IS_OK("_scc_assert(d[" + std::to_string(i) + "] == " + std::to_string(i + 1) + ");");
+    }
+
+    SCC_TEST_IS_OK(R"(
+        {
+            // local static array
+            int e[4] = {0};
+            _scc_assert(sizeof(e) == 4 * sizeof(int));
+            _scc_assert(sizeof(e) == 16);
+            for (int i = 0; i < 4; i++)
+            {
+                _scc_assert(e[i] == 0);
+            }
+        }
+    )");
+
 }

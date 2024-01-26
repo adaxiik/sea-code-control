@@ -33,7 +33,13 @@ int main()
     *(data + 3) = '\n';
     write(STDOUT_FILENO, data, 4);
 
-    free(data);
+    free(data); // don't forget to free :)
+
+    // stack
+    int stack_data[] = {1, 2, 3, 4};
+    for (int i = 0; i < 4; ++i){
+        _scc_puti(stack_data[i]);
+    }
 
     return 0;
 }

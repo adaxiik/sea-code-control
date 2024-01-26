@@ -12,6 +12,7 @@ namespace scc
         {
             const std::string variable_name;
             const Type variable_type;
+            const uint32_t initializer_size_elements;
 
             enum class Flags : uint8_t
             {
@@ -25,10 +26,13 @@ namespace scc
 
             CreateArrayVariableInstruction(const std::string& variable_name
                                          , Type variable_type
-                                         , Flags flags)
+                                         , Flags flags
+                                         , size_t initializer_size_elements)
             : variable_name(variable_name)
             , variable_type(variable_type)
-            , flags(flags) {}
+            , initializer_size_elements(static_cast<uint32_t>(initializer_size_elements))
+            , flags(flags)
+            {}
             
             InterpreterResult execute(InterpreterState &state) const;
         };

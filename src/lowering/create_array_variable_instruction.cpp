@@ -43,19 +43,32 @@ namespace scc
             if (not variable->set_value(state.memory, Type::Value(static_cast<Type::Primitive::PTR>(variable->address()))))
                 return creation_result;
 
-            // for now
-            // if (not (flags & Flags::HasInitializer))
+            if (not (flags & Flags::HasInitializer))
                 return creation_result;
+            
+            if (state.result_stack.size() < initializer_size_elements)
+                return InterpreterError::RuntimeError;
 
 
-            // if (state.result_stack.size() < 1)
-            //     return InterpreterError::RuntimeError;
+            Type underlying_type = variable_type;
+            underlying_type.modifiers.pop_back();
+            size_t underlying_type_size = underlying_type.size_bytes();
+            for (uint32_t i = 0; i < initializer_size_elements; ++i)
+            {
+                auto value = state.result_stack.top().get_value();
+                state.result_stack.pop();
 
-            // auto value = state.result_stack.top();
-            // state.result_stack.pop();
+                if (not state.memory.write_value(variable->address() + i * underlying_type_size, value.value, underlying_type))
+                    return InterpreterError::MemoryError;
+            }
 
+            size_t initialized_bytes = initializer_size_elements * underlying_type_size;
+            size_t uninitialized_bytes = variable_type.size_bytes() - initialized_bytes;
 
-                
+            if (state.memory.memset(variable->address() + initialized_bytes, 0, uninitialized_bytes))
+                return creation_result;
+            
+            
             return InterpreterError::RuntimeError;
         }
 

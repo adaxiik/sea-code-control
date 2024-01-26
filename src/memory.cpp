@@ -34,26 +34,26 @@ namespace scc
     std::optional<Memory::address_t> Memory::get_chunk_end(Memory::address_t address) const
     {
         auto start = find_start_of_chunk(address);
-        if (!start)
+        if (not start)
             return std::nullopt;
-        
+
         auto it = m_memory.find(start.value());
         if (it == m_memory.end())
             return std::nullopt;
-        
+
         return it->second.size + it->first - 1;
     }
 
     std::optional<size_t> Memory::get_chunk_size (Memory::address_t address) const
     {
         auto start = find_start_of_chunk(address);
-        if (!start)
+        if (not start)
             return std::nullopt;
-        
+
         auto it = m_memory.find(start.value());
         if (it == m_memory.end())
             return std::nullopt;
-        
+
         return it->second.size;
     }
 
@@ -69,17 +69,17 @@ namespace scc
     bool Memory::read_into(address_t address, void* buffer, size_t size) const
     {
         std::optional<address_t> start_address_opt = find_start_of_chunk(address);
-        if (!start_address_opt.has_value())
+        if (not start_address_opt.has_value())
             return false;
-        
+
         address_t start_address = start_address_opt.value();
         address_t real_memory_index = address - start_address;
-        
+
         if (real_memory_index + size > m_memory.at(start_address).size)
             return false;
 
         std::memcpy(buffer, &m_memory.at(start_address).data[real_memory_index], size);
-        
+
         return true;
     }
 
@@ -93,7 +93,7 @@ namespace scc
                 return Type::Value(value.value()); \
             } \
             break;
-        
+
         if (type.is_struct())
         {
             // TODOOO: implement struct variables
@@ -135,7 +135,7 @@ namespace scc
         {
             // TODOOO: implement struct variables
             std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-            std::abort(); 
+            std::abort();
         }
     }
 
@@ -173,5 +173,25 @@ namespace scc
             default:
                 return false;
         }
+    }
+
+    bool Memory::memset(address_t address, char value, size_t size)
+    {
+        if (size == 0)
+            return true;
+
+        std::optional<address_t> start_address_opt = find_start_of_chunk(address);
+        if (not start_address_opt.has_value())
+            return false;
+
+        address_t start_address = start_address_opt.value();
+        address_t real_memory_index = address - start_address;
+
+        if (real_memory_index + size > m_memory.at(start_address).size)
+            return false;
+
+        std::memset(&m_memory.at(start_address).data[real_memory_index], value, size);
+
+        return true;
     }
 }

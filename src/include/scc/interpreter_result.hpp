@@ -29,6 +29,7 @@ namespace scc
         AssertionFailedError,
         MemoryError,
         DereferenceError,
+        NotEnoughValuesToDropError,
         COUNT
     };
 

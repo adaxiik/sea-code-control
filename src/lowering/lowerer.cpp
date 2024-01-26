@@ -115,8 +115,14 @@ namespace scc
             CAFlags::None 
             | ((variable_static_array_declaration_statement.initializers.size() > 0 or variable_static_array_declaration_statement.is_global) ? CAFlags::HasInitializer : CAFlags::None)
             | (variable_static_array_declaration_statement.is_global ? CAFlags::IsGlobal : CAFlags::None)
-            | (variable_static_array_declaration_statement.is_constant ? CAFlags::IsConst : CAFlags::None)
+            | (variable_static_array_declaration_statement.is_constant ? CAFlags::IsConst : CAFlags::None),
+            variable_static_array_declaration_statement.initializers.size()
         ), variable_static_array_declaration_statement.location));
+
+        for (auto& initializer: variable_static_array_declaration_statement.initializers)
+            m_to_lower.push(initializer.get());
+        
+
     }
 
     void Lowerer::lower(const binding::BoundVariableDeclarationStatement &variable_declaration_statement)

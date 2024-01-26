@@ -3,6 +3,8 @@
 #include <memory>
 #include <map>
 #include <optional>
+#include <cstdlib>
+
 #include "type.hpp"
 namespace scc
 {
@@ -31,7 +33,14 @@ namespace scc
             std::unique_ptr<char[]> data;
             size_t size;
 
-            MemoryChunk(size_t size) : data(std::make_unique<char[]>(size)), size(size) {}
+            MemoryChunk(size_t size)
+            : data(std::make_unique<char[]>(size))
+            , size(size)
+            {
+                for (size_t i = 0; i < size; i++)
+                    data[i] = std::rand() % 256; // oh no, C style rand :O
+
+            }
             MemoryChunk(const MemoryChunk&) = delete;
             MemoryChunk(MemoryChunk&&) = default;
             MemoryChunk& operator=(const MemoryChunk&) = delete;
@@ -42,23 +51,23 @@ namespace scc
 
         /**
          * @brief free memory
-         * 
-         * @param address 
+         *
+         * @param address
          * @return true if memory was freed successfully
          * @return false if address was not found
          */
         bool free(address_t address);
- 
+
         std::optional<address_t> find_start_of_chunk(address_t address) const;
 
         std::optional<Type::Value> read_value(address_t address, Type type) const;
 
         /**
          * @brief write value to memory
-         * 
-         * @param address 
-         * @param value 
-         * @param type 
+         *
+         * @param address
+         * @param value
+         * @param type
          * @return true if value was written successfully
          * @return false if address was not found
          */
@@ -71,7 +80,7 @@ namespace scc
             std::optional<address_t> start_address_opt = find_start_of_chunk(address);
             if (!start_address_opt.has_value())
                 return std::nullopt;
-            
+
             address_t start_address = start_address_opt.value();
             address_t real_memory_index = address - start_address;
 
@@ -79,16 +88,16 @@ namespace scc
                 return std::nullopt;
 
 
-            // std::cout << "READ: " << address << " " << *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) << std::endl;   
+            // std::cout << "READ: " << address << " " << *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) << std::endl;
             return *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]);
         }
 
         /**
          * @brief read value from memory
-         * 
-         * @param address 
-         * @param buffer 
-         * @param size 
+         *
+         * @param address
+         * @param buffer
+         * @param size
          * @return true if value was read successfully
          * @return false if address was not found or size is too big
          */
@@ -96,10 +105,10 @@ namespace scc
 
         /**
          * @brief write value to memory
-         * 
-         * @tparam T 
+         *
+         * @tparam T
          * @param address
-         * @param value 
+         * @param value
          * @return true if value was written successfully
          * @return false if address was not found
          */
@@ -110,19 +119,30 @@ namespace scc
 
             static_assert(sizeof(T) <= 8, "T is too big");
             std::optional<address_t> start_address_opt = find_start_of_chunk(address);
-            if (!start_address_opt.has_value())
+            if (not start_address_opt.has_value())
                 return false;
-            
+
             address_t start_address = start_address_opt.value();
             address_t real_memory_index = address - start_address;
-            
+
             if (real_memory_index + sizeof(T) > m_memory.at(start_address).size)
                 return false;
 
             *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) = value;
-            
+
             return true;
         }
+
+        /**
+         * @brief set memory to value
+         *
+         * @param address
+         * @param value
+         * @param size
+         * @return true if memory was set successfully
+         * @return false if address was not found or size is too big
+         */
+        bool memset(address_t address, char value, size_t size);
 
         const std::map<address_t, MemoryChunk>& get_chunks() const { return m_memory; }
 

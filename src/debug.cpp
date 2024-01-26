@@ -626,7 +626,7 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 23, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 24, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:                               ss << "None"; break;
@@ -652,6 +652,7 @@ namespace scc
                 case InterpreterError::AssertionFailedError:               ss << "Assertion failed error"; break;
                 case InterpreterError::MemoryError:                        ss << "Memory error"; break;
                 case InterpreterError::DereferenceError:                   ss << "Dereference error"; break;
+                case InterpreterError::NotEnoughValuesToDropError:         ss << "Not enough values to drop error"; break;
                 default:                                                   ss << "Unknown error"; break;
             }
         }

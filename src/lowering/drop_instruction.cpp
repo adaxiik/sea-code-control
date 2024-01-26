@@ -6,6 +6,9 @@ namespace scc
     {
         InterpreterResult DropInstruction::execute(InterpreterState &state) const
         {
+            if (state.result_stack.size() < count)
+                return InterpreterError::NotEnoughValuesToDropError;
+
             for (size_t i = 0; i < count; i++)
                 state.result_stack.pop();
                 

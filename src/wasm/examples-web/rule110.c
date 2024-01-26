@@ -43,35 +43,37 @@ void swap_rows(unsigned char **row, unsigned char **next_row)
     *next_row = tmp;
 }
 
+
+#define WIDTH 40
+#define HEIGHT 40
+#define SYMBOL '#'
+
+
 int main()
 {
     // https://en.wikipedia.org/wiki/Rule_110
-    
-    const int width = 40;
-    const int height = 40;
-    const char symbol = '#';
+
     const unsigned char rule = 110;
 
-    unsigned char *row = (unsigned char *)malloc(width * SIZE_OF_CHAR); 
-    unsigned char *next_row = (unsigned char *)malloc(width * SIZE_OF_CHAR);
+    unsigned char row_data[WIDTH] = {0};
+    unsigned char next_row_data[WIDTH] = {0};
 
-    memset(row, 0, width * SIZE_OF_CHAR);
+    // we'll use pointers to swap rows later
+    unsigned char *row = row_data;
+    unsigned char *next_row = next_row_data;
 
-    // we will set our starting state
-    row[width - 1] = 1;
+    // we'll set our starting state
+    row[WIDTH - 1] = 1;
 
     // first generation
-    print_row(row, width, symbol);
+    print_row(row, WIDTH, SYMBOL);
 
-    for (int i = 0; i < height; ++i)
+    for (int i = 0; i < HEIGHT; ++i)
     {
-        next_generation(row, next_row, width, rule);
-        print_row(next_row, width, symbol);
+        next_generation(row, next_row, WIDTH, rule);
+        print_row(next_row, WIDTH, SYMBOL);
         swap_rows(&row, &next_row);
     }
-
-    free(row);
-    free(next_row);
 
     return 0;
 }

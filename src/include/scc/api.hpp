@@ -16,7 +16,7 @@ namespace scc
     namespace api
     {
         // wasm-bindgen doesn't support std::stringstream
-        std::string debug_ast_as_json(const ParserResult& parser_result) 
+        std::string debug_ast_as_json(const ParserResult& parser_result)
         {
             std::stringstream ss;
             debug::ast_as_json(ss, parser_result);
@@ -45,7 +45,7 @@ namespace scc
                     var str = UTF8ToString($1);
                     window[fn_name](str);
                 }, fn_name.c_str(), str);
-            });            
+            });
         }
 
         void set_stderr_callback(const std::string& fn_name)
@@ -56,7 +56,7 @@ namespace scc
                     var str = UTF8ToString($1);
                     window[fn_name](str);
                 }, fn_name.c_str(), str);
-            });            
+            });
         }
 
         binding::BoundBlockStatement* cast_bound_node_to_bound_block_statement(binding::BoundNode* node)
@@ -105,7 +105,7 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("ParseError", scc::InterpreterError::ParseError)
         .value("BindError", scc::InterpreterError::BindError)
         .value("RuntimeError", scc::InterpreterError::RuntimeError)
-        .value("ReachedUnreachableError", scc::InterpreterError::ReachedUnreachableError) 
+        .value("ReachedUnreachableError", scc::InterpreterError::ReachedUnreachableError)
         .value("InvalidOperationError", scc::InterpreterError::InvalidOperationError)
         .value("DivisionByZeroError", scc::InterpreterError::DivisionByZeroError)
         .value("VariableAlreadyExistsError", scc::InterpreterError::VariableAlreadyExistsError)
@@ -124,9 +124,10 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("AssertionFailedError", scc::InterpreterError::AssertionFailedError)
         .value("MemoryError", scc::InterpreterError::MemoryError)
         .value("DereferenceError", scc::InterpreterError::DereferenceError)
+        .value("NotEnoughValuesToDropError", scc::InterpreterError::NotEnoughValuesToDropError)
         .value("COUNT", scc::InterpreterError::COUNT);
-    
-    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 23);
+
+    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 24);
 
 
 
@@ -135,12 +136,12 @@ EMSCRIPTEN_BINDINGS(scc_api)
     //     .function("parse", &scc::Interpreter::parse, emscripten::allow_raw_pointers())
     //     .function("interpret_string", emscripten::select_overload<scc::InterpreterResult(const std::string&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers())
     //     .function("interpret_parserresult", emscripten::select_overload<scc::InterpreterResult(const scc::ParserResult&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers());
-    
+
     emscripten::function("debug_ast_as_json", &scc::api::debug_ast_as_json);
     emscripten::function("debug_ast_as_puml", &scc::api::debug_ast_as_puml);
     emscripten::function("debug_interpreter_error_as_text", &scc::api::debug_interpreter_error_as_text);
     emscripten::function("debug_print_location", &scc::api::debug_print_location);
-    
+
     emscripten::function("get_location_row", &scc::api::get_location_row);
 
     emscripten::function("set_stdout_callback", &scc::api::set_stdout_callback, emscripten::allow_raw_pointers());
@@ -153,13 +154,13 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .function("next", &scc::RunningInterpreter::next, emscripten::allow_raw_pointers())
         .function("breakpoints", &scc::RunningInterpreter::breakpoints, emscripten::allow_raw_pointers())
         .function("current_location", &scc::RunningInterpreter::current_location, emscripten::allow_raw_pointers());
-    
+
     emscripten::class_<scc::Breakpoints>("Breakpoints")
         .function("add", &scc::Breakpoints::add, emscripten::allow_raw_pointers())
         .function("remove", &scc::Breakpoints::remove, emscripten::allow_raw_pointers())
         .function("contains", &scc::Breakpoints::contains)
         .function("clear", &scc::Breakpoints::clear);
-    
+
     emscripten::class_<scc::binding::BinderError>("BinderError");
     emscripten::class_<scc::binding::BinderResult<scc::binding::BoundNode>>("BinderResult")
         .function("get_value", &scc::binding::BinderResult<scc::binding::BoundNode>::get_value, emscripten::allow_raw_pointers());
@@ -186,7 +187,7 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .function("interpret_parserresult", emscripten::select_overload<scc::Interpreter::RunningInterpreterCreationResult(const scc::ParserResult&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers())
         .function("interpret_binderresult", emscripten::select_overload<scc::Interpreter::RunningInterpreterCreationResult(const scc::binding::BinderResult<scc::binding::BoundNode>&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers())
         .function("interpret_locationannotatedprogram", emscripten::select_overload<scc::Interpreter::RunningInterpreterCreationResult(const std::vector<std::pair<scc::lowering::Instruction, std::optional<scc::Location>>>&)>(&scc::Interpreter::interpret), emscripten::allow_raw_pointers());
-        
+
         // I spend 4 hours debugging this line with no success. I have no idea why it doesn't work.. fucking line
         // .function("interpret", emscripten::select_overload<scc::RunningInterpreterCreationResult(void)>, emscripten::allow_raw_pointers());
 
