@@ -226,7 +226,7 @@ namespace scc
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
             {
-                std::cerr << "Error at " << m_state.instruction_pointer << std::endl;
+                // std::cerr << "Error at " << m_state.instruction_pointer << std::endl;
                 m_state.instruction_pointer = m_program.size();
                 // m_state.call_stack = call_stack; // literally unwinding xd
                 // m_state.global_scope = global_scope;
