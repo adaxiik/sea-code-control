@@ -125,9 +125,10 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("MemoryError", scc::InterpreterError::MemoryError)
         .value("DereferenceError", scc::InterpreterError::DereferenceError)
         .value("NotEnoughValuesToDropError", scc::InterpreterError::NotEnoughValuesToDropError)
+        .value("FailedToAssignError", scc::InterpreterError::FailedToAssignError)
         .value("COUNT", scc::InterpreterError::COUNT);
 
-    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 24);
+    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 25);
 
 
 

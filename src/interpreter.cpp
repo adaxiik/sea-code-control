@@ -81,9 +81,9 @@ namespace scc
             // debug::instructions_as_text(std::cout, lowered);
             debug::instructions_as_text(std::cout, lowered_with_location);
         }
-        
+
         // this doesnt have copy constructor
-        
+
         return RunningInterpreterCreationResult{
             RunningInterpreter(lowered_with_location),
             std::nullopt
@@ -140,7 +140,7 @@ namespace scc
         };
     }
 
-    
+
 
     // **********************
     // * RunningInterpreter *
@@ -202,7 +202,7 @@ namespace scc
 
         for (; m_state.instruction_pointer < m_program.size(); )
         {
-            const auto& [instruction, location] = m_program[m_state.instruction_pointer];  
+            const auto& [instruction, location] = m_program[m_state.instruction_pointer];
 
             bool should_break = false;
             if (location.has_value())
@@ -212,7 +212,7 @@ namespace scc
             }
 
             if (
-                m_breakpoints.contains(m_current_location.row) 
+                m_breakpoints.contains(m_current_location.row)
                 and not m_continuing_after_breakpoint
                 and should_break
             ){
@@ -226,12 +226,13 @@ namespace scc
             auto result = std::visit(lowering::InstructionExecuter(m_state), instruction);
             if (result.is_error())
             {
+                std::cerr << "Error at " << m_state.instruction_pointer << std::endl;
                 m_state.instruction_pointer = m_program.size();
                 // m_state.call_stack = call_stack; // literally unwinding xd
                 // m_state.global_scope = global_scope;
                 return result;
             }
-            
+
             if (result.has_value())
                 m_state.result_stack.push(result);
 
@@ -246,7 +247,7 @@ namespace scc
             }
 
         }
-        
+
         return InterpreterError::None;
     }
 
@@ -269,7 +270,7 @@ namespace scc
                 m_state.instruction_pointer = m_program.size();
                 return result;
             }
-            
+
             if (result.has_value())
                 m_state.result_stack.push(result);
 
@@ -284,7 +285,7 @@ namespace scc
             }
         }
 
-       
+
         return InterpreterError::None;
     }
 

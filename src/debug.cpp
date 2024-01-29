@@ -136,10 +136,10 @@ namespace scc
                 ss << node.symbol_name() << " ==>\t";
                 auto value = node.value();
                 constexpr auto MAX_VALUE_LENGTH = 10;
-                
+
                 if(value.length() > MAX_VALUE_LENGTH)
-                    value = value.substr(0, MAX_VALUE_LENGTH) + "...";    
-            
+                    value = value.substr(0, MAX_VALUE_LENGTH) + "...";
+
                 escape_string(ss, value);
                 ss << std::endl;
 
@@ -175,7 +175,7 @@ namespace scc
 
         // TODOOOOOOOOOO0: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
-        {  
+        {
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
             {
                 constexpr auto DOWN_PIPE  = "│   ";
@@ -192,8 +192,8 @@ namespace scc
                         ss << SPLIT_PIPE;
                 }
                 static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21, "Update this switch statement");
-                
-                
+
+
                 if (node.location)
                     ss << node.location.value().row << ":" << node.location.value().column << " ";
 
@@ -224,8 +224,8 @@ namespace scc
                     auto& literal_expression = static_cast<const binding::BoundLiteralExpression&>(node);
                     ss << "LiteralExpression (" << literal_expression.type << ") ==> ";
 
-                    type_as_text(ss, literal_expression.type); 
-                    
+                    type_as_text(ss, literal_expression.type);
+
                     ss << std::endl;
                     break;
                 }
@@ -234,7 +234,7 @@ namespace scc
                 {
                     auto& binary_expression = static_cast<const binding::BoundBinaryExpression&>(node);
                     ss << "BinaryExpression(" << binary_expression.type << ") ==> ";
-                    
+
                     #define CASE_OP_KIND(KIND, OP) \
                     case binding::BoundBinaryExpression::OperatorKind::KIND: \
                         ss << std::quoted(OP) << std::endl; \
@@ -273,7 +273,7 @@ namespace scc
                                                 , depth + 1
                                                 , false
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
-                    bound_ast_as_text_tree_impl(*binary_expression.right 
+                    bound_ast_as_text_tree_impl(*binary_expression.right
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
@@ -308,7 +308,7 @@ namespace scc
                 {
                     auto& parenthesized_expression = static_cast<const binding::BoundParenthesizedExpression&>(node);
                     ss << "ParenthesizedExpression" << std::endl;
-                    
+
                     for(size_t i = 0; i < parenthesized_expression.expressions.size(); i++)
                     {
                         bound_ast_as_text_tree_impl(*parenthesized_expression.expressions[i]
@@ -348,7 +348,7 @@ namespace scc
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
 
-                    
+
                     break;
                 }
                 case binding::BoundNodeKind::IfStatement:
@@ -423,7 +423,7 @@ namespace scc
                         ss << function.parameters[i].get()->type << " " << function.parameters[i].get()->variable_name;
                         if (i != function.parameters.size() - 1)
                             ss << ", ";
-                    } 
+                    }
                     ss << ")" << std::endl;
 
                     if (function.body)
@@ -587,12 +587,12 @@ namespace scc
                                 , std::string());
 
         }
-    
+
         void memory_chunks_as_json(std::ostream& ss, const Memory& memory)
         {
             ss << "[";
             const std::map<Memory::address_t, Memory::MemoryChunk>& chunks = memory.get_chunks();
-            
+
             bool first = true;
             for (auto& [address, chunk] : chunks)
             {
@@ -619,14 +619,14 @@ namespace scc
         void memory_chunks_as_text(std::ostream &ss, const Memory& memory)
         {
             const std::map<Memory::address_t, Memory::MemoryChunk>& chunks = memory.get_chunks();
-            
+
             for (auto& [address, chunk] : chunks)
                 ss << "Chunk " << address << " [" << address << ", " << memory.get_chunk_end(address).value() << "] (" << memory.get_chunk_size(address).value() << ") " << std::endl;
         }
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 24, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 25, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:                               ss << "None"; break;
@@ -653,15 +653,16 @@ namespace scc
                 case InterpreterError::MemoryError:                        ss << "Memory error"; break;
                 case InterpreterError::DereferenceError:                   ss << "Dereference error"; break;
                 case InterpreterError::NotEnoughValuesToDropError:         ss << "Not enough values to drop error"; break;
+                case InterpreterError::FailedToAssignError:                ss << "Failed to assign error"; break;
                 default:                                                   ss << "Unknown error"; break;
             }
         }
-    
+
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
             static_assert(lowering::InstructionCount == 21, "Update this switch statement");
             std::visit(overloaded{
-                [&](lowering::BinaryOperationInstruction binary_operation) { 
+                [&](lowering::BinaryOperationInstruction binary_operation) {
                     ss << "BinaryOperation ==> ";
                     #define CASE_OP_KIND(KIND, OP) \
                         case binding::BoundBinaryExpression::OperatorKind::KIND: \

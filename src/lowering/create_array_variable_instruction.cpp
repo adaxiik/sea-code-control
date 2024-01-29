@@ -30,22 +30,23 @@ namespace scc
                 return creation_result;
 
             auto variable = flags & Flags::IsGlobal
-             ? state.global_scope.get_variable(variable_name) 
+             ? state.global_scope.get_variable(variable_name)
              : state.call_stack.scope_stack().get_from_scopestack(variable_name);
 
             if (not variable)
                 return InterpreterError::VariableDoesntExistError;
-            
+
 
 
             // int a[5];
             // a == &a
-            if (not variable->set_value(state.memory, Type::Value(static_cast<Type::Primitive::PTR>(variable->address()))))
-                return creation_result;
+            // EDIT: do we really need this? variable.get_value() should return the address of the array if type is array
+            // if (not variable->set_value(state.memory, Type::Value(static_cast<Type::Primitive::PTR>(variable->address()))))
+            //     return InterpreterError::MemoryError;
 
             if (not (flags & Flags::HasInitializer))
                 return creation_result;
-            
+
             if (state.result_stack.size() < initializer_size_elements)
                 return InterpreterError::RuntimeError;
 
@@ -67,8 +68,8 @@ namespace scc
 
             if (state.memory.memset(variable->address() + initialized_bytes, 0, uninitialized_bytes))
                 return creation_result;
-            
-            
+
+
             return InterpreterError::RuntimeError;
         }
 

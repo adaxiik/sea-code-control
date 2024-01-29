@@ -2,6 +2,57 @@
 
 namespace scc
 {
+    // "\n" -> [10, 0]
+    static std::vector<char> escape_string(const std::string& str)
+    {
+
+        std::vector<char> result;
+        result.reserve(str.size());
+        for (size_t i = 1; i < str.size()-1; i++) // skip first and last quote
+        {
+            if (str[i] == '\\')
+            {
+                switch (str[i + 1])
+                {
+                case 'n':
+                    result.push_back('\n');
+                    break;
+                case 't':
+                    result.push_back('\t');
+                    break;
+                case 'r':
+                    result.push_back('\r');
+                    break;
+                case '0':
+                    result.push_back('\0');
+                    break;
+                case '\\':
+                    result.push_back('\\');
+                    break;
+                case '\'':
+                    result.push_back('\'');
+                    break;
+                case '\"':
+                    result.push_back('\"');
+                    break;
+                default:
+                    // TODO: string escape sequences
+                    // there are more, but we dont support them yet
+                    // https://en.wikipedia.org/wiki/Escape_sequences_in_C
+                    break;
+                }
+                i++;
+                continue;
+            }
+
+            result.push_back(str[i]);
+        }
+        result.push_back('\0');
+        return result;
+    }
+
+
+
     binding::BinderResult<binding::BoundVariableDeclarationStatement> Binder::bind_variable_declaration(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_variable_declaration);
@@ -169,6 +220,13 @@ namespace scc
                 //     ├── identifier ==>      a
                 //     └── number_literal ==>  0
 
+                // declaration ==>     char x[] =...
+                // ├── primitive_type ==>      char
+                // └── init_declarator ==>     x[] = \"abc...
+                //     ├── array_declarator ==>        x[]
+                //     │   └── identifier ==>  x
+                //     └── string_literal ==>  \"abc\"
+
                 auto init_declarator_node = node.named_child(identifier_index);
                 // first is declaration and second is initializer
                 auto declaration = resolve_declarator(init_declarator_node, 0, true);
@@ -287,7 +345,50 @@ namespace scc
                         // int x[] = 1;
                         // int x[2] = 1;
                         // both are invalid
-                        return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
+                        // char x[] = "abc"; is only valid for static arrays?
+                        if (initializer_node.symbol() != Parser::STRING_LITERAL_SYMBOL)
+                            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
+
+                        auto array_declaration = static_cast<binding::BoundVariableStaticArrayDeclarationStatement*>(declaration.get_value());
+                        bool forced_size = array_declaration->array_size != 0;
+                        std::vector<char> escaped_string = escape_string(initializer_node.value());
+
+                        if (forced_size and escaped_string.size() > array_declaration->array_size)
+                        {
+                            // initializer list is bigger than array size
+                            // int x[2] = "abc";
+                            // but
+                            // int x[10] = "abc"; is ok, and rest of the elements are 0
+                            return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
+                        }
+
+                        if (not forced_size)
+                        {
+                            array_declaration->array_size = escaped_string.size();
+                            array_declaration->type.modifiers.back() = Type::Array{array_declaration->array_size};
+                            *type_scope.get_from_scopestack(array_declaration->variable_name) = array_declaration->type;
+                        }
+
+                        Type initializer_type = type.value();
+                        initializer_type.modifiers.pop_back();
+
+                        for (uint32_t i = 0; i < escaped_string.size(); i++)
+                        {
+                            auto initializer = std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(escaped_string[i]));
+                            auto casted_initializer = std::make_unique<binding::BoundCastExpression>(std::move(initializer), std::move(initializer_type));
+
+                            array_declaration->initializers.push_back(std::move(casted_initializer));
+                        }
+
+                        for (uint32_t i = escaped_string.size(); i < array_declaration->array_size; i++)
+                        {
+                            auto initializer = std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(0));
+                            auto casted_initializer = std::make_unique<binding::BoundCastExpression>(std::move(initializer), std::move(initializer_type));
+
+                            array_declaration->initializers.push_back(std::move(casted_initializer));
+                        }
+
+                        return declaration;
                     }
                     default:
                         SCC_UNREACHABLE();

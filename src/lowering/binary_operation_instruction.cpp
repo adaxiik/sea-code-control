@@ -34,7 +34,7 @@ namespace scc
                 auto result {perform_op(std::get<Type::Primitive::PTR>(left_result.value.primitive_value().value()), r_val)};
                 if (not result.has_value())
                     return InterpreterResult::error(InterpreterError::DivisionByZeroError);
-                
+
                 if constexpr (not inherit_ptr_type)
                     return InterpreterResult::ok(InterpreterResultValue(result.value()));
 
@@ -54,10 +54,10 @@ namespace scc
                 auto result {perform_op(l_val, std::get<Type::Primitive::PTR>(right_result.value.primitive_value().value()))};
                 if (not result.has_value())
                     return InterpreterResult::error(InterpreterError::DivisionByZeroError);
-                
+
                 if constexpr (not inherit_ptr_type)
                     return InterpreterResult::ok(InterpreterResultValue(result.value()));
-                
+
                 auto result_type = Type::deduce_type<RIGHT_CAST>();
                 result_type.modifiers = std::vector<Type::Modifier>(right_pointer_depth, Type::Pointer{});
                 return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::PTR>(result.value()), result_type));
@@ -107,6 +107,7 @@ namespace scc
 
                 switch (operator_kind)
                 {
+                    case Operator::Subtraction: DO_OP_PTR(-);
                     case Operator::Equals: DO_OP_PTR(==);
                     case Operator::NotEquals: DO_OP_PTR(!=);
                     case Operator::LessThan: DO_OP_PTR(<);
@@ -115,10 +116,10 @@ namespace scc
                     case Operator::GreaterThanOrEqual: DO_OP_PTR(>=);
                     default:
                         return InterpreterResult::error(InterpreterError::InvalidOperationError);
-                        
+
                 }
             }
-            
+
 
             if (not left_result.type.is_primitive() or not right_result.type.is_primitive())
             {

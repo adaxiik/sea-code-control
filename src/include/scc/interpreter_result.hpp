@@ -10,7 +10,7 @@ namespace scc
         ParseError,
         BindError,
         RuntimeError,
-        ReachedUnreachableError, 
+        ReachedUnreachableError,
         InvalidOperationError,
         DivisionByZeroError,
         VariableAlreadyExistsError,
@@ -30,6 +30,7 @@ namespace scc
         MemoryError,
         DereferenceError,
         NotEnoughValuesToDropError,
+        FailedToAssignError,
         COUNT
     };
 
@@ -39,7 +40,7 @@ namespace scc
         Break,
         Continue,
         Return,
-        
+
         COUNT
     };
 
@@ -50,7 +51,7 @@ namespace scc
 
         InterpreterResultValue(Type::Value value)
             : value(value), type(Type::from_value(value)) {}
-        
+
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
         InterpreterResultValue(T value)
             : value(Type::Value(value)), type(Type::from_value(value)) {}
@@ -69,10 +70,10 @@ namespace scc
         template <typename T, typename = std::enable_if_t<!std::is_arithmetic_v<T>>>
         InterpreterResultValue(const T& , Type type)
             : type(type) {}
-        
+
         InterpreterResultValue(Type::Value value, Type type)
             : value(value), type(type) {}
-    
+
     };
 
     class InterpreterResult
@@ -92,10 +93,10 @@ namespace scc
         // Ill left them implicit
         InterpreterResult(std::optional<InterpreterResultValue> value)
             : value(value), interpreter_result(InterpreterError::None), signal(InterpreterSignal::None) {}
-        
+
         InterpreterResult(InterpreterError interpreter_result)
             : value(std::nullopt), interpreter_result(interpreter_result), signal(InterpreterSignal::None) {}
-        
+
         InterpreterResult(InterpreterSignal signal)
             : value(std::nullopt), interpreter_result(InterpreterError::None), signal(signal) {}
 

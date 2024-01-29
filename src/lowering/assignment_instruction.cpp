@@ -15,16 +15,16 @@ namespace scc
             state.result_stack.pop();
 
             auto variable = state.call_stack.scope_stack().get_from_scopestack(variable_name);
-            if (!variable)
+            if (not variable)
                 variable = state.global_scope.get_variable(variable_name);
 
-            if (!variable)
+            if (not variable)
                 return InterpreterError::VariableDoesntExistError;
 
-            if (variable->set_value(state.memory, result.get_value().value))
-                return result;
+            if (not variable->set_value(state.memory, result.get_value().value))
+                return InterpreterError::FailedToAssignError;
 
-            return InterpreterError::RuntimeError;
+            return result;
         }
     }
 }
