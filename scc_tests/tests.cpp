@@ -1190,6 +1190,7 @@ TEST_CASE("Unary expressions")
     SCC_TEST_IS_OK("_scc_assert(~(unsigned int)0 == (unsigned int)0xFFFFFFFF);");
     SCC_TEST_IS_OK("_scc_assert(~(unsigned int)1 == (unsigned int)0xFFFFFFFE);");
 
-    SCC_TEST_IS_ERROR("_scc_assert(~1.0f == -2);");
-    SCC_TEST_IS_ERROR("_scc_assert(~1.0 == -2);");
+    SCC_TEST_IS_ERROR("~1.0f);");
+    SCC_TEST_IS_ERROR("~1.0);");
+    SCC_TEST_IS_ERROR("~(int*)0);");
 }
