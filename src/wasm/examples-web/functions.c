@@ -1,7 +1,6 @@
 #include <math.h>
 #include <stdio.h>
-
-void _scc_puti(int x);
+#include <scc.h>
 
 
 void print_hello(); // defined later
@@ -12,7 +11,7 @@ int factorial(int n)
         return 1;
 
     // I am assigning the variable only so that it can be seen in the visualization :)
-    int result = n * factorial(n - 1); 
+    int result = n * factorial(n - 1);
     return result;
 }
 
@@ -63,14 +62,14 @@ int main()
     print_hello();
 
     int factorial_of_5 = factorial(5);
-    _scc_puti(factorial_of_5);
+    scc_puti(factorial_of_5);
 
     float lerp_result = lerp(0.0f, 25.0f, 0.5f);
 
     print_pyramid(5);
-    
+
     putchar('\n');
-    
+
     draw_sin_wave(15, 20);
     draw_sin_wave(15, 20);
     return 0;

@@ -1194,3 +1194,23 @@ TEST_CASE("Unary expressions")
     SCC_TEST_IS_ERROR("~1.0);");
     SCC_TEST_IS_ERROR("~(int*)0);");
 }
+
+TEST_CASE("Read-only string literals")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("_scc_assert(\"abc\"[0] == 'a');");
+    SCC_TEST_IS_OK("_scc_assert(\"abc\"[1] == 'b');");
+    SCC_TEST_IS_OK("_scc_assert(\"abc\"[2] == 'c');");
+    SCC_TEST_IS_OK("_scc_assert(\"abc\"[3] == '\\0');");
+    SCC_TEST_IS_OK("_scc_assert(\"abc\"[4] == '\\0');");
+
+    SCC_TEST_IS_OK("_scc_assert(\"abc\" == \"abc\");");
+    SCC_TEST_IS_OK("_scc_assert(\"abc\" != \"def\");");
+    SCC_TEST_IS_OK("_scc_assert(sizeof(\"abc\") == 4);");
+
+    SCC_TEST_IS_ERROR("*\"abc\" = 'd';");
+}

@@ -2,14 +2,31 @@
 #include <cstring>
 namespace scc
 {
-    Memory::address_t Memory::allocate(size_t size)
+    Memory::address_t Memory::allocate(size_t size, bool is_protected)
     {
         address_t address = m_next_address;
         m_next_address += size;
 
-        m_memory.insert({address, MemoryChunk(size)});
+        m_memory.insert({address, MemoryChunk(size, is_protected)});
 
         return address;
+    }
+
+    bool Memory::write_buffer_unsafe(address_t address, const void* buffer, size_t size)
+    {
+        std::optional<address_t> start_address_opt = find_start_of_chunk(address);
+        if (not start_address_opt.has_value())
+            return false;
+
+        address_t start_address = start_address_opt.value();
+        address_t real_memory_index = address - start_address;
+
+        if (real_memory_index + size > m_memory.at(start_address).size)
+            return false;
+
+        std::memcpy(&m_memory.at(start_address).data[real_memory_index], buffer, size);
+
+        return true;
     }
 
     bool Memory::free(address_t address)
@@ -66,7 +83,7 @@ namespace scc
         return size;
     }
 
-    bool Memory::read_into(address_t address, void* buffer, size_t size) const
+    bool Memory::read_buffer(address_t address, void* buffer, size_t size) const
     {
         std::optional<address_t> start_address_opt = find_start_of_chunk(address);
         if (not start_address_opt.has_value())

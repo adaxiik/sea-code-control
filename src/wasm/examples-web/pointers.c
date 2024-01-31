@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-void _scc_puti(int x);
-void _scc_putc(char x);
-
-
+#include <scc.h>
 
 int g;
 
@@ -13,7 +9,7 @@ int main()
 {
     int* g_ptr = &g;
     *g_ptr = 420;
-    _scc_puti(g);
+    scc_puti(g);
 
     int val_a = 64;
     int val_b = 420;
@@ -21,9 +17,9 @@ int main()
     int* ptr_b = &val_b;
     int** ptr = &ptr_a;
 
-    _scc_puti(**ptr);
+    scc_puti(**ptr);
     ptr = &ptr_b;
-    _scc_puti(**ptr);
+    scc_puti(**ptr);
 
     // heap
     char* data = malloc(4);
@@ -38,7 +34,7 @@ int main()
     // stack
     int stack_data[] = {1, 2, 3, 4};
     for (int i = 0; i < 4; ++i){
-        _scc_puti(stack_data[i]);
+        scc_puti(stack_data[i]);
     }
 
     return 0;

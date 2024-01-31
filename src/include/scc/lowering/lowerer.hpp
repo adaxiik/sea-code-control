@@ -28,6 +28,7 @@
 #include "binding/bound_dereference_expression.hpp"
 #include "binding/bound_pointer_assignment_expression.hpp"
 #include "binding/bound_unary_expression.hpp"
+#include "binding/bound_string_expression.hpp"
 
 #include "location.hpp"
 
@@ -60,7 +61,7 @@ namespace scc
 
         bool should_drop_after_statement(const binding::BoundStatement* statement);
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22);
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23);
 
         void lower(const binding::BoundExpressionStatement &expression_statement);
         void lower(const binding::BoundBlockStatement &block_statement);
@@ -90,6 +91,7 @@ namespace scc
         void lower(const binding::BoundDereferenceExpression &pointer_expression);
         void lower(const binding::BoundPointerAssignmentExpression &pointer_assignment_expression);
         void lower(const binding::BoundUnaryExpression &unary_expression);
+        void lower(const binding::BoundStringExpression &string_expression);
 
     public:
         std::vector<std::pair<lowering::Instruction, std::optional<Location>>> lower(const binding::BoundBlockStatement* root);

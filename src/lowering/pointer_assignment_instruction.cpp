@@ -21,7 +21,7 @@ namespace scc
             // this is already checked in binder
             if (not pointer.get_value().type.is_pointer())
                 return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
-            
+
             if (not std::holds_alternative<Type::PrimitiveValue>(pointer.get_value().value.value))
                 return InterpreterResult::error(InterpreterError::DereferenceError);
 
@@ -29,14 +29,13 @@ namespace scc
             auto primitive_val = std::get<Type::PrimitiveValue>(pointer.get_value().value.value);
             if (not std::holds_alternative<Type::Primitive::PTR>(primitive_val))
                 return InterpreterResult::error(InterpreterError::DereferenceError);
-            
+
             auto address_value = std::get<Type::Primitive::PTR>(primitive_val);
 
-            if (state.memory.write_value(address_value, result_to_assign.get_value().value, result_to_assign.get_value().type))
-                return result_to_assign;
+            if (not state.memory.write_value(address_value, result_to_assign.get_value().value, result_to_assign.get_value().type))
+                return InterpreterError::MemoryError;
 
-
-            return InterpreterError::RuntimeError;
+            return result_to_assign;
         }
     }
 }

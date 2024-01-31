@@ -8,13 +8,6 @@ namespace scc
         {
             return bind_number_literal(node);
         }
-        else if (node.symbol() == Parser::STRING_LITERAL_SYMBOL)
-        {
-            // TODOOO: 
-            // it has quotes, so we need to remove them
-            // return std::make_unique<binding::BoundLiteralExpression>(node.value().substr(1, node.value().size() - 2),
-            SCC_UNIMPLEMENTED();
-        }
         else if (node.symbol() == Parser::CHAR_LITERAL_SYMBOL)
         {
             char c_value = 0;
@@ -55,11 +48,11 @@ namespace scc
             return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::Char>(c_value));
         }
 
-        
+
         SCC_UNREACHABLE();
-        
-        SCC_BINDER_RESULT_TYPE(bind_literal_expression);  
+
+        SCC_BINDER_RESULT_TYPE(bind_literal_expression);
         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
-      
+
     }
 }

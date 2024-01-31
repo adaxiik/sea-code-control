@@ -86,7 +86,8 @@ namespace scc::export_format
             {"types", snapshot.types},
             {"global_variables", snapshot.global_variables},
             {"stackframes", snapshot.stackframes},
-            {"anonymous_allocations", snapshot.anonymous_allocations}
+            {"anonymous_allocations", snapshot.anonymous_allocations},
+            {"read_only_allocations", snapshot.read_only_allocations}
         }.dump(4);
     }
 
@@ -123,7 +124,7 @@ namespace scc::export_format
             if (variable.is_initialized())
             {
                 data.resize(variable.type().size_bytes());
-                state.memory.read_into(variable.address(), data.data(), data.size());
+                state.memory.read_buffer(variable.address(), data.data(), data.size());
             }
 
             snapshot.global_variables.push_back({
@@ -162,7 +163,7 @@ namespace scc::export_format
                     if (variable.is_initialized())
                     {
                         data.resize(variable.type().size_bytes());
-                        state.memory.read_into(variable.address(), data.data(), data.size());
+                        state.memory.read_buffer(variable.address(), data.data(), data.size());
                     }
 
                     export_format::Variable exported_variable{
@@ -242,6 +243,14 @@ namespace scc::export_format
 
         snapshot_global_variables(snapshot, state, get_type_index_of);
         snapshot_stackframes(snapshot, state, get_type_index_of);
+
+        for (const auto& [_, address] : state.read_only_string_literals)
+        {
+            size_t size_bytes = state.memory.get_chunk_size(address).value_or(0);
+            std::vector<Byte> data(size_bytes);
+            state.memory.read_buffer(address, data.data(), data.size());
+            snapshot.read_only_allocations.push_back(AllocatedPlace{address, size_bytes, data});
+        }
 
         return snapshot;
     }

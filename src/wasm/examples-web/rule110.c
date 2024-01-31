@@ -3,10 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define SIZE_OF_CHAR 1
-
-void _scc_puti(int i);
-
 void next_generation(unsigned char *last_row, unsigned char* new_row, int width, unsigned char rule)
 {
     for (int i = 0; i < width; ++i)
@@ -23,7 +19,6 @@ void next_generation(unsigned char *last_row, unsigned char* new_row, int width,
 
 void print_row(unsigned char *row, int width, char symbol)
 {
-    // TODO: implement buffering with static array
     for (int i = 0; i < width; ++i)
     {
         char c = ' ';

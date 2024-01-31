@@ -1,15 +1,15 @@
+// contains scc_puti
+#include <scc.h>
 #include <stdio.h>
-
-void _scc_puti(int x);  // print integer with newline
-void _scc_putc(char x); // print character.. or you can use putchar from stdio.h
 
 int main()
 {
     // you can add breakpoints only on lines containing code :)
-    
+    puts("Hello, Sailor!");
+
     int a = 34;
     int b = 35;
-    _scc_puti(a + b);
+    scc_puti(a + b);
 
     return 0;
 }

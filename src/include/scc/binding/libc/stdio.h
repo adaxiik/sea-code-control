@@ -5,14 +5,20 @@ namespace scc::binding::libc
 
 constexpr auto stdio_h = R"(
 
-long _scc_write(int fd, const void* data, unsigned long count);
+#include <unistd.h>
+#include <string.h>
 
 int putchar(int c)
 {
-    // STDOUT_FILENO = 1
-    return _scc_write(1, &c, 1);
+    return write(STDOUT_FILENO, &c, 1);
 }
 
+int puts(const char* s)
+{
+    int w = write(STDOUT_FILENO, s, strlen(s));
+    putchar('\n');
+    return w;
+}
 
 )";
 

@@ -1,6 +1,5 @@
 #include <stdio.h>
-
-void _scc_puti(int x);
+#include <scc.h>
 
 int g_a = 34;
 int g_b = 35;
@@ -12,9 +11,9 @@ int foo = 420;
 
 int main()
 {
-    _scc_puti(g_a);
-    _scc_puti(g_b);
-    _scc_puti(g_default);
+    scc_puti(g_a);
+    scc_puti(g_b);
+    scc_puti(g_default);
 
     // =====
     for (int i = 0; i < 10; ++i) {
@@ -24,16 +23,16 @@ int main()
     // =====
 
 
-    _scc_puti(foo); // 420
+    scc_puti(foo); // 420
 
     {
         int foo = 69; // shadowing
-        _scc_puti(foo); // 69
+        scc_puti(foo); // 69
     }
 
-    _scc_puti(foo); // 420
+    scc_puti(foo); // 420
 
-    
+
 
     return 0;
 }

@@ -13,7 +13,7 @@ namespace scc
     {
         using Label = size_t;
         using InstructionPointer = size_t;
-        
+
         Memory memory;
         std::stack<InterpreterResult> result_stack;
         InstructionPointer instruction_pointer;
@@ -21,6 +21,7 @@ namespace scc
         std::map<std::string, InstructionPointer> functions;
         CallStack call_stack;
         GlobalScope global_scope;
+        std::map<std::string, Memory::address_t> read_only_string_literals;
         InterpreterState(size_t memory_offset, size_t stack_size, size_t global_scope_size)
         : memory(Memory(memory_offset))
         , instruction_pointer(0)

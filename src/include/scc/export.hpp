@@ -137,6 +137,7 @@ namespace scc
             std::vector<Variable> global_variables;
             std::vector<Stackframe> stackframes;
             std::vector<AllocatedPlace> anonymous_allocations;
+            std::vector<AllocatedPlace> read_only_allocations;
         };
 
         ProgramSnapshot make_snapshot(const InterpreterState& state);

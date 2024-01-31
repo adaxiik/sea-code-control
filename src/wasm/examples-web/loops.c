@@ -1,6 +1,5 @@
 #include <stdio.h>
-
-void _scc_puti(int x);  // print integer with newline
+#include <scc.h>
 
 int main()
 {
@@ -21,14 +20,14 @@ int main()
     {
         if (i % 2 == 0)
             continue;
-        _scc_puti(i);
+        scc_puti(i);
     }
 
 
     int max = 5;
     while (max -= 1)
     {
-        _scc_puti(max);
+        scc_puti(max);
     }
 
     return 0;

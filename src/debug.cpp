@@ -191,7 +191,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23, "Update this switch statement");
 
 
                 if (node.location)
@@ -331,6 +331,15 @@ namespace scc
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+
+                case binding::BoundNodeKind::StringExpression:
+                {
+                    auto& string_expression = static_cast<const binding::BoundStringExpression&>(node);
+                    ss << "StringExpression (" << string_expression.type << ") ==> ";
+                    escape_string(ss, string_expression.value);
+                    ss << std::endl;
                     break;
                 }
 
@@ -690,7 +699,7 @@ namespace scc
 
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 22, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 23, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) {
                     ss << "BinaryOperation ==> ";
@@ -806,6 +815,9 @@ namespace scc
                         ss << std::quoted("!");
                     else
                         ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                },
+                [&](lowering::PushStringInstruction push_string) {
+                    ss << "PushString ==> " << push_string.value << " (" << push_string.value.size() << " - 1)";
                 },
                 [&](auto) {
                     ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;

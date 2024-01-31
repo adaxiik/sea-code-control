@@ -17,11 +17,11 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::I32))
             return InterpreterError::ReachedUnreachableError;
-        
+
         // you never know
         if (not std::holds_alternative<Type::Primitive::I32>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::I32 val = std::get<Type::Primitive::I32>(value.get_value().value.primitive_value().value());
         InterpreterIO::write_stdout(std::to_string(val) + "\n");
 
@@ -38,15 +38,15 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::Char))
             return InterpreterError::ReachedUnreachableError;
-        
+
         // you never know
         if (not std::holds_alternative<Type::Primitive::Char>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::Char val = std::get<Type::Primitive::Char>(value.get_value().value.primitive_value().value());
         InterpreterIO::write_stdout(std::string(1, val));
 
-        return InterpreterError::None;  
+        return InterpreterError::None;
     }
 
     InterpreterResult assert(InterpreterState &state)
@@ -59,16 +59,16 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::Bool))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::Bool>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::Bool val = std::get<Type::Primitive::Bool>(value.get_value().value.primitive_value().value());
-        
+
         if (not val)
             return InterpreterError::AssertionFailedError;
-    
-        return InterpreterError::None;  
+
+        return InterpreterError::None;
     }
 
     InterpreterResult sinf(InterpreterState &state)
@@ -81,10 +81,10 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::F32))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::F32>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::F32 val = std::get<Type::Primitive::F32>(value.get_value().value.primitive_value().value());
 
         return InterpreterResult::ok(InterpreterResultValue(std::sin(val)));
@@ -100,10 +100,10 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::F32))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::F32>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::F32 val = std::get<Type::Primitive::F32>(value.get_value().value.primitive_value().value());
 
         return InterpreterResult::ok(InterpreterResultValue(std::cos(val)));
@@ -119,10 +119,10 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::F64))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::F64>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::F64 val = std::get<Type::Primitive::F64>(value.get_value().value.primitive_value().value());
 
         return InterpreterResult::ok(InterpreterResultValue(std::sin(val)));
@@ -138,10 +138,10 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::F64))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::F64>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::F64 val = std::get<Type::Primitive::F64>(value.get_value().value.primitive_value().value());
 
         return InterpreterResult::ok(InterpreterResultValue(std::cos(val)));
@@ -157,10 +157,10 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::U64))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::U64>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::U64 size = std::get<Type::Primitive::U64>(value.get_value().value.primitive_value().value());
         Type::Primitive::PTR addr = state.memory.allocate(size);
 
@@ -177,12 +177,12 @@ namespace scc::lowering::inbuild
 
         if (value.get_value().type != Type(Type::PrimitiveType::Void, std::vector<Type::Modifier>{Type::Pointer{}}))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (not std::holds_alternative<Type::Primitive::PTR>(value.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         Type::Primitive::PTR addr = std::get<Type::Primitive::PTR>(value.get_value().value.primitive_value().value());
-        
+
         if (not state.memory.free(addr))
             return InterpreterError::MemoryError;
 
@@ -193,7 +193,7 @@ namespace scc::lowering::inbuild
     {
         if (state.result_stack.size() < 3)
             return InterpreterError::RuntimeError;
-        
+
         InterpreterResult fd = state.result_stack.top();
         state.result_stack.pop();
 
@@ -217,7 +217,7 @@ namespace scc::lowering::inbuild
 
         if (not std::holds_alternative<Type::Primitive::U64>(count.get_value().value.primitive_value().value()))
             return InterpreterError::ReachedUnreachableError;
-        
+
         if (addr.get_value().type != Type(Type::PrimitiveType::Void, std::vector<Type::Modifier>{Type::Pointer{}}))
             return InterpreterError::ReachedUnreachableError;
 
@@ -236,7 +236,7 @@ namespace scc::lowering::inbuild
 
         std::unique_ptr<char[]> data = std::make_unique<char[]>(count_val);
 
-        if (not state.memory.read_into(addr_val, data.get(), count_val))
+        if (not state.memory.read_buffer(addr_val, data.get(), count_val))
             return InterpreterError::MemoryError;
 
 
@@ -246,7 +246,7 @@ namespace scc::lowering::inbuild
             InterpreterIO::write_stderr(std::string(data.get(), count_val));
         else
             return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(-1)));
-            
+
         return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I64>(count_val)));
     }
 

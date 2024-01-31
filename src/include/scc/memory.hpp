@@ -32,10 +32,12 @@ namespace scc
         {
             std::unique_ptr<char[]> data;
             size_t size;
+            bool is_protected;
 
-            MemoryChunk(size_t size)
+            MemoryChunk(size_t size, bool is_protected = false)
             : data(std::make_unique<char[]>(size))
             , size(size)
+            , is_protected(is_protected)
             {
                 for (size_t i = 0; i < size; i++)
                     data[i] = std::rand() % 256; // oh no, C style rand :O
@@ -47,7 +49,7 @@ namespace scc
             MemoryChunk& operator=(MemoryChunk&&) = default;
         };
 
-        address_t allocate(size_t size);
+        address_t allocate(size_t size, bool is_protected = false);
 
         /**
          * @brief free memory
@@ -101,7 +103,7 @@ namespace scc
          * @return true if value was read successfully
          * @return false if address was not found or size is too big
          */
-        bool read_into(address_t address, void* buffer, size_t size) const;
+        bool read_buffer(address_t address, void* buffer, size_t size) const;
 
         /**
          * @brief write value to memory
@@ -128,10 +130,27 @@ namespace scc
             if (real_memory_index + sizeof(T) > m_memory.at(start_address).size)
                 return false;
 
-            *reinterpret_cast<T*>(&m_memory.at(start_address).data[real_memory_index]) = value;
+            auto& chunk = m_memory.at(start_address);
+            if (chunk.is_protected)
+                return false;
+
+            *reinterpret_cast<T*>(&chunk.data[real_memory_index]) = value;
 
             return true;
         }
+
+        /**
+         * @brief write value to memory
+         *
+         * @warning it ignores chunk protection
+         *
+         * @param address
+         * @param buffer
+         * @param size
+         * @return true if value was written successfully
+         * @return false if address was not found or size is too big
+         */
+        bool write_buffer_unsafe(address_t address, const void* buffer, size_t size);
 
         /**
          * @brief set memory to value

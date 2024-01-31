@@ -482,6 +482,11 @@ namespace scc
         m_to_lower.push(unary_expression.expression.get());
     }
 
+    void Lowerer::lower(const binding::BoundStringExpression &string_expression)
+    {
+        m_to_lower.push(std::make_pair(lowering::PushStringInstruction(string_expression.value), string_expression.location));
+    }
+
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
     {
 
@@ -549,7 +554,7 @@ namespace scc
                 continue;
             }
 
-            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22);
+            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23);
 
             const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
             m_to_lower.pop();
@@ -621,6 +626,9 @@ namespace scc
                 break;
             case binding::BoundNodeKind::UnaryExpression:
                 lower(*static_cast<const binding::BoundUnaryExpression *>(current_node));
+                break;
+            case binding::BoundNodeKind::StringExpression:
+                lower(*static_cast<const binding::BoundStringExpression *>(current_node));
                 break;
             default:
                 SCC_NOT_IMPLEMENTED("Unknown BoundNodeKind in Lowerer::lower");

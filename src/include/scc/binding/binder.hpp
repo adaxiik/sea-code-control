@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <set>
 #include "treenode.hpp"
 #include "parser.hpp"
 #include "binding/binder_scope.hpp"
@@ -29,13 +30,14 @@
 #include "binding/bound_call_expression.hpp"
 #include "binding/bound_for_statement.hpp"
 #include "binding/bound_unary_expression.hpp"
+#include "binding/bound_string_expression.hpp"
 
 namespace scc
 {
     class Binder
     {
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -58,6 +60,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundDereferenceExpression>, "DereferenceExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundPointerAssignmentExpression>, "PointerAssignmentExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundUnaryExpression>, "UnaryExpression must be derived from BoundExpression");
+        static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundStringExpression>, "StringExpression must be derived from BoundExpression");
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -97,6 +100,7 @@ namespace scc
 
         std::map<std::string, FunctionDeclaration> m_functions;
         std::map<std::string, std::string> m_macros;
+        std::set<std::string> m_included_headers;
         std::optional<std::reference_wrapper<const FunctionDeclaration>> m_current_function;
 
         binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
@@ -130,12 +134,14 @@ namespace scc
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_subscript_assignment_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundExpression> bind_update_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundUnaryExpression> bind_unary_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundStringExpression> bind_string_expression(const TreeNode &node);
 
         std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
         static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
 
         bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
         bool prepoc_define(const TreeNode &node);
+        static std::vector<char> escape_string(const std::string& str);
     public:
         Binder(): m_current_function(std::nullopt) { m_scope_stack.push();}
         ~Binder() = default;

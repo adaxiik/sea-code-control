@@ -16,8 +16,9 @@ namespace scc
             return bind_cast_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::PARENTHESIZED_EXPRESSION_SYMBOL:
             return bind_parenthesized_expression(node).add_location_to_value_if_ok(node.maybe_location());
-        case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::STRING_LITERAL_SYMBOL:
+            return bind_string_expression(node).add_location_to_value_if_ok(node.maybe_location());
+        case Parser::NUMBER_LITERAL_SYMBOL:
         case Parser::CHAR_LITERAL_SYMBOL:
             return bind_literal_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::IDENTIFIER_SYMBOL:
