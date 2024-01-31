@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void interpret(char *input)
+void interpret(const char *input)
 {
     char tape[30000] = {0};
     char *ptr = tape;

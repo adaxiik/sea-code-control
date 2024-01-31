@@ -24,6 +24,7 @@ namespace scc::lowering::inbuild
     InterpreterResult free(InterpreterState &state);
     InterpreterResult write(InterpreterState &state);
     InterpreterResult read(InterpreterState &state);
+    InterpreterResult eval(InterpreterState &state);
 
     // math.h
     // https://en.cppreference.com/w/c/numeric/math
@@ -55,7 +56,7 @@ namespace scc::lowering::inbuild
             }
         }},
         {"_scc_read", {
-            read, 
+            read,
             Type(Type::PrimitiveType::I64),
             {
                 Type(Type::PrimitiveType::I32),
@@ -65,7 +66,8 @@ namespace scc::lowering::inbuild
                 ),
                 Type(Type::PrimitiveType::U64)
             }
-        }}
+        }},
+        {"_scc_eval", {eval, Type(Type::PrimitiveType::I32), {Type(Type::PrimitiveType::Char, std::vector<Type::Modifier>{Type::Pointer{}}), Type(Type::PrimitiveType::U64)}}},
     };
 
 }

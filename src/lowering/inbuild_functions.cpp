@@ -4,7 +4,7 @@
 
 #include "lowering/inbuild_functions.hpp"
 #include "interpreter_io.hpp"
-
+#include "interpreter.hpp"
 namespace scc::lowering::inbuild
 {
     InterpreterResult puti(InterpreterState &state)
@@ -252,7 +252,70 @@ namespace scc::lowering::inbuild
 
     InterpreterResult read(InterpreterState &)
     {
-        return InterpreterError::None;
+        return InterpreterError::AssertionFailedError;
+    }
+
+    InterpreterResult eval(InterpreterState &state)
+    {
+        if (state.result_stack.size() < 2)
+            return InterpreterError::RuntimeError;
+
+        InterpreterResult addr = state.result_stack.top();
+        state.result_stack.pop();
+
+        InterpreterResult len = state.result_stack.top();
+        state.result_stack.pop();
+
+        if (not len.is_ok_and_has_value())
+            return len;
+
+        if (not addr.is_ok_and_has_value())
+            return addr;
+
+        if (len.get_value().type != Type(Type::PrimitiveType::U64))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (not std::holds_alternative<Type::Primitive::U64>(len.get_value().value.primitive_value().value()))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (addr.get_value().type != Type(Type::PrimitiveType::Char, std::vector<Type::Modifier>{Type::Pointer{}}))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (not std::holds_alternative<Type::Primitive::PTR>(addr.get_value().value.primitive_value().value()))
+            return InterpreterError::ReachedUnreachableError;
+
+        Type::Primitive::U64 len_val = std::get<Type::Primitive::U64>(len.get_value().value.primitive_value().value());
+        Type::Primitive::PTR addr_val = std::get<Type::Primitive::PTR>(addr.get_value().value.primitive_value().value());
+
+        std::unique_ptr<char[]> data = std::make_unique<char[]>(len_val);
+
+        if (not state.memory.read_buffer(addr_val, data.get(), len_val))
+            return InterpreterError::MemoryError;
+
+        std::string str(data.get(), len_val);
+
+        Interpreter interpreter;
+        auto result = interpreter.interpret(str);
+        if (result.is_error()) // return -1
+            return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I32>(-1)));
+
+        auto eval_result = result.value().continue_execution();
+
+        if (eval_result.is_error())
+            return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I32>(-1)));
+
+        if (eval_result.get_value().type != Type(Type::PrimitiveType::I32))
+            return InterpreterResult::ok(InterpreterResultValue(static_cast<Type::Primitive::I32>(0)));
+
+        return InterpreterResult::ok(
+            InterpreterResultValue(
+                static_cast<Type::Primitive::I32>(
+                    std::get<Type::Primitive::I32>(
+                        eval_result.get_value().value.primitive_value().value()
+                    )
+                )
+            )
+        );
     }
 
 }
