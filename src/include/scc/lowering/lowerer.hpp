@@ -27,13 +27,14 @@
 #include "binding/bound_reference_expression.hpp"
 #include "binding/bound_dereference_expression.hpp"
 #include "binding/bound_pointer_assignment_expression.hpp"
+#include "binding/bound_unary_expression.hpp"
 
 #include "location.hpp"
 
 namespace scc
 {
     class Lowerer
-    {   
+    {
         using Label = size_t;
         Label m_current_label;
         Label create_label();
@@ -59,7 +60,7 @@ namespace scc
 
         bool should_drop_after_statement(const binding::BoundStatement* statement);
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21);
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22);
 
         void lower(const binding::BoundExpressionStatement &expression_statement);
         void lower(const binding::BoundBlockStatement &block_statement);
@@ -88,6 +89,7 @@ namespace scc
         void lower(const binding::BoundVariableStaticArrayDeclarationStatement &variable_pointer_declaration_statement);
         void lower(const binding::BoundDereferenceExpression &pointer_expression);
         void lower(const binding::BoundPointerAssignmentExpression &pointer_assignment_expression);
+        void lower(const binding::BoundUnaryExpression &unary_expression);
 
     public:
         std::vector<std::pair<lowering::Instruction, std::optional<Location>>> lower(const binding::BoundBlockStatement* root);

@@ -79,7 +79,7 @@ namespace scc
 
         do
         {
-            if (value.find('f') != std::string::npos 
+            if (value.find('f') != std::string::npos
             && value.find('.') != std::string::npos)
             {
                 number_type = NumberType::FLOAT;
@@ -129,7 +129,7 @@ namespace scc
             switch (number_type)
             {
             case NumberType::SIGNED:
-                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I32>(std::stoi(value, nullptr, base_int)));
+                return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I32>(std::stoll(value, nullptr, base_int)));
             case NumberType::LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::I64>(std::stoll(value, nullptr, base_int)));
             case NumberType::LONG_LONG:
@@ -140,7 +140,7 @@ namespace scc
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(std::stoull(value, nullptr, base_int)));
             case NumberType::UNSIGNED_LONG_LONG:
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::U64>(std::stoull(value, nullptr, base_int)));
-            case NumberType::FLOAT: 
+            case NumberType::FLOAT:
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::F32>(std::stof(value, nullptr)));
             case NumberType::DOUBLE:
                 return std::make_unique<binding::BoundLiteralExpression>(static_cast<Type::Primitive::F64>(std::stod(value, nullptr)));
@@ -154,16 +154,16 @@ namespace scc
             // std::cerr << "Binder::bind_number_literal: " << e.what() << std::endl;
             // return nullptr;
             SCC_BINDER_RESULT_TYPE(bind_number_literal);
-            
+
             return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::InvalidNumberLiteralError, node));
-            
+
         }
 
         SCC_UNREACHABLE();
         SCC_BINDER_RESULT_TYPE(bind_number_literal);
-            
+
         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
-      
+
     }
 
 }

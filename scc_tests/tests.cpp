@@ -1134,3 +1134,62 @@ TEST_CASE("Static arrays")
     )");
 
 }
+
+TEST_CASE("Strings")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SUBCASE("Stack strings")
+    {
+        SCC_TEST_IS_OK(R"(char a[] = "abcdefg";)");
+        SCC_TEST_IS_OK("_scc_assert(sizeof(a) == 8);");
+        for (int i = 0; i < 7; i++)
+        {
+            SCC_TEST_IS_OK("_scc_assert(a[" + std::to_string(i) + "] == '" + std::string(1, 'a' + i) + "');");
+        }
+        SCC_TEST_IS_OK("_scc_assert(a[7] == '\\0');");
+
+        SCC_TEST_IS_OK(R"(char b[10] = "abcdefg";)");
+        SCC_TEST_IS_OK("_scc_assert(sizeof(b) == 10);");
+        for (int i = 0; i < 7; i++)
+        {
+            SCC_TEST_IS_OK("_scc_assert(b[" + std::to_string(i) + "] == '" + std::string(1, 'a' + i) + "');");
+        }
+        SCC_TEST_IS_OK("_scc_assert(b[7] == '\\0');");
+        SCC_TEST_IS_OK("_scc_assert(b[8] == '\\0');");
+        SCC_TEST_IS_OK("_scc_assert(b[9] == '\\0');");
+
+        SCC_TEST_IS_ERROR(R"(char c[3] = "abcdefg";)");
+    }
+}
+
+TEST_CASE("Unary expressions")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+    SCC_TEST_IS_OK("_scc_assert(!0);");
+    SCC_TEST_IS_OK("_scc_assert(!1 == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!2 == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!!0 == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!!1);");
+    SCC_TEST_IS_OK("_scc_assert(!1LL == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!1.0f == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!1.0 == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!'a' == 0);");
+    SCC_TEST_IS_OK("_scc_assert(!'\\0');");
+
+    SCC_TEST_IS_OK("_scc_assert(~0 == -1);");
+    SCC_TEST_IS_OK("_scc_assert(~1 == -2);");
+    SCC_TEST_IS_OK("_scc_assert(~2 == -3);");
+    SCC_TEST_IS_OK("_scc_assert(~-1 == 0);");
+    SCC_TEST_IS_OK("_scc_assert(~(unsigned int)0 == (unsigned int)0xFFFFFFFF);");
+    SCC_TEST_IS_OK("_scc_assert(~(unsigned int)1 == (unsigned int)0xFFFFFFFE);");
+
+    SCC_TEST_IS_ERROR("_scc_assert(~1.0f == -2);");
+    SCC_TEST_IS_ERROR("_scc_assert(~1.0 == -2);");
+}

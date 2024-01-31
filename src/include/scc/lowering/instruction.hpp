@@ -23,6 +23,7 @@
 #include "lowering/dereference_instruction.hpp"
 #include "lowering/pointer_assignment_instruction.hpp"
 #include "lowering/create_array_variable_instruction.hpp"
+#include "lowering/unary_operation_instruction.hpp"
 
 namespace scc
 {
@@ -49,7 +50,8 @@ namespace scc
             ReferenceInstruction,
             DereferenceInstruction,
             PointerAssignmentInstruction,
-            CreateArrayVariableInstruction>;
+            CreateArrayVariableInstruction,
+            UnaryOperationInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

@@ -11,7 +11,7 @@
 // Borrowed from DOCTEST ..
 // not tested, but should work :)
 
-#ifdef SCC_CLANG 
+#ifdef SCC_CLANG
     #define SCC_PRAGMA_TO_STR(x) _Pragma(#x)
     #define SCC_CLANG_SUPPRESS_WARNING_PUSH _Pragma("clang diagnostic push")
     #define SCC_CLANG_SUPPRESS_WARNING(w) SCC_PRAGMA_TO_STR(clang diagnostic ignored w)
@@ -57,7 +57,6 @@
     SCC_GCC_SUPPRESS_WARNING_WITH_PUSH("-Wsign-compare")                                         \
     SCC_MSVC_SUPPRESS_WARNING_WITH_PUSH(4388)
 
-// pop ignore sign comparsion warning
 #define SCC_SUPPRESS_WARNING_POP                                                 \
     SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
 
@@ -69,7 +68,13 @@
 #define SCC_SUPPRESS_WARNING_POP_INT_IN_BOOL_CONTEXT                                            \
     SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
 
+#define SCC_SUPPRESS_WARNING_PUSH_BOOL_OPERATION                                                 \
+    SCC_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wbool-operation")                                     \
+    SCC_GCC_SUPPRESS_WARNING_WITH_PUSH("-Wbool-operation")                                       \
+    SCC_MSVC_SUPPRESS_WARNING_WITH_PUSH(4804)
 
+#define SCC_SUPPRESS_WARNING_POP_BOOL_OPERATION                                                  \
+    SCC_CLANG_SUPPRESS_WARNING_POP SCC_GCC_SUPPRESS_WARNING_POP SCC_MSVC_SUPPRESS_WARNING_POP
 
 
 

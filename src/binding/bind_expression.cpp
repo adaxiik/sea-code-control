@@ -42,12 +42,14 @@ namespace scc
             return bind_subscript_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::UPDATE_EXPRESSION_SYMBOL:
             return bind_update_expression(node).add_location_to_value_if_ok(node.maybe_location());
+        case Parser::UNARY_EXPRESSION_SYMBOL:
+            return bind_unary_expression(node).add_location_to_value_if_ok(node.maybe_location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;
         }
 
-        SCC_BINDER_RESULT_TYPE(bind_expression);  
+        SCC_BINDER_RESULT_TYPE(bind_expression);
         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
 
     }

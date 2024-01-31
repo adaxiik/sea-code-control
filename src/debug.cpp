@@ -173,7 +173,7 @@ namespace scc
             ss << type;
         }
 
-        // TODOOOOOOOOOO0: convert it into multiple functions for each node type
+        // TODOOOOOOOOOOOOO: convert it into multiple functions for each node type
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node)
         {
             std::function<void(const binding::BoundNode&, int, bool, std::string)> bound_ast_as_text_tree_impl = [&](const binding::BoundNode& node, int depth, bool last, std::string prefix)
@@ -191,7 +191,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22, "Update this switch statement");
 
 
                 if (node.location)
@@ -287,6 +287,36 @@ namespace scc
                     type_as_text(ss, cast_expression.type);
                     ss << std::endl;
                     bound_ast_as_text_tree_impl(*cast_expression.expression
+                                                , depth + 1
+                                                , true
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+                    break;
+                }
+
+                case binding::BoundNodeKind::UnaryExpression:
+                {
+                    auto& unary_expression = static_cast<const binding::BoundUnaryExpression&>(node);
+                    ss << "UnaryExpression (" << unary_expression.type << ") ==> ";
+
+                    #define CASE_OP_KIND(KIND, OP) \
+                    case binding::BoundUnaryExpression::OperatorKind::KIND: \
+                        ss << std::quoted(OP) << std::endl; \
+                        break;
+
+                    static_assert(static_cast<int>(binding::BoundUnaryExpression::OperatorKind::COUNT) == 2, "Update this switch statement");
+
+                    switch(unary_expression.op_kind)
+                    {
+                        CASE_OP_KIND(BinaryNot, "~")
+                        CASE_OP_KIND(LogicalNot, "!")
+                        default:
+                            ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                            break;
+                    }
+
+                    #undef CASE_OP_KIND
+
+                    bound_ast_as_text_tree_impl(*unary_expression.expression
                                                 , depth + 1
                                                 , true
                                                 , prefix + (last ? SPACE : DOWN_PIPE));
@@ -660,7 +690,7 @@ namespace scc
 
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 21, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 22, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) {
                     ss << "BinaryOperation ==> ";
@@ -764,6 +794,18 @@ namespace scc
                     << (create_array_variable.flags & CAVFlags::IsConst ? "const " : "") \
                     << create_array_variable.variable_type \
                     << " " << create_array_variable.variable_name;
+                },
+                [&](lowering::UnaryOperationInstruction unary_operation) {
+                    ss << "UnaryOperation ==> ";
+                        static_assert(static_cast<int>(binding::BoundUnaryExpression::OperatorKind::COUNT) == 2);
+
+                    using UOPK = lowering::UnaryOperationInstruction::OperatorKind;
+                    if (unary_operation.operator_kind == UOPK::BinaryNot)
+                        ss << std::quoted("~");
+                    else if (unary_operation.operator_kind == UOPK::LogicalNot)
+                        ss << std::quoted("!");
+                    else
+                        ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
                 },
                 [&](auto) {
                     ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;

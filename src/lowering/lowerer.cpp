@@ -35,7 +35,7 @@
 
 namespace scc
 {
-    
+
     void Lowerer::lower(const binding::BoundExpressionStatement &expression_statement)
     {
         m_to_lower.push(expression_statement.expression.get());
@@ -65,12 +65,12 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
-            CVFlags::None 
+            CVFlags::None
             | ((variable_value_declaration_statement.initializer != nullptr or variable_value_declaration_statement.is_global) ? CVFlags::HasInitializer : CVFlags::None)
             | (variable_value_declaration_statement.is_global ? CVFlags::IsGlobal : CVFlags::None)
             | (variable_value_declaration_statement.is_constant ? CVFlags::IsConst : CVFlags::None)
         ), variable_value_declaration_statement.location));
-        
+
         if (variable_value_declaration_statement.initializer)
         {
             m_to_lower.push(variable_value_declaration_statement.initializer.get());
@@ -89,7 +89,7 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::CreateValueVariableInstruction(
             variable_pointer_declaration_statement.variable_name,
             variable_pointer_declaration_statement.type,
-            CVFlags::None 
+            CVFlags::None
             | ((variable_pointer_declaration_statement.initializer != nullptr or variable_pointer_declaration_statement.is_global) ? CVFlags::HasInitializer : CVFlags::None)
             | (variable_pointer_declaration_statement.is_global ? CVFlags::IsGlobal : CVFlags::None)
             | (variable_pointer_declaration_statement.is_constant ? CVFlags::IsConst : CVFlags::None)
@@ -112,7 +112,7 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::CreateArrayVariableInstruction(
             variable_static_array_declaration_statement.variable_name,
             variable_static_array_declaration_statement.type,
-            CAFlags::None 
+            CAFlags::None
             | ((variable_static_array_declaration_statement.initializers.size() > 0 or variable_static_array_declaration_statement.is_global) ? CAFlags::HasInitializer : CAFlags::None)
             | (variable_static_array_declaration_statement.is_global ? CAFlags::IsGlobal : CAFlags::None)
             | (variable_static_array_declaration_statement.is_constant ? CAFlags::IsConst : CAFlags::None),
@@ -121,7 +121,7 @@ namespace scc
 
         for (auto& initializer: variable_static_array_declaration_statement.initializers)
             m_to_lower.push(initializer.get());
-        
+
 
     }
 
@@ -163,7 +163,7 @@ namespace scc
             m_to_lower.push(if_statement.condition.get());
             return;
         }
-        
+
         // if (condition) { ... } else { ... }
         //   =>
         // condition
@@ -200,7 +200,7 @@ namespace scc
         Label break_label = create_label();
 
         m_to_lower.push(PopLabels());
-      
+
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(break_label), while_statement.location));
         m_to_lower.push(std::make_pair(lowering::GotoInstruction(continue_label), while_statement.location));
         if (while_statement.body)
@@ -208,7 +208,7 @@ namespace scc
         m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(break_label), while_statement.location));
         m_to_lower.push(while_statement.condition.get());
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), while_statement.location));
-        
+
         m_to_lower.push(PushLabels(continue_label, break_label));
     }
 
@@ -241,7 +241,7 @@ namespace scc
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
-        
+
         m_to_lower.push(std::make_pair(lowering::GotoInstruction(m_loop_labels.top().break_label), break_statement.location));
         m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), break_statement.location));
     }
@@ -250,7 +250,7 @@ namespace scc
     {
         if (m_loop_labels.empty())
             SCC_UNREACHABLE();
-        
+
         m_to_lower.push(std::make_pair(lowering::GotoInstruction(m_loop_labels.top().continue_label), continue_statement.location));
         m_to_lower.push(std::make_pair(lowering::PopScopeInstruction(), continue_statement.location));
     }
@@ -259,7 +259,7 @@ namespace scc
     {
         if (!function_statement.body)
             return;
-        
+
         Label funtion_end_label = create_label();
 
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(funtion_end_label), function_statement.location));
@@ -328,7 +328,7 @@ namespace scc
     {
         if (parenthesized_expression.expressions.size() > 1)
             m_to_lower.push(std::make_pair(lowering::DropInstruction(parenthesized_expression.expressions.size() - 1), parenthesized_expression.location));
-        
+
         for (const auto& expression: parenthesized_expression.expressions)
             m_to_lower.push(expression.get());
     }
@@ -354,14 +354,14 @@ namespace scc
     void Lowerer::lower_inbuild_fn_call(const binding::BoundCallExpression &call_expression)
     {
         const auto& fn = lowering::inbuild::inbuild_functions.at(call_expression.function_name);
-        
+
         m_to_lower.push(
             std::make_pair(
                 lowering::CallInbuildInstruction(
                     call_expression.function_name,
                     fn.inbuild_function,
                     fn.return_type != Type(Type::PrimitiveType::Void)
-                ), 
+                ),
             call_expression.location)
         );
 
@@ -402,7 +402,7 @@ namespace scc
             }
         }
 
-        lower_inbuild_fn_call(call_expression);  
+        lower_inbuild_fn_call(call_expression);
     }
 
     void Lowerer::lower(const binding::BoundForStatement &for_statement)
@@ -427,7 +427,7 @@ namespace scc
         m_to_lower.push(PopLabels());
 
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(break_label), for_statement.location));
-        
+
         m_to_lower.push(std::make_pair(lowering::GotoInstruction(restart_label), for_statement.location));
 
         if (for_statement.increment)
@@ -436,12 +436,12 @@ namespace scc
             m_to_lower.push(std::make_pair(lowering::DropInstruction(), for_statement.location));
             m_to_lower.push(for_statement.increment.get());
         }
-        
+
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(continue_label), for_statement.location));
-        
+
         if (for_statement.body)
             m_to_lower.push(for_statement.body.get());
-                
+
         if (for_statement.condition)
         {
             m_to_lower.push(std::make_pair(lowering::GotoFalseInstruction(break_label), for_statement.location));
@@ -449,7 +449,7 @@ namespace scc
         }
 
         m_to_lower.push(std::make_pair(lowering::LabelInstruction(restart_label), for_statement.location));
-        
+
         if (for_statement.initializer)
             m_to_lower.push(for_statement.initializer.get());
 
@@ -476,12 +476,18 @@ namespace scc
         m_to_lower.push(pointer_assignment_expression.address_expression.get());
     }
 
+    void Lowerer::lower(const binding::BoundUnaryExpression &unary_expression)
+    {
+        m_to_lower.push(std::make_pair(lowering::UnaryOperationInstruction(unary_expression.op_kind), unary_expression.location));
+        m_to_lower.push(unary_expression.expression.get());
+    }
+
     bool Lowerer::should_drop_after_statement(const binding::BoundStatement* statement)
     {
 
         if (statement->bound_node_kind() == binding::BoundNodeKind::VariableDeclarationStatement)
             return true;
-        
+
         if (statement->bound_node_kind() != binding::BoundNodeKind::ExpressionStatement)
             return false;
 
@@ -490,7 +496,7 @@ namespace scc
         if (expression->bound_node_kind() == binding::BoundNodeKind::CallExpression &&
             static_cast<const binding::BoundCallExpression*>(expression)->type == Type(Type::PrimitiveType::Void))
         {
-            return false;    
+            return false;
         }
 
         return true;
@@ -512,7 +518,7 @@ namespace scc
             {
                 m_to_lower.push(std::make_pair(lowering::DropInstruction(), node->location));
             }
-            
+
             m_to_lower.push(node);
         }
 
@@ -543,7 +549,7 @@ namespace scc
                 continue;
             }
 
-            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 21);
+            static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 22);
 
             const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
             m_to_lower.pop();
@@ -612,6 +618,9 @@ namespace scc
                 break;
             case binding::BoundNodeKind::PointerAssignmentExpression:
                 lower(*static_cast<const binding::BoundPointerAssignmentExpression *>(current_node));
+                break;
+            case binding::BoundNodeKind::UnaryExpression:
+                lower(*static_cast<const binding::BoundUnaryExpression *>(current_node));
                 break;
             default:
                 SCC_NOT_IMPLEMENTED("Unknown BoundNodeKind in Lowerer::lower");

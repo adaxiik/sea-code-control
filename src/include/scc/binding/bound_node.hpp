@@ -20,8 +20,9 @@ namespace scc
             ForStatement,
 
 
-            // Expressions .. see is_statement() 
+            // Expressions .. see is_statement()
             BinaryExpression,   // binary_expression should be the first expression, see EXPRESSION_COUNT
+            UnaryExpression,
             LiteralExpression,
             CastExpression,
             ParenthesizedExpression,
