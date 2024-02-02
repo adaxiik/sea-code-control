@@ -163,6 +163,22 @@ namespace scc
          */
         bool memset(address_t address, char value, size_t size);
 
+        /**
+         * @brief basically strlen with any char
+         *
+         * Reading byte by byte from outside would be really slow
+         *
+         *  a b c d e f
+         *  ^
+         *  find_first_byte_value_offset_in_chunk(^, 'd') -> 3
+         *
+         * @param address
+         * @param value
+         * @return std::optional<size_t>
+         * @retval std::nullopt if address was not found or address went out of chunk
+         */
+        std::optional<size_t> find_first_byte_value_offset_in_chunk(address_t address, char value) const;
+
         const std::map<address_t, MemoryChunk>& get_chunks() const { return m_memory; }
 
         std::optional<address_t> get_chunk_end (address_t address) const;

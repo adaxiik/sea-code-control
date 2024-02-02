@@ -25,6 +25,7 @@
 #include "lowering/create_array_variable_instruction.hpp"
 #include "lowering/unary_operation_instruction.hpp"
 #include "lowering/push_string_instruction.hpp"
+#include "lowering/printf_instruction.hpp"
 
 namespace scc
 {
@@ -53,7 +54,8 @@ namespace scc
             PointerAssignmentInstruction,
             CreateArrayVariableInstruction,
             UnaryOperationInstruction,
-            PushStringInstruction>;
+            PushStringInstruction,
+            PrintfInstruction>;
 
         constexpr auto InstructionCount = std::variant_size_v<Instruction>;
 

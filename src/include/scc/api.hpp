@@ -126,9 +126,13 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("DereferenceError", scc::InterpreterError::DereferenceError)
         .value("NotEnoughValuesToDropError", scc::InterpreterError::NotEnoughValuesToDropError)
         .value("FailedToAssignError", scc::InterpreterError::FailedToAssignError)
+        .value("PrintfHasTooManyArgumentsError", scc::InterpreterError::PrintfHasTooManyArgumentsError)
+        .value("PrintfFormatError", scc::InterpreterError::PrintfFormatError)
+        .value("PrintfUnsuportedFormatError", scc::InterpreterError::PrintfUnsuportedFormatError)
+        .value("PrintMissingArgumentsError", scc::InterpreterError::PrintMissingArgumentsError)
         .value("COUNT", scc::InterpreterError::COUNT);
 
-    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 25);
+    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 29);
 
 
 

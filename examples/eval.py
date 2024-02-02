@@ -132,5 +132,7 @@ eval_results = []
 for c_file in all_c_files:
     eval_results.append(evaluate_file(c_file))
 
+for out_file in all_out_files:
+    os.remove(out_file)
 
 print(results_to_md(eval_results))

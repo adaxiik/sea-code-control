@@ -34,6 +34,9 @@ namespace scc
             PointerAssignmentExpression,
             StringExpression,
 
+            // printf is a special case of fn call.. its only supported variadic function, so it has own instruction
+            PrintfExpression,
+
             COUNT,
         };
 

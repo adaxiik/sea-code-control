@@ -31,6 +31,10 @@ namespace scc
         DereferenceError,
         NotEnoughValuesToDropError,
         FailedToAssignError,
+        PrintfHasTooManyArgumentsError,
+        PrintfFormatError,
+        PrintfUnsuportedFormatError,
+        PrintMissingArgumentsError,
         COUNT
     };
 

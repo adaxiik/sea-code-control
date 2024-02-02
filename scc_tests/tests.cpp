@@ -1214,3 +1214,59 @@ TEST_CASE("Read-only string literals")
 
     SCC_TEST_IS_ERROR("*\"abc\" = 'd';");
 }
+
+TEST_CASE("printf")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    std::stringstream ss;
+    std::stringstream ss_err;
+
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
+
+    SCC_TEST_IS_ERROR(R"(printf("no args %d \n");)");
+    SCC_TEST_IS_ERROR(R"(printf("not enough args %d %d \n", 1);)");
+    SCC_TEST_IS_ERROR(R"(printf("too many args %d \n", 1, 2);)");
+
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("no args\n");)");
+    CHECK(ss.str() == "no args\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("one arg %d\n", 1);)");
+    CHECK(ss.str() == "one arg 1\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("two args %d %d\n", 1, 2);)");
+    CHECK(ss.str() == "two args 1 2\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("chars %c %c %c %c\n", 'a', 69, 'c', 'd');)");
+    CHECK(ss.str() == "chars a E c d\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("float %f\n", 1.5f);)");
+    CHECK(ss.str() == "float 1.5\n");
+    ss.str("");
+
+
+    SCC_TEST_IS_OK(R"(printf("string %s\n", "abc");)");
+    CHECK(ss.str() == "string abc\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("string %s %s\n", "abc", "def");)");
+    CHECK(ss.str() == "string abc def\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(char stack_str[] = "stack string";)");
+    SCC_TEST_IS_OK(R"(printf("stack string %s\n", stack_str);)");
+    CHECK(ss.str() == "stack string stack string\n");
+    ss.str("");
+
+    SCC_TEST_IS_OK(R"(printf("%%\n");)");
+    CHECK(ss.str() == "%\n");
+
+}

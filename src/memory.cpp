@@ -211,4 +211,25 @@ namespace scc
 
         return true;
     }
+
+    std::optional<size_t> Memory::find_first_byte_value_offset_in_chunk(address_t address, char value) const
+    {
+        std::optional<address_t> start_address_opt = find_start_of_chunk(address);
+        if (not start_address_opt.has_value())
+            return std::nullopt;
+
+        address_t start_address = start_address_opt.value();
+        address_t real_memory_index = address - start_address;
+
+        if (real_memory_index >= m_memory.at(start_address).size)
+            return std::nullopt;
+
+        for (size_t i = real_memory_index; i < m_memory.at(start_address).size; ++i)
+            if (m_memory.at(start_address).data[i] == value)
+                return i - real_memory_index;
+
+        return std::nullopt;
+
+    }
+
 }

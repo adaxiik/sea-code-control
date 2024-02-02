@@ -31,13 +31,14 @@
 #include "binding/bound_for_statement.hpp"
 #include "binding/bound_unary_expression.hpp"
 #include "binding/bound_string_expression.hpp"
+#include "binding/bound_printf_expression.hpp"
 
 namespace scc
 {
     class Binder
     {
 
-        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23, "Update this code");
+        static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 24, "Update this code");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundExpressionStatement>, "ExpressionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBlockStatement>, "BlockStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundBinaryExpression>, "BinaryExpression must be derived from BoundExpression");
@@ -61,6 +62,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundPointerAssignmentExpression>, "PointerAssignmentExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundUnaryExpression>, "UnaryExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundStringExpression>, "StringExpression must be derived from BoundExpression");
+        static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundPrintfExpression>, "PrintfExpression must be derived from BoundExpression");
 
         Binder(const Binder &) = delete;
         Binder(Binder &&) = delete;
@@ -124,7 +126,7 @@ namespace scc
         binding::BinderResult<binding::BoundNode> bind_declaration(const TreeNode &node);
         binding::BinderResult<binding::BoundFunctionStatement> bind_function(const TreeNode &node);
         binding::BinderResult<binding::BoundReturnStatement> bind_return_statement(const TreeNode &node);
-        binding::BinderResult<binding::BoundCallExpression> bind_call_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundExpression> bind_call_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundForStatement> bind_for_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundReferenceExpression> bind_reference_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundDereferenceExpression> bind_dereference_expression(const TreeNode &node);
@@ -135,6 +137,7 @@ namespace scc
         binding::BinderResult<binding::BoundExpression> bind_update_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundUnaryExpression> bind_unary_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundStringExpression> bind_string_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundPrintfExpression> bind_printf_expression(const TreeNode &node);
 
         std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
         static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);

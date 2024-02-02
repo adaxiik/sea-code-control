@@ -2,7 +2,7 @@
 
 namespace scc
 {
-    binding::BinderResult<binding::BoundCallExpression> Binder::bind_call_expression(const TreeNode &node)
+    binding::BinderResult<binding::BoundExpression> Binder::bind_call_expression(const TreeNode &node)
     {
         // call_expression ==>     fn(1,2,3)
         // ├── identifier ==>      fn
@@ -16,6 +16,12 @@ namespace scc
         SCC_ASSERT_EQ(node.first_named_child().symbol(), Parser::IDENTIFIER_SYMBOL);
         SCC_BINDER_RESULT_TYPE(bind_call_expression);
         std::string function_name = node.first_named_child().value();
+
+
+        // printf is only supported variadic function.. its so special, that it has own instructions
+        if (function_name == "printf")
+            return bind_printf_expression(node);
+
         if (m_functions.find(function_name) == m_functions.end())
         {
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
@@ -40,6 +46,7 @@ namespace scc
             arguments.push_back(std::make_unique<binding::BoundCastExpression>(argument.release_value(), fn_declaration.parameters[i]));
         }
 
-        return std::make_unique<binding::BoundCallExpression>(fn_declaration.return_type, std::move(function_name), std::move(arguments));
+        auto bce =  std::make_unique<binding::BoundCallExpression>(fn_declaration.return_type, std::move(function_name), std::move(arguments));
+        return binding::BinderResult<ResultType>(std::move(bce));
     }
 }

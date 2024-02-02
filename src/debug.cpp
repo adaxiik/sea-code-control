@@ -191,7 +191,7 @@ namespace scc
                     else
                         ss << SPLIT_PIPE;
                 }
-                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 23, "Update this switch statement");
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 24, "Update this switch statement");
 
 
                 if (node.location)
@@ -500,6 +500,26 @@ namespace scc
                     }
                     break;
                 }
+
+                case binding::BoundNodeKind::PrintfExpression:
+                {
+                    auto& printf_expression = static_cast<const binding::BoundPrintfExpression&>(node);
+                    ss << "PrintfExpression (" << printf_expression.type << ") ==> " << std::endl;
+                    bound_ast_as_text_tree_impl(*printf_expression.format
+                                                , depth + 1
+                                                , false
+                                                , prefix + (last ? SPACE : DOWN_PIPE));
+
+                    for (size_t i = 0; i < printf_expression.arguments.size(); i++)
+                    {
+                        bound_ast_as_text_tree_impl(*printf_expression.arguments[i]
+                                                    , depth + 1
+                                                    , i == printf_expression.arguments.size() - 1
+                                                    , prefix + (last ? SPACE : DOWN_PIPE));
+                    }
+                    break;
+                }
+
                 case binding::BoundNodeKind::ForStatement:
                 {
                     auto& for_statement = static_cast<const binding::BoundForStatement&>(node);
@@ -665,7 +685,7 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 25, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 29, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:                               ss << "None"; break;
@@ -693,13 +713,17 @@ namespace scc
                 case InterpreterError::DereferenceError:                   ss << "Dereference error"; break;
                 case InterpreterError::NotEnoughValuesToDropError:         ss << "Not enough values to drop error"; break;
                 case InterpreterError::FailedToAssignError:                ss << "Failed to assign error"; break;
+                case InterpreterError::PrintfHasTooManyArgumentsError:     ss << "Printf has too many arguments error"; break;
+                case InterpreterError::PrintfFormatError:                  ss << "Printf format error"; break;
+                case InterpreterError::PrintfUnsuportedFormatError:        ss << "Printf unsuported format error"; break;
+                case InterpreterError::PrintMissingArgumentsError:         ss << "Print missing arguments error"; break;
                 default:                                                   ss << "Unknown error"; break;
             }
         }
 
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction)
         {
-            static_assert(lowering::InstructionCount == 23, "Update this switch statement");
+            static_assert(lowering::InstructionCount == 24, "Update this switch statement");
             std::visit(overloaded{
                 [&](lowering::BinaryOperationInstruction binary_operation) {
                     ss << "BinaryOperation ==> ";
@@ -818,6 +842,9 @@ namespace scc
                 },
                 [&](lowering::PushStringInstruction push_string) {
                     ss << "PushString ==> " << push_string.value << " (" << push_string.value.size() << " - 1)";
+                },
+                [&](lowering::PrintfInstruction printf) {
+                    ss << "Printf (" << printf.argument_count_without_fmt << " + 1)";
                 },
                 [&](auto) {
                     ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
