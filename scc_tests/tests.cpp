@@ -1226,6 +1226,10 @@ TEST_CASE("printf")
     scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
     scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
 
+    SCC_TEST_IS_ERROR(R"(printf("no args\n");)");
+
+    SCC_TEST_IS_OK("#include <stdio.h>\n");
+
     SCC_TEST_IS_ERROR(R"(printf("no args %d \n");)");
     SCC_TEST_IS_ERROR(R"(printf("not enough args %d %d \n", 1);)");
     SCC_TEST_IS_ERROR(R"(printf("too many args %d \n", 1, 2);)");

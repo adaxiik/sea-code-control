@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <scc.h>
 
 int main()
 {
@@ -11,8 +10,7 @@ int main()
 
     for (;;)
     {
-        putchar('x');
-        putchar('\n');
+        printf("x\n");
         break;
     }
 
@@ -20,14 +18,15 @@ int main()
     {
         if (i % 2 == 0)
             continue;
-        scc_puti(i);
+
+        printf("i = %d\n", i);
     }
 
 
     int max = 5;
     while (max -= 1)
     {
-        scc_puti(max);
+        printf("max = %d\n", max);
     }
 
     return 0;

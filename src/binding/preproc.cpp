@@ -31,17 +31,17 @@ namespace scc
             return true;
 
         const char* lib = nullptr;
-        if (include_node.value() == "<stdio.h>")
+        if (include_node.value() == BINDER_LIBC_STDIO_H)
             lib = binding::libc::stdio_h;
-        else if (include_node.value() == "<stdlib.h>")
+        else if (include_node.value() == BINDER_LIBC_STDLIB_H)
             lib = binding::libc::stdlib_h;
-        else if (include_node.value() == "<math.h>")
+        else if (include_node.value() == BINDER_LIBC_MATH_H)
             lib = binding::libc::math_h;
-        else if (include_node.value() == "<unistd.h>")
+        else if (include_node.value() == BINDER_LIBC_UNISTD_H)
             lib = binding::libc::unistd_h;
-        else if (include_node.value() == "<string.h>")
+        else if (include_node.value() == BINDER_LIBC_STRING_H)
             lib = binding::libc::string_h;
-        else if (include_node.value() == "<scc.h>")
+        else if (include_node.value() == BINDER_LIBC_SCC_H)
             lib = binding::libc::scc_h;
         else
             return false;

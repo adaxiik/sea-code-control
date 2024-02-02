@@ -1,7 +1,5 @@
 #include <math.h>
 #include <stdio.h>
-#include <scc.h>
-
 
 void print_hello(); // defined later
 
@@ -62,7 +60,7 @@ int main()
     print_hello();
 
     int factorial_of_5 = factorial(5);
-    scc_puti(factorial_of_5);
+    printf("Factorial of 5 is %d\n", factorial_of_5);
 
     float lerp_result = lerp(0.0f, 25.0f, 0.5f);
 

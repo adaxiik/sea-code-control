@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <scc.h>
 
 int g_a = 34;
 int g_b = 35;
@@ -11,27 +10,18 @@ int foo = 420;
 
 int main()
 {
-    scc_puti(g_a);
-    scc_puti(g_b);
-    scc_puti(g_default);
+    printf("g_a = %d\ng_b = %d\ng_default = %d\n", g_a, g_b, g_default);
 
-    // =====
-    for (int i = 0; i < 10; ++i) {
-        putchar('=');
-    }
-    putchar('\n');
-    // =====
+    puts("=========================");
 
-
-    scc_puti(foo); // 420
+    printf("%d\n", foo); // 420
 
     {
         int foo = 69; // shadowing
-        scc_puti(foo); // 69
+        printf("%d\n", foo); // 69
     }
 
-    scc_puti(foo); // 420
-
+    printf("%d\n", foo); // 420
 
 
     return 0;

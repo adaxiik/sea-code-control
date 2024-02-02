@@ -1,5 +1,3 @@
-// contains scc_puti
-#include <scc.h>
 #include <stdio.h>
 
 int main()
@@ -9,7 +7,7 @@ int main()
 
     int a = 34;
     int b = 35;
-    scc_puti(a + b);
+    printf("a + b = %d\n", a + b);
 
     return 0;
 }

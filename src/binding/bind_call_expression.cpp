@@ -19,8 +19,10 @@ namespace scc
 
 
         // printf is only supported variadic function.. its so special, that it has own instructions
-        if (function_name == "printf")
+        if (function_name == "printf" and m_included_headers.find(BINDER_LIBC_STDIO_H) != m_included_headers.end())
+        {
             return bind_printf_expression(node);
+        }
 
         if (m_functions.find(function_name) == m_functions.end())
         {

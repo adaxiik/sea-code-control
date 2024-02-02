@@ -35,6 +35,14 @@
 
 namespace scc
 {
+    constexpr auto BINDER_LIBC_STDIO_H = "<stdio.h>";
+    constexpr auto BINDER_LIBC_STDLIB_H = "<stdlib.h>";
+    constexpr auto BINDER_LIBC_STRING_H = "<string.h>";
+    constexpr auto BINDER_LIBC_STDDEF_H = "<stddef.h>";
+    constexpr auto BINDER_LIBC_MATH_H = "<math.h>";
+    constexpr auto BINDER_LIBC_UNISTD_H = "<unistd.h>";
+    constexpr auto BINDER_LIBC_SCC_H = "<scc.h>";
+
     class Binder
     {
 
