@@ -34,8 +34,6 @@ namespace scc
         return m_lowerer.lower(bind_result);
     }
 
-
-
     Interpreter::RunningInterpreterCreationResult Interpreter::interpret(const std::string &code)
     {
         return interpret(m_parser.parse(code));
@@ -56,9 +54,7 @@ namespace scc
             };
         }
 
-        {
-            debug::bound_ast_as_text_tree(std::cout, *bind_result.get_value());
-        }
+        // debug::bound_ast_as_text_tree(std::cout, *bind_result.get_value());
 
         binding::BoundNode* root = bind_result.get_value();
         if (root->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
@@ -69,18 +65,9 @@ namespace scc
 
         auto lowered_with_location = m_lowerer.lower(static_cast<binding::BoundBlockStatement*>(root));
 
-        {
-            // std::vector<lowering::Instruction> lowered;
-            // std::transform(
-            //     lowered_with_location.begin(),
-            //     lowered_with_location.end(),
-            //     std::back_inserter(lowered),
-            //     [](auto& pair) { return pair.first; }
-            // );
 
-            // debug::instructions_as_text(std::cout, lowered);
-            debug::instructions_as_text(std::cout, lowered_with_location);
-        }
+        // debug::instructions_as_text(std::cout, lowered_with_location);
+
 
         // this doesnt have copy constructor
 

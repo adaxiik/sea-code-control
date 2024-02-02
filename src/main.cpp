@@ -32,13 +32,15 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    bool mute = std::any_of(argv, argv + argc, [](const char* arg) { return std::string(arg) == "--mute"; });
+
     auto code = scc::io::slurp_file(argv[1]);
-    if (!code)
+    if (not code)
     {
         std::cerr << "Failed to open file: " << argv[1] << std::endl;
         return 1;
     }
-    
+
     scc::Interpreter interpreter;
     auto parse_result = interpreter.parse(code.value());
     if (parse_result.has_error())
@@ -47,6 +49,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    if (not mute)
     {
         std::stringstream puml;
         scc::debug::ast_as_puml(puml, parse_result);
@@ -67,7 +70,7 @@ int main(int argc, char const *argv[])
     // running_interpreter.breakpoints().add(29);
     auto interpret_result = running_interpreter.continue_execution();
     // scc::export_format::make_snapshot(running_interpreter.state());
-    
+
 
     if (interpret_result.is_error())
     {
