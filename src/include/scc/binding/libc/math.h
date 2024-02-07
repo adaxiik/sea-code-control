@@ -12,6 +12,7 @@ float _scc_sinf(float x);
 float _scc_cosf(float x);
 double _scc_sin(double x);
 double _scc_cos(double x);
+double _scc_pow(double x, double y);
 
 
 float sinf(float x)
@@ -32,6 +33,11 @@ double sin(double x)
 double cos(double x)
 {
     return _scc_cos(x);
+}
+
+double pow(double x, double y)
+{
+    return _scc_pow(x, y);
 }
 
 )";

@@ -147,6 +147,42 @@ namespace scc::lowering::inbuild
         return InterpreterResult::ok(InterpreterResultValue(std::cos(val)));
     }
 
+    InterpreterResult pow(InterpreterState &state)
+    {
+        if (state.result_stack.size() < 2)
+            return InterpreterError::RuntimeError;
+
+        InterpreterResult x = state.result_stack.top();
+        state.result_stack.pop();
+
+        InterpreterResult y = state.result_stack.top();
+        state.result_stack.pop();
+
+        if (not y.is_ok_and_has_value())
+            return y;
+
+        if (not x.is_ok_and_has_value())
+            return x;
+
+        if (y.get_value().type != Type(Type::PrimitiveType::F64))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (not std::holds_alternative<Type::Primitive::F64>(y.get_value().value.primitive_value().value()))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (x.get_value().type != Type(Type::PrimitiveType::F64))
+            return InterpreterError::ReachedUnreachableError;
+
+        if (not std::holds_alternative<Type::Primitive::F64>(x.get_value().value.primitive_value().value()))
+            return InterpreterError::ReachedUnreachableError;
+
+        Type::Primitive::F64 y_val = std::get<Type::Primitive::F64>(y.get_value().value.primitive_value().value());
+        Type::Primitive::F64 x_val = std::get<Type::Primitive::F64>(x.get_value().value.primitive_value().value());
+
+        return InterpreterResult::ok(InterpreterResultValue(std::pow(x_val, y_val)));
+    }
+
+
     InterpreterResult malloc(InterpreterState &state)
     {
         InterpreterResult value = state.result_stack.top();

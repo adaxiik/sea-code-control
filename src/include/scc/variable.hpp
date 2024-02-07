@@ -32,7 +32,7 @@ namespace scc
 
             // int a[5];
             // a == &a
-            if (m_type.is_array())
+            if (m_type.is_array() and not m_is_parameter)
                 return Type::Value(static_cast<Type::Primitive::PTR>(m_address));
 
             return memory.read_value(m_address, m_type);

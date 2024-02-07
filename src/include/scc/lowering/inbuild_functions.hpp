@@ -32,6 +32,7 @@ namespace scc::lowering::inbuild
     InterpreterResult cosf(InterpreterState &state);
     InterpreterResult sin(InterpreterState &state);
     InterpreterResult cos(InterpreterState &state);
+    InterpreterResult pow(InterpreterState &state);
 
     const std::map<FunctionName, Function> inbuild_functions = {
         {"_scc_puti", {puti, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::I32)}}},
@@ -40,6 +41,7 @@ namespace scc::lowering::inbuild
         {"_scc_cosf", {cosf, Type(Type::PrimitiveType::F32), {Type(Type::PrimitiveType::F32)}}},
         {"_scc_sin", {sin, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
         {"_scc_cos", {cos, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64)}}},
+        {"_scc_pow", {pow, Type(Type::PrimitiveType::F64), {Type(Type::PrimitiveType::F64), Type(Type::PrimitiveType::F64)}}},
         {"_scc_assert", {assert, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::Bool)}}},
         {"_scc_malloc", {malloc, Type(Type::PrimitiveType::Void, std::vector<Type::Modifier>{Type::Pointer{}}), {Type(Type::PrimitiveType::U64)}}},
         {"_scc_free", {free, Type(Type::PrimitiveType::Void), {Type(Type::PrimitiveType::Void, std::vector<Type::Modifier>{Type::Pointer{}})}}},

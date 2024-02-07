@@ -2,8 +2,8 @@
 
 # Evaluation results
 ## Summary
-- Compiles without errors: 127/137
-- Interprets without errors: 91/137
+- Compiles without errors: 118/137
+- Interprets without errors: 98/137
 
 | File | Compiles without errors | Interprets without errors | Output matches |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@
 | [c_datove_typy_celociselne_typy_2.c](./c_datove_typy_celociselne_typy_2.c) | ✅ | ✅ | ✅ |
 | [c_funkce_funkce_2.c](./c_funkce_funkce_2.c) | ✅ | ✅ | ✅ |
 | [c_promenne_promenne_1.c](./c_promenne_promenne_1.c) | ✅ | ✅ | ✅ |
+| [c_rizeni_toku_while_8.c](./c_rizeni_toku_while_8.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_if_1.c](./c_rizeni_toku_if_1.c) | ✅ | ✅ | ✅ |
 | [c_funkce_funkce_13.c](./c_funkce_funkce_13.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_for_2.c](./c_rizeni_toku_for_2.c) | ✅ | ✅ | ✅ |
@@ -27,7 +28,9 @@
 | [caste_chyby_caste_chyby_5.c](./caste_chyby_caste_chyby_5.c) | ✅ | ✅ | ✅ |
 | [c_promenne_promenne_2.c](./c_promenne_promenne_2.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_11.c](./c_pole_staticka_pole_11.c) | ✅ | ✅ | ✅ |
+| [c_datove_typy_pravdivostni_typy_2.c](./c_datove_typy_pravdivostni_typy_2.c) | ✅ | ✅ | ✅ |
 | [c_promenne_promenne_6.c](./c_promenne_promenne_6.c) | ✅ | ✅ | ✅ |
+| [c_rizeni_toku_while_7.c](./c_rizeni_toku_while_7.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_10.c](./c_pole_staticka_pole_10.c) | ✅ | ✅ | ✅ |
 | [caste_chyby_caste_chyby_2.c](./caste_chyby_caste_chyby_2.c) | ✅ | ✅ | ✅ |
 | [c_funkce_funkce_4.c](./c_funkce_funkce_4.c) | ✅ | ✅ | ✅ |
@@ -44,6 +47,7 @@
 | [ruzne_tahak_2.c](./ruzne_tahak_2.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_4.c](./c_pole_staticka_pole_4.c) | ✅ | ✅ | ✅ |
 | [c_text_retezce_2.c](./c_text_retezce_2.c) | ✅ | ✅ | ✅ |
+| [c_datove_typy_pravdivostni_typy_3.c](./c_datove_typy_pravdivostni_typy_3.c) | ✅ | ✅ | ✅ |
 | [ruzne_nahodna_cisla_1.c](./ruzne_nahodna_cisla_1.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_while_6.c](./c_rizeni_toku_while_6.c) | ✅ | ✅ | ✅ |
 | [c_datove_typy_desetinne_typy_2.c](./c_datove_typy_desetinne_typy_2.c) | ✅ | ✅ | ✅ |
@@ -58,6 +62,7 @@
 | [c_rizeni_toku_while_4.c](./c_rizeni_toku_while_4.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_while_2.c](./c_rizeni_toku_while_2.c) | ✅ | ✅ | ✅ |
 | [c_text_vystup_1.c](./c_text_vystup_1.c) | ✅ | ✅ | ✅ |
+| [c_pole_staticka_pole_6.c](./c_pole_staticka_pole_6.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_while_3.c](./c_rizeni_toku_while_3.c) | ✅ | ✅ | ✅ |
 | [c_prace_s_pameti_ukazatele_3.c](./c_prace_s_pameti_ukazatele_3.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_2.c](./c_pole_staticka_pole_2.c) | ✅ | ✅ | ✅ |
@@ -71,6 +76,7 @@
 | [c_datove_typy_celociselne_typy_4.c](./c_datove_typy_celociselne_typy_4.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_if_4.c](./c_rizeni_toku_if_4.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_while_1.c](./c_rizeni_toku_while_1.c) | ✅ | ✅ | ✅ |
+| [caste_chyby_caste_chyby_1.c](./caste_chyby_caste_chyby_1.c) | ✅ | ✅ | ✅ |
 | [c_promenne_slozeny_zapis_2.c](./c_promenne_slozeny_zapis_2.c) | ✅ | ✅ | ✅ |
 | [c_prace_s_pameti_ukazatele_na_funkce_2.c](./c_prace_s_pameti_ukazatele_na_funkce_2.c) | ✅ | ✅ | ✅ |
 | [c_rizeni_toku_if_3.c](./c_rizeni_toku_if_3.c) | ✅ | ✅ | ✅ |
@@ -88,59 +94,53 @@
 | [c_prace_s_pameti_ukazatele_8.c](./c_prace_s_pameti_ukazatele_8.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_3.c](./c_pole_staticka_pole_3.c) | ✅ | ✅ | ✅ |
 | [c_pole_staticka_pole_7.c](./c_pole_staticka_pole_7.c) | ✅ | ✅ | ✅ |
+| [c_datove_typy_pravdivostni_typy_1.c](./c_datove_typy_pravdivostni_typy_1.c) | ✅ | ✅ | ✅ |
 | [c_prace_s_pameti_automaticka_pamet_1.c](./c_prace_s_pameti_automaticka_pamet_1.c) | ✅ | ✅ | ✅ |
 | [c_prace_s_pameti_ukazatele_2.c](./c_prace_s_pameti_ukazatele_2.c) | ✅ | ✅ | ❌ |
-| [c_prace_s_pameti_ukazatele_10.c](./c_prace_s_pameti_ukazatele_10.c) | ✅ | ✅ | ❌ |
-| [c_datove_typy_desetinne_typy_3.c](./c_datove_typy_desetinne_typy_3.c) | ✅ | ✅ | ❌ |
-| [c_text_vystup_3.c](./c_text_vystup_3.c) | ✅ | ✅ | ❌ |
-| [c_pole_staticka_pole_6.c](./c_pole_staticka_pole_6.c) | ✅ | ✅ | ❌ |
-| [c_pole_staticka_pole_8.c](./c_pole_staticka_pole_8.c) | ✅ | ✅ | ❌ |
+| [c_datove_typy_pravdivostni_typy_4.c](./c_datove_typy_pravdivostni_typy_4.c) | ✅ | ✅ | ❌ |
 | [c_pole_staticka_pole_9.c](./c_pole_staticka_pole_9.c) | ✅ | ✅ | ❌ |
 | [c_prace_s_pameti_ukazatele_1.c](./c_prace_s_pameti_ukazatele_1.c) | ✅ | ✅ | ❌ |
 | [c_modularizace_pouzivani_kodu_z_jinych_souboru_1.c](./c_modularizace_pouzivani_kodu_z_jinych_souboru_1.c) | ✅ | ✅ | ❌ |
 | [c_rizeni_toku_for_3.c](./c_rizeni_toku_for_3.c) | ✅ | ❌ | ✅ |
 | [c_rizeni_toku_switch_1.c](./c_rizeni_toku_switch_1.c) | ✅ | ❌ | ❌ |
-| [c_rizeni_toku_while_8.c](./c_rizeni_toku_while_8.c) | ✅ | ❌ | ❌ |
 | [c_prace_s_pameti_ukazatele_na_funkce_3.c](./c_prace_s_pameti_ukazatele_na_funkce_3.c) | ✅ | ❌ | ❌ |
 | [c_prikazy_vyrazy_3.c](./c_prikazy_vyrazy_3.c) | ✅ | ❌ | ❌ |
 | [c_struktury_struktury_funkce_3.c](./c_struktury_struktury_funkce_3.c) | ✅ | ❌ | ❌ |
-| [c_datove_typy_pravdivostni_typy_2.c](./c_datove_typy_pravdivostni_typy_2.c) | ✅ | ❌ | ❌ |
 | [c_prace_s_pameti_ukazatele_na_funkce_1.c](./c_prace_s_pameti_ukazatele_na_funkce_1.c) | ✅ | ❌ | ❌ |
-| [c_rizeni_toku_while_7.c](./c_rizeni_toku_while_7.c) | ✅ | ❌ | ❌ |
 | [c_preprocesor_makra_3.c](./c_preprocesor_makra_3.c) | ✅ | ❌ | ❌ |
 | [c_struktury_struktury_funkce_2.c](./c_struktury_struktury_funkce_2.c) | ✅ | ❌ | ❌ |
-| [c_datove_typy_pravdivostni_typy_3.c](./c_datove_typy_pravdivostni_typy_3.c) | ✅ | ❌ | ❌ |
 | [c_text_vstup_4.c](./c_text_vstup_4.c) | ✅ | ❌ | ❌ |
-| [c_text_vstup_3.c](./c_text_vstup_3.c) | ✅ | ❌ | ❌ |
 | [c_rizeni_toku_for_1.c](./c_rizeni_toku_for_1.c) | ✅ | ❌ | ❌ |
-| [c_datove_typy_pravdivostni_typy_4.c](./c_datove_typy_pravdivostni_typy_4.c) | ✅ | ❌ | ❌ |
 | [c_rizeni_toku_ternarni_operator_1.c](./c_rizeni_toku_ternarni_operator_1.c) | ✅ | ❌ | ❌ |
 | [c_preprocesor_makra_2.c](./c_preprocesor_makra_2.c) | ✅ | ❌ | ❌ |
 | [c_rizeni_toku_switch_2.c](./c_rizeni_toku_switch_2.c) | ✅ | ❌ | ❌ |
-| [c_text_vstup_1.c](./c_text_vstup_1.c) | ✅ | ❌ | ❌ |
 | [caste_chyby_caste_chyby_3.c](./caste_chyby_caste_chyby_3.c) | ✅ | ❌ | ❌ |
 | [c_promenne_promenne_12.c](./c_promenne_promenne_12.c) | ✅ | ❌ | ❌ |
 | [c_pole_zubata_pole_1.c](./c_pole_zubata_pole_1.c) | ✅ | ❌ | ❌ |
 | [c_struktury_struktury_funkce_1.c](./c_struktury_struktury_funkce_1.c) | ✅ | ❌ | ❌ |
 | [c_struktury_struktury_1.c](./c_struktury_struktury_1.c) | ✅ | ❌ | ❌ |
-| [caste_chyby_caste_chyby_1.c](./caste_chyby_caste_chyby_1.c) | ✅ | ❌ | ❌ |
 | [c_promenne_promenne_11.c](./c_promenne_promenne_11.c) | ✅ | ❌ | ❌ |
-| [c_promenne_promenne_13.c](./c_promenne_promenne_13.c) | ✅ | ❌ | ❌ |
 | [ruzne_nahodna_cisla_2.c](./ruzne_nahodna_cisla_2.c) | ✅ | ❌ | ❌ |
-| [c_text_vystup_5.c](./c_text_vystup_5.c) | ✅ | ❌ | ❌ |
-| [c_text_vystup_4.c](./c_text_vystup_4.c) | ✅ | ❌ | ❌ |
 | [c_pole_staticka_pole_12.c](./c_pole_staticka_pole_12.c) | ✅ | ❌ | ❌ |
 | [caste_chyby_caste_chyby_4.c](./caste_chyby_caste_chyby_4.c) | ✅ | ❌ | ❌ |
 | [c_prace_s_pameti_dynamicka_pamet_1.c](./c_prace_s_pameti_dynamicka_pamet_1.c) | ✅ | ❌ | ❌ |
-| [c_datove_typy_pravdivostni_typy_1.c](./c_datove_typy_pravdivostni_typy_1.c) | ✅ | ❌ | ❌ |
 | [c_rizeni_toku_switch_3.c](./c_rizeni_toku_switch_3.c) | ✅ | ❌ | ❌ |
+| [c_prace_s_pameti_ukazatele_10.c](./c_prace_s_pameti_ukazatele_10.c) | ❌ | ✅ | ⚠️ |
+| [c_datove_typy_desetinne_typy_3.c](./c_datove_typy_desetinne_typy_3.c) | ❌ | ✅ | ⚠️ |
+| [c_text_vystup_3.c](./c_text_vystup_3.c) | ❌ | ✅ | ⚠️ |
+| [c_pole_staticka_pole_8.c](./c_pole_staticka_pole_8.c) | ❌ | ✅ | ⚠️ |
 | [c_text_vstup_2.c](./c_text_vstup_2.c) | ❌ | ❌ | ⚠️ |
 | [c_promenne_konstanty_1.c](./c_promenne_konstanty_1.c) | ❌ | ❌ | ⚠️ |
 | [c_promenne_promenne_7.c](./c_promenne_promenne_7.c) | ❌ | ❌ | ⚠️ |
 | [c_funkce_funkce_5.c](./c_funkce_funkce_5.c) | ❌ | ❌ | ⚠️ |
 | [c_funkce_funkce_10.c](./c_funkce_funkce_10.c) | ❌ | ❌ | ⚠️ |
+| [c_text_vstup_3.c](./c_text_vstup_3.c) | ❌ | ❌ | ⚠️ |
 | [c_funkce_funkce_11.c](./c_funkce_funkce_11.c) | ❌ | ❌ | ⚠️ |
 | [c_funkce_funkce_9.c](./c_funkce_funkce_9.c) | ❌ | ❌ | ⚠️ |
+| [c_text_vstup_1.c](./c_text_vstup_1.c) | ❌ | ❌ | ⚠️ |
 | [c_promenne_promenne_8.c](./c_promenne_promenne_8.c) | ❌ | ❌ | ⚠️ |
+| [c_promenne_promenne_13.c](./c_promenne_promenne_13.c) | ❌ | ❌ | ⚠️ |
+| [c_text_vystup_5.c](./c_text_vystup_5.c) | ❌ | ❌ | ⚠️ |
+| [c_text_vystup_4.c](./c_text_vystup_4.c) | ❌ | ❌ | ⚠️ |
 | [c_promenne_promenne_10.c](./c_promenne_promenne_10.c) | ❌ | ❌ | ⚠️ |
 | [c_prikazy_vyrazy_4.c](./c_prikazy_vyrazy_4.c) | ❌ | ❌ | ⚠️ |

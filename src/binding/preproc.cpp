@@ -6,6 +6,8 @@
 #include "binding/libc/unistd.h"
 #include "binding/libc/string.h"
 #include "binding/libc/scc.h"
+#include "binding/libc/stddef.h"
+#include "binding/libc/stdbool.h"
 
 namespace scc
 {
@@ -43,6 +45,10 @@ namespace scc
             lib = binding::libc::string_h;
         else if (include_node.value() == BINDER_LIBC_SCC_H)
             lib = binding::libc::scc_h;
+        else if (include_node.value() == BINDER_LIBC_STDDEF_H)
+            lib = binding::libc::stddef_h;
+        else if (include_node.value() == BINDER_LIBC_STDBOOL_H)
+            lib = binding::libc::stdbool_h;
         else
             return false;
 

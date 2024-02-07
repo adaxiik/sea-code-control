@@ -2,6 +2,7 @@
 
 # quick dirty script to evaluate all .c files :)
 
+from concurrent.futures import ThreadPoolExecutor
 import glob
 import os
 import pathlib
@@ -66,7 +67,7 @@ def run_command(program_path: str) -> RunOutput:
 
 def compile_file(file_path: str) -> CompilerOutput:
     path_str = pathlib.Path(file_path).resolve().as_posix()
-    command = f"{COMPILER} {path_str} -o {path_str}.out -lm -std=c99 -pedantic -Wno-everything"
+    command = f"{COMPILER} {path_str} -o {path_str}.out -lm -std=c99 -pedantic -Wno-everything -Werror=format"
     output = run_command(command)
     return_code = output.return_code
 
@@ -129,8 +130,12 @@ def results_to_md(results: list[EvalResult]) -> str:
 
 eval_results = []
 
-for c_file in all_c_files:
-    eval_results.append(evaluate_file(c_file))
+# for c_file in all_c_files:
+#     eval_results.append(evaluate_file(c_file))
+
+with ThreadPoolExecutor(max_workers=12) as e:
+    eval_results = list(e.map(evaluate_file, all_c_files))
+
 
 for out_file in all_out_files:
     os.remove(out_file)
