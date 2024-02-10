@@ -25,8 +25,7 @@ namespace scc
 
         bool is_constant = has_qualifier && node.first_named_child().value() == "const";
         bool is_global = m_scope_stack.is_global_scope();
-        auto type_descriptor = node.named_child(type_index).value();
-        auto type = Type::from_string(type_descriptor);
+        auto type = deduce_type_from_node(node.named_child(type_index));
         if(not type.has_value())
         {
             // TODOOOOOOOOOOOOO: custom types
@@ -34,7 +33,7 @@ namespace scc
             // return nullptr;
             SCC_BINDER_RESULT_TYPE(bind_variable_declaration);
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
-            error.add_diagnostic("Unknown type: " + type_descriptor);
+            error.add_diagnostic("Unknown type: " + node.named_child(type_index).value());
             return error;
         }
 

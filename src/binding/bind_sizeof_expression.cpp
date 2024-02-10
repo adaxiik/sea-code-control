@@ -17,7 +17,7 @@ namespace scc
         }
         else if (node.first_named_child().symbol() == Parser::TYPE_DESCRIPTOR_SYMBOL)
         {
-            auto deduced_type = deduce_type_from_type_descriptor(node.first_named_child());
+            auto deduced_type = deduce_type_from_node(node.first_named_child());
             if (not deduced_type.has_value())
             {
                 auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::FailedToDeduceTypeFromTypeDescriptorError, node));

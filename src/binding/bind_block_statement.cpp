@@ -28,6 +28,13 @@ namespace scc
 
                 return binding::BinderResult<ResultType>::ok(std::move(block_statement));
             }
+            else if (node.first_named_child().symbol() == Parser::TYPE_DEFINITION_SYMBOL)
+            {
+                if (not handle_typedef(node.first_named_child()))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::TypedefError, node));
+
+                return binding::BinderResult<ResultType>::ok(std::move(block_statement));
+            }
 
             auto result = bind_impl(node.first_named_child());
             BUBBLE_ERROR(result);
@@ -38,7 +45,7 @@ namespace scc
 
             auto statement = static_cast<binding::BoundStatement*>(result.release_value().release());
             block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(statement));
-            return binding::BinderResult<ResultType>::ok(std::move(block_statement));             
+            return binding::BinderResult<ResultType>::ok(std::move(block_statement));
         }
 
         if (node.has_parent())
@@ -62,6 +69,12 @@ namespace scc
                     return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::DefineMacroError, node));
                 continue;
             }
+            else if (child.symbol() == Parser::TYPE_DEFINITION_SYMBOL)
+            {
+                if (not handle_typedef(child))
+                    return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::TypedefError, node));
+                continue;
+            }
 
 
             auto binded = bind_impl(child);
@@ -70,7 +83,7 @@ namespace scc
             if(not binded.get_value()->is_statement())
             {
                 // TODOOO: UNREACHABLE???
-                SCC_UNREACHABLE();                
+                SCC_UNREACHABLE();
             }
             auto bound_statement_ptr = static_cast<binding::BoundStatement*>(binded.release_value().release());
             block_statement->statements.push_back(std::unique_ptr<binding::BoundStatement>(bound_statement_ptr));
