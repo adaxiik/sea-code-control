@@ -23,26 +23,37 @@ namespace scc
 
     void REPL::print_result(const InterpreterResult &result)
     {
-        if (result.get_value().type.is_pointer())
-        {
-            m_output_stream << "0x" << std::hex << std::get<Memory::address_t>(result.get_value().value.primitive_value().value()) << std::dec; 
-            return;
-        }
+        // if (result.get_value().type.is_pointer())
+        // {
+        //     m_output_stream << "0x" << std::hex << std::get<Memory::address_t>(result.get_value().value.primitive_value().value()) << std::dec;
+        //     return;
+        // }
 
-        std::visit(overloaded{
-            [&](const Type::Primitive::Char& value) { m_output_stream << "'" << value << "'" ; },
-            [&](const Type::Primitive::U8& value) { m_output_stream << value; },
-            [&](const Type::Primitive::I8& value) { m_output_stream << value; },
-            [&](const Type::Primitive::U16& value) { m_output_stream << value; },
-            [&](const Type::Primitive::I16& value) { m_output_stream << value; },
-            [&](const Type::Primitive::U32& value) { m_output_stream << value; },
-            [&](const Type::Primitive::I32& value) { m_output_stream << value; },
-            [&](const Type::Primitive::U64& value) { m_output_stream << value; },
-            [&](const Type::Primitive::I64& value) { m_output_stream << value; },
-            [&](const Type::Primitive::F32& value) { m_output_stream << value; },
-            [&](const Type::Primitive::F64& value) { m_output_stream << value; },
-            [&](const Type::Primitive::Bool& value) { m_output_stream << (value ? "true" : "false") ; }
-        }, result.get_value().value.primitive_value().value());
+        // if (result.get_value().type.is_struct())
+        // {
+        //     Type::StructValue struct_value = std::get<Type::StructValue>(result.get_value().value.value);
+        //     m_output_stream << "struct " << struct_value.
+
+        //     return;
+        // }
+
+        // std::visit(overloaded{
+        //     [&](const Type::Primitive::Char& value) { m_output_stream << "'" << value << "'" ; },
+        //     [&](const Type::Primitive::U8& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::I8& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::U16& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::I16& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::U32& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::I32& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::U64& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::I64& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::F32& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::F64& value) { m_output_stream << value; },
+        //     [&](const Type::Primitive::Bool& value) { m_output_stream << (value ? "true" : "false") ; }
+        // }, result.get_value().value.primitive_value().value());
+        // result.get_value().value.print(m_output_stream);
+        Type::Value::print_as_type(m_output_stream, result.get_value().value.value, result.get_value().type);
+
     }
 
     void REPL::run()
@@ -132,7 +143,7 @@ namespace scc
                 );
                 debug::instructions_as_text(std::cout, lowered);
             }
-            
+
             running_interpreter.append_code(lower_result);
 
             auto result = running_interpreter.continue_execution();

@@ -24,22 +24,33 @@ namespace scc
                     , variable_type
                     , variable_type.size_bytes()
                     , flags & Flags::IsConst
+                    , flags & Flags::IsGlobal
                 );
             }
 
             if (creation_result.is_error())
                 return creation_result;
 
+            if (flags & Flags::IsGlobal)
+            {
+                Variable* variable = state.global_scope.get_variable(variable_name);
+                if (not variable)
+                    return InterpreterError::VariableDoesntExistError;
+
+                size_t size = variable_type.size_bytes();
+                state.memory.memset(variable->address(), 0, size); // zero initialize global variables
+            }
+
             if (not (flags & Flags::HasInitializer))
                 return creation_result;
 
-            auto variable = flags & Flags::IsGlobal
-             ? state.global_scope.get_variable(variable_name) 
-             : state.call_stack.scope_stack().get_from_scopestack(variable_name);
+            Variable* variable = (flags & Flags::IsGlobal) ?
+                          state.global_scope.get_variable(variable_name)
+                        : state.call_stack.scope_stack().get_from_scopestack(variable_name);
 
             if (not variable)
                 return InterpreterError::VariableDoesntExistError;
-            
+
             if (state.result_stack.size() < 1)
                 return InterpreterError::RuntimeError;
 
@@ -48,7 +59,7 @@ namespace scc
 
             if (variable->set_value(state.memory, value.get_value().value))
                 return creation_result;
-                
+
             return InterpreterError::RuntimeError;
         }
 

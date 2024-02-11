@@ -66,7 +66,7 @@ namespace scc
             variable_value_declaration_statement.variable_name,
             variable_value_declaration_statement.type,
             CVFlags::None
-            | ((variable_value_declaration_statement.initializer != nullptr or variable_value_declaration_statement.is_global) ? CVFlags::HasInitializer : CVFlags::None)
+            | ((variable_value_declaration_statement.initializer != nullptr) ? CVFlags::HasInitializer : CVFlags::None)
             | (variable_value_declaration_statement.is_global ? CVFlags::IsGlobal : CVFlags::None)
             | (variable_value_declaration_statement.is_constant ? CVFlags::IsConst : CVFlags::None)
         ), variable_value_declaration_statement.location));
@@ -75,11 +75,11 @@ namespace scc
         {
             m_to_lower.push(variable_value_declaration_statement.initializer.get());
         }
-        else if (variable_value_declaration_statement.is_global)
-        {
-            m_to_lower.push(std::make_pair(lowering::CastInstruction(variable_value_declaration_statement.type), variable_value_declaration_statement.location));
-            m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(Type::PrimitiveType::I32, 0), variable_value_declaration_statement.location));
-        }
+        // else if (variable_value_declaration_statement.is_global)
+        // {
+        //     m_to_lower.push(std::make_pair(lowering::CastInstruction(variable_value_declaration_statement.type), variable_value_declaration_statement.location));
+        //     m_to_lower.push(std::make_pair(lowering::PushLiteralInstruction(Type::PrimitiveType::I32, 0), variable_value_declaration_statement.location));
+        // }
 
     }
 

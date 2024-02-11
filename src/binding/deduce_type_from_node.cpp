@@ -8,6 +8,7 @@ namespace scc
         // SCC_ASSERT_NAMED_CHILD_COUNT(node, 1);
 
         // we only support anonymous structs for now
+        // thus name is always empty
         if (node.named_child_count() != 1)
             return std::nullopt;
 
@@ -20,7 +21,6 @@ namespace scc
         //         ├── type_identifier ==> Amen
         //         └── field_identifier ==>        x
 
-        std::string type_name = node.last_named_child().value();
         std::map<std::string, Type> fields;
 
         for (uint32_t i = 0; i < node.first_named_child().named_child_count(); i++)
@@ -39,25 +39,26 @@ namespace scc
             fields.insert_or_assign(field_name.value(), type.value());
         }
 
-        return Type::StructType(type_name, fields);
+        return Type::StructType("<anonymous>", fields);
     }
 
     std::optional<Type> Binder::deduce_type_from_node(const TreeNode &node)
     {
         // SCC_ASSERT_NODE_SYMBOL(Parser::TYPE_DESCRIPTOR_SYMBOL );
 
-        SCC_ASSERT(
-            node.symbol() == Parser::TYPE_DESCRIPTOR_SYMBOL
-         or node.symbol() == Parser::STRUCT_SPECIFIER_SYMBOL
-         or node.symbol() == Parser::PRIMITIVE_TYPE_SYMBOL
-         or node.symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL
-         or node.symbol() == Parser::TYPE_IDENTIFIER_SYMBOL);
-
+        // SCC_ASSERT(
+        //     node.symbol() == Parser::TYPE_DESCRIPTOR_SYMBOL
+        //  or node.symbol() == Parser::STRUCT_SPECIFIER_SYMBOL
+        //  or node.symbol() == Parser::PRIMITIVE_TYPE_SYMBOL
+        //  or node.symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL
+        //  or node.symbol() == Parser::TYPE_IDENTIFIER_SYMBOL
+        // );
 
         if (
             node.symbol() == Parser::PRIMITIVE_TYPE_SYMBOL
             or node.symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL
             or node.symbol() == Parser::TYPE_IDENTIFIER_SYMBOL
+            or node.symbol() == Parser::IDENTIFIER_SYMBOL
         )
         {
             std::string type_name = node.value();
