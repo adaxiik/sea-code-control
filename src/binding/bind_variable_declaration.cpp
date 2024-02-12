@@ -190,7 +190,30 @@ namespace scc
                         {
                             // int x = {1}; is ok, but int x = {1,2}; is not
                             // int x = {}; is not valid C99
-                            if (initializer_node.named_child_count() != 1 )
+                            // EDIT: it might be struct .. so S x = {1,2}; can be valid valid
+
+                            if (type.value().is_struct() and not type.value().is_pointer())
+                            {
+                                // initializer_list ==>        {.x = 1, ....
+                                // ├── initializer_pair ==>    .x = 1
+                                // │   ├── field_designator ==>        .x
+                                // │   │   └── field_identifier ==>    x
+                                // │   └── number_literal ==>  1
+                                // └── initializer_pair ==>    .z = 1
+                                //     ├── field_designator ==>        .z
+                                //     │   └── field_identifier ==>    z
+                                //     └── number_literal ==>  1
+
+                                // or
+
+                                // initializer_list ==>        {1, 2}
+                                // ├── number_literal ==>      1
+                                // └── number_literal ==>      2
+                                SCC_NOT_IMPLEMENTED("struct initializer");
+                            }
+
+
+                            if (initializer_node.named_child_count() != 1)
                                 return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::InvalidInitializerError, initializer_node));
 
                             auto initializer = bind_expression(initializer_node.first_named_child());

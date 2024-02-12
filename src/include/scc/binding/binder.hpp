@@ -148,6 +148,8 @@ namespace scc
         binding::BinderResult<binding::BoundUnaryExpression> bind_unary_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundStringExpression> bind_string_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPrintfExpression> bind_printf_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundDereferenceExpression> bind_field_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_field_assignment_expression(const TreeNode &node);
 
         std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
 

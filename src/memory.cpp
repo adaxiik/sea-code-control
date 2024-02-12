@@ -170,15 +170,15 @@ namespace scc
         #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
             return write<Type::Primitive::KIND>(address, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
 
+         if (type.is_pointer())
+            return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
+
         if (type.is_struct())
         {
             // TODOOO: implement struct variables
             std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
             std::abort();
         }
-
-        if (type.is_pointer())
-            return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
 
         switch (std::get<Type::PrimitiveType>(type.base_type))
         {

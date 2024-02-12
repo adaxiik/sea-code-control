@@ -38,6 +38,7 @@ namespace scc
                 InvalidSubscriptExpressionError,
                 InvalidUpdateExpression,
                 TypedefError,
+                InvalidFieldAccessError,
                 COUNT
             };
 

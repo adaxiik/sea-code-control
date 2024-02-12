@@ -114,6 +114,33 @@ namespace scc
         return std::nullopt;
     }
 
+    size_t TreeNode::count_named_children_with_symbol(TSSymbol symbol, SearchDepth max_depth) const
+    {
+        size_t count = 0;
+        std::queue<TreeNode> queue;
+        queue.push(*this);
+        uint32_t depth = 0;
+
+        while (!queue.empty())
+        {
+            TreeNode node = queue.front();
+            queue.pop();
+
+            if (node.symbol() == symbol)
+                count++;
+
+            if (max_depth != SearchDepth::infinite && depth >= max_depth)
+                continue;
+
+            for (uint32_t i = 0; i < node.named_child_count(); i++)
+                queue.push(node.named_child(i));
+
+            depth++;
+        }
+
+        return count;
+    }
+
     bool TreeNode::has_named_child_with_symbol(TSSymbol symbol, SearchDepth max_depth) const
     {
         return named_child_with_symbol_BFS(symbol, max_depth).has_value();

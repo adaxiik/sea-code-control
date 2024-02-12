@@ -343,6 +343,7 @@ namespace scc
                     break;
                 }
 
+
                 case binding::BoundNodeKind::ParenthesizedExpression:
                 {
                     auto& parenthesized_expression = static_cast<const binding::BoundParenthesizedExpression&>(node);

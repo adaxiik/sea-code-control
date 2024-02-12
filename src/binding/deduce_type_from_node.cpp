@@ -17,6 +17,10 @@ namespace scc
         //     ├── field_declaration ==>   int a;
         //     │   ├── primitive_type ==>  int
         //     │   └── field_identifier ==>        a
+        //     ├── field_declaration ==>   A* ptr;
+        //     │   ├── type_identifier ==> A
+        //     │   └── pointer_declarator ==>      * ptr
+        //     │       └── field_identifier ==>    ptr
         //     └── field_declaration ==>   Amen x;
         //         ├── type_identifier ==> Amen
         //         └── field_identifier ==>        x
@@ -25,21 +29,28 @@ namespace scc
 
         for (uint32_t i = 0; i < node.first_named_child().named_child_count(); i++)
         {
-            auto field_declaration = node.first_named_child().named_child(i);
+            TreeNode field_declaration = node.first_named_child().named_child(i);
             SCC_ASSERT(field_declaration.symbol() == Parser::FIELD_DECLARATION_SYMBOL);
             SCC_ASSERT_NAMED_CHILD_COUNT(field_declaration, 2);
 
-            auto field_type = field_declaration.first_named_child();
-            auto field_name = field_declaration.last_named_child();
+            TreeNode field_type = field_declaration.first_named_child();
+            auto field_name_opt = field_declaration.named_child_with_symbol_BFS(Parser::FIELD_IDENTIFIER_SYMBOL);
+            if (not field_name_opt.has_value())
+                return std::nullopt;
+
+            TreeNode field_name = field_name_opt.value();
 
             auto type = binder.deduce_type_from_node(field_type);
             if (not type.has_value())
                 return std::nullopt;
 
+            size_t ptr_depth = node.count_named_children_with_symbol(Parser::POINTER_DECLARATOR_SYMBOL);
+            type.value().modifiers = std::vector<Type::Modifier>(ptr_depth, Type::Pointer{});
+
             fields.insert_or_assign(field_name.value(), type.value());
         }
 
-        return Type::StructType("<anonymous>", fields);
+        return Type::StructType{"<anonymous>", std::move(fields)};
     }
 
     std::optional<Type> Binder::deduce_type_from_node(const TreeNode &node)

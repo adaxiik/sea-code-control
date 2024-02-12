@@ -22,10 +22,10 @@ namespace scc
             : m_node(node)
             , m_parser_result(&parser_result){}
 
-        TreeNode(TSNode node, const ParserResult *parser_result) 
+        TreeNode(TSNode node, const ParserResult *parser_result)
             : m_node(node)
             , m_parser_result(parser_result){}
-        
+
         ~TreeNode() = default;
 
         TreeNode(const TreeNode & node) : m_node(node.m_node), m_parser_result(node.m_parser_result) {}
@@ -66,15 +66,16 @@ namespace scc
 
         /**
          * @brief Returns the first child with the given symbol.
-         * 
+         *
          * BFS is used to search for the child.
          * Depth can be limited by the max_depth parameter. (default: infinite)
-         * 
-         * @param symbol 
-         * @param max_depth 
-         * @return std::optional<TreeNode> 
+         *
+         * @param symbol
+         * @param max_depth
+         * @return std::optional<TreeNode>
          */
         std::optional<TreeNode> named_child_with_symbol_BFS(TSSymbol symbol, SearchDepth max_depth = SearchDepth::infinite) const;
         bool has_named_child_with_symbol(TSSymbol symbol, SearchDepth max_depth = SearchDepth::infinite) const;
+        size_t count_named_children_with_symbol(TSSymbol symbol, SearchDepth max_depth = SearchDepth::infinite) const;
     };
 }
