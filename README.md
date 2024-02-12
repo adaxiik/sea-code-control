@@ -5,7 +5,7 @@
 # Used libraries
 ### For interpreter itself
 - [Tree sitter](https://github.com/tree-sitter/tree-sitter/)
-- [Tree sitter C](https://github.com/tree-sitter/tree-sitter-c)
+- [Tree sitter C](https://github.com/tree-sitter/tree-sitter-c) .. [this]( https://github.com/tree-sitter/tree-sitter-c/blob/82ed290fc3e53041eb0c64137b113a006a87c83b/grammar.js) particular grammar was used
 - [Linenoise](https://github.com/yhirose/cpp-linenoise)
 - [Doctest](https://github.com/doctest/doctest)
 - [nlohmann/json](https://github.com/nlohmann/json)
