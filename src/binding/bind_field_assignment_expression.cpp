@@ -41,7 +41,7 @@ namespace scc
 
         auto binary_expression = std::make_unique<binding::BoundBinaryExpression>(
             std::move(left_expression.get_value()->expression),
-            std::move(right_expression.release_value()),
+            right_expression.release_value(),
             target_type,
             operator_kind
         );

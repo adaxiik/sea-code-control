@@ -43,6 +43,7 @@ namespace scc
         struct StructType
         {
             std::string name;
+            // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO: change it to vector.. order of the fields is important
             std::map<std::string, Type> fields;
 
             bool operator==(const StructType &other) const

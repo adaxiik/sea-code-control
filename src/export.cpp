@@ -207,14 +207,6 @@ namespace scc::export_format
             if (it != type_to_type_index.end())
                 return it->second;
 
-
-
-            if (type.is_struct())
-            {
-                std::cerr << "type_to_export_type: struct type is not supported yet" << std::endl;
-                std::abort();
-            }
-
             if (type.is_pointer())
             {
                 // well.. rekurzivní typy by přecejen byly fajn xd
@@ -228,6 +220,31 @@ namespace scc::export_format
                     [&](const scc::Type::Pointer) { snapshot.types.push_back(PointerType{pointing_to_type_index}); },
                     [&](const scc::Type::Array array) { snapshot.types.push_back(ArrayType{pointing_to_type_index, type.size_bytes(), array.size}); },
                 }, last_modifier);
+
+                auto type_index = type_to_type_index.size();
+                type_to_type_index.insert({type, type_index});
+                return type_index;
+            }
+
+            if (type.is_struct())
+            {
+                // auto type_copy = type;
+
+                auto as_struct = std::get<scc::Type::StructType>(type.base_type);
+
+                size_t current_offset = 0;
+                std::vector<StructField> fields;
+                for (const auto& [name, field_type] : as_struct.fields)
+                {
+                    StructField field;
+                    field.name = name;
+                    field.type_index = get_type_index_of(field_type);
+                    field.offset_bytes = current_offset;
+                    current_offset += field_type.size_bytes();
+                    fields.push_back(field);
+                }
+
+                snapshot.types.push_back(StructType{as_struct.name, fields, current_offset});
 
                 auto type_index = type_to_type_index.size();
                 type_to_type_index.insert({type, type_index});

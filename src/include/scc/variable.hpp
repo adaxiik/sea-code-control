@@ -21,7 +21,8 @@ namespace scc
         , m_is_parameter(is_parameter)
         {
             // int a[1]; a; is valid
-            if (m_type.is_array())
+            // I'll probably remove m_initialized soon
+            if (m_type.is_array() or m_type.is_struct())
                 m_initialized = true;
         }
 

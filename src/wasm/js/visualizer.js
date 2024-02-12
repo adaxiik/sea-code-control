@@ -155,6 +155,15 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return type.kind == "array";
     }
 
+    let isStruct = function(typeIndex) {
+        let type = exportedProgram.types[typeIndex];
+        if (!type) {
+            console.log("ERROR: typeIndex " + typeIndex + " not found");
+            return false;
+        }
+        return type.kind == "struct";
+    }
+
 
 
     let getTypeName = function(typeIndex) {
@@ -170,6 +179,9 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         }
         else if (type.kind == "array") {
             return getTypeName(type.element_type_index) + "[" + type.size_bytes / exportedProgram.types[type.element_type_index].size_bytes + "]";
+        }
+        else if (type.kind == "struct") {
+            return type.name;
         }
 
         return "ERROR";
@@ -233,7 +245,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return getDataValueFromView(view, typeName);
     }
 
-    let addVariableToStackFrame = function(stackFrame, variable) {
+    let createVariableData = function(variable) {
         let address = variable.allocated_place.address;
         variableAddressToName[address] = variable.name;
 
@@ -242,10 +254,11 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         variableData.dataTypeString = getTypeName(variable.type_index);
         variableData.isPointer = isPointer(variable.type_index);
         variableData.valueString = variableValueAsString(variable).toString();
-        stackFrame.functionVariables[variable.name] = variableData;
+        // stackFrame.functionVariables[variable.name] = variableData;
+        return variableData;
     }
 
-    let addArrayToStackFrame = function(stackFrame, variable) {
+    let createArrayData = function(variable) {
         let address = variable.allocated_place.address;
         variableAddressToName[address] = variable.name;
 
@@ -267,15 +280,75 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
             arrayData.elements[i] = element;
         }
 
-        stackFrame.functionVariables[variable.name] = arrayData;
+        // stackFrame.functionVariables[variable.name] = arrayData;
+        return arrayData;
     }
 
-    let addToStackFrame = function(stackFrame, variable) {
-        if (isArray(variable.type_index)) {
-            addArrayToStackFrame(stackFrame, variable);
-        } else {
-            addVariableToStackFrame(stackFrame, variable);
+    let createStructData = function(variable) {
+        // let stackFrame1StructMemberStruct1 = new DataModelStructures.Struct();    //Member struct variable
+        // stackFrame1StructMemberStruct1.variableName = "stackFrame1StructMemberStruct1";
+        // stackFrame1StructMemberStruct1.elements = new Array<DataModelStructures.Variable>();
+        // stackFrame1StructMemberStruct1.dataTypeString = "struct2";
+        // stackFrame1StructMemberStruct1.isCollapsed = true;
+        // let stackFrame1StructMember4 = new DataModelStructures.Variable();
+        // stackFrame1StructMember4.variableName = "stackFrame1StructMember4";
+        // stackFrame1StructMember4.dataTypeString = "int";
+        // stackFrame1StructMember4.valueString = "73";
+
+        let address = variable.allocated_place.address;
+        variableAddressToName[address] = variable.name;
+
+        let structData = new cvisualizer.DataModelStructures.Struct();
+        structData.variableName = variable.name;
+        structData.isCollapsed = true;
+        structData.dataTypeString = getTypeName(variable.type_index);
+        structData.elements = [];
+        // {
+        //     "fields": [
+        //         {
+        //             "name": "x",
+        //             "offset_bytes": 0,
+        //             "type_index": 0
+        //         }
+        //     ],
+        //     "kind": "struct",
+        //     "name": "<anonymous>",
+        //     "size_bytes": 4
+        // }
+
+        let structType = exportedProgram.types[variable.type_index];
+        let fields = structType.fields;
+        for (let field of fields) {
+            let fieldAddress = variable.allocated_place.address + field.offset_bytes;
+            let dataSlice = variable.allocated_place.data.slice(field.offset_bytes, field.offset_bytes + exportedProgram.types[field.type_index].size_bytes);
+
+            let fieldVariable = {
+                name: field.name,
+                type_index: field.type_index,
+                is_initialized: true,
+                allocated_place: {
+                    address: fieldAddress,
+                    data: dataSlice
+                }
+            };
+            let d = createData(fieldVariable);
+            structData.elements.push(d);
         }
+
+        return structData;
+    }
+
+    let createData = function(variable) {
+        if (isArray(variable.type_index)) {
+            return createArrayData(variable);
+        }
+        else if (isStruct(variable.type_index)) {
+            return createStructData(variable);
+        }
+         else {
+            return createVariableData(variable);
+        }
+        throw "ERROR";
     }
 
 
@@ -284,7 +357,8 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
     globalVariables.functionName = "Global variables";
     globalVariables.isCollapsed = false;
     for (let global of exportedProgram.global_variables) {
-        addToStackFrame(globalVariables, global);
+        let d = createData(globalVariables, global);
+        stackFrame.functionVariables[global.name] = d;
     }
     programStack.stackFrames[globalVariables.frameId] = globalVariables;
 
@@ -297,19 +371,22 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         stackFrame.isCollapsed = false;
 
         for (let param of exportedStackframe.parameters) {
-            let address = param.allocated_place.address;
-            variableAddressToName[address] = param.name;
+            // let address = param.allocated_place.address;
+            // variableAddressToName[address] = param.name;
 
-            let variable = new cvisualizer.DataModelStructures.Variable();
-            variable.variableName = param.name;
-            variable.dataTypeString = getTypeName(param.type_index);
-            variable.valueString = variableValueAsString(param);
-            variable.isPointer = isPointer(param.type_index);
-            stackFrame.functionParameters[param.name] = variable;
+            // let variable = new cvisualizer.DataModelStructures.Variable();
+            // variable.variableName = param.name;
+            // variable.dataTypeString = getTypeName(param.type_index);
+            // variable.valueString = variableValueAsString(param);
+            // variable.isPointer = isPointer(param.type_index);
+            let d = createData(param);
+            // stackFrame.functionParameters[param.name] = variable;
+            stackFrame.functionParameters[param.name] = d;
         }
 
         for (let local of exportedStackframe.variables) {
-            addToStackFrame(stackFrame, local);
+            let d = createData(local);
+            stackFrame.functionVariables[local.name] = d;
         }
 
         programStack.stackFrames[stackFrame.frameId] = stackFrame;
