@@ -51,6 +51,8 @@ namespace scc
         TreeNode child(uint32_t index) const;
         TreeNode named_child(uint32_t index) const;
 
+        std::optional<TreeNode> child_by_field(TSFieldId field) const;
+
         TreeNode first_child() const;
         TreeNode first_named_child() const;
         TreeNode last_child() const;

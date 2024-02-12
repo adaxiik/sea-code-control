@@ -26,7 +26,6 @@ namespace scc
                 ReturnStatementOutsideFunctionError,
                 FunctionAlreadyDefinedError,
                 ReturnStatementMissingExpressionError,
-                UnsupportedForStatementError,
                 ParserError, // Tree sitter error
                 // TODOO: Variable already exists / Variable does not exist
                 FailedToIncludeError,

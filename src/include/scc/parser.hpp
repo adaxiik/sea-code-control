@@ -75,6 +75,33 @@ namespace scc
         // for(auto& name : names)
         //     std::cout << name << std::endl;
 
+
+
+        // =======================
+        // = Tree-sitter fields =
+        // =======================
+
+        // size_t field_count = ts_language_field_count(language);
+        // std::cout << "field count: " << field_count << std::endl;
+        // std::set<std::string> names;
+        // for (size_t i = 0; i < field_count; i++)
+        // {
+        //     const char* name = ts_language_field_name_for_id(language, i);
+        //     if (name == nullptr)
+        //         continue;
+
+        //     auto s = ts_language_field_id_for_name(language, name, std::strlen(name));
+        //     std::string name_upper{name};
+        //     std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(), [](unsigned char c){ return std::toupper(c); });
+        //     std::string result = "static constexpr auto " + name_upper + "_FIELD = " + std::to_string(s) + ";";
+        //     names.insert(result);
+
+        // }
+
+        // for(auto& name : names)
+        //     std::cout << name << std::endl;
+
+
         static constexpr auto ABSTRACT_ARRAY_DECLARATOR_SYMBOL = 177;
         static constexpr auto ABSTRACT_FUNCTION_DECLARATOR_SYMBOL = 173;
         static constexpr auto ABSTRACT_PARENTHESIZED_DECLARATOR_SYMBOL = 165;
@@ -173,5 +200,29 @@ namespace scc
         static constexpr auto UNION_SPECIFIER_SYMBOL = 187;
         static constexpr auto UPDATE_EXPRESSION_SYMBOL = 214;
         static constexpr auto WHILE_STATEMENT_SYMBOL = 200;
+
+        static constexpr auto ALTERNATIVE_FIELD = 1;
+        static constexpr auto ARGUMENTS_FIELD = 3;
+        static constexpr auto ARGUMENT_FIELD = 2;
+        static constexpr auto BODY_FIELD = 4;
+        static constexpr auto CONDITION_FIELD = 5;
+        static constexpr auto CONSEQUENCE_FIELD = 6;
+        static constexpr auto DECLARATOR_FIELD = 7;
+        static constexpr auto DESIGNATOR_FIELD = 8;
+        static constexpr auto DIRECTIVE_FIELD = 9;
+        static constexpr auto FIELD_FIELD = 10;
+        static constexpr auto FUNCTION_FIELD = 11;
+        static constexpr auto INDEX_FIELD = 12;
+        static constexpr auto INITIALIZER_FIELD = 13;
+        static constexpr auto LABEL_FIELD = 14;
+        static constexpr auto LEFT_FIELD = 15;
+        static constexpr auto NAME_FIELD = 16;
+        static constexpr auto OPERATOR_FIELD = 17;
+        static constexpr auto PARAMETERS_FIELD = 18;
+        static constexpr auto PATH_FIELD = 19;
+        static constexpr auto RIGHT_FIELD = 20;
+        static constexpr auto SIZE_FIELD = 21;
+        static constexpr auto TYPE_FIELD = 22;
+        static constexpr auto UPDATE_FIELD = 23;
     };
 }

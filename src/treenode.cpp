@@ -52,6 +52,15 @@ namespace scc
         return TreeNode(ts_node_named_child(m_node, index), m_parser_result);
     }
 
+    std::optional<TreeNode> TreeNode::child_by_field(TSFieldId field) const
+    {
+        TSNode child = ts_node_child_by_field_id(m_node, field);
+        if (ts_node_is_null(child))
+            return std::nullopt;
+
+        return TreeNode(child, m_parser_result);
+    }
+
     TreeNode TreeNode::first_child() const
     {
         return TreeNode(ts_node_child(m_node, 0), m_parser_result);
