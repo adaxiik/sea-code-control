@@ -137,7 +137,10 @@ namespace scc
                 error.add_diagnostic("Unknown field: " + identifier);
                 return error;
             }
-            auto offset_constant = std::make_unique<binding::BoundLiteralExpression>(Type::Value{offset.value()});
+            auto offset_constant = std::make_unique<binding::BoundLiteralExpression>(
+                Type::Value(Type(Type::PrimitiveType::U64), static_cast<Type::Primitive::U64>(offset.value()))
+            );
+
             auto addition_expression = std::make_unique<binding::BoundBinaryExpression>(
                 std::move(casted_to_void_ptr),
                 std::move(offset_constant),

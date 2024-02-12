@@ -64,7 +64,6 @@ namespace scc
         //  or node.symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL
         //  or node.symbol() == Parser::TYPE_IDENTIFIER_SYMBOL
         // );
-
         if (
             node.symbol() == Parser::PRIMITIVE_TYPE_SYMBOL
             or node.symbol() == Parser::SIZED_TYPE_SPECIFIER_SYMBOL

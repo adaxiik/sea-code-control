@@ -49,9 +49,9 @@ namespace scc
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
 
         m_scope_stack.pop();
-        
+
         std::unique_ptr<binding::BoundBlockStatement> body_statement = std::unique_ptr<binding::BoundBlockStatement>(static_cast<binding::BoundBlockStatement*>(body_statement_result.release_value().release()));
 
-        return std::make_unique<binding::BoundForStatement>(initializer_result.release_value(), std::move(condition), std::move(increment), std::move(body_statement));        
+        return std::make_unique<binding::BoundForStatement>(initializer_result.release_value(), std::move(condition), std::move(increment), std::move(body_statement));
     }
 }

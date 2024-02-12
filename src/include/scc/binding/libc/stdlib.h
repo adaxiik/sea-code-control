@@ -4,11 +4,12 @@ namespace scc::binding::libc
 {
 
 constexpr auto stdlib_h = R"(
+#include <stddef.h>
 
-void* _scc_malloc(unsigned long size);
+void* _scc_malloc(size_t size);
 void _scc_free(void* ptr);
 
-void* malloc(unsigned long size)
+void* malloc(size_t size)
 {
     return _scc_malloc(size);
 }

@@ -46,9 +46,10 @@ namespace scc
         //             └── parameter_list ==>  ()
 
         int type_index = node.first_named_child().symbol() == Parser::STORAGE_CLASS_SPECIFIER_SYMBOL; // eg.: `static`
-        
+
         // TODOO: custom types
-        std::optional<Type> return_type_opt = Type::from_string(node.named_child(type_index).value());
+        // std::optional<Type> return_type_opt = Type::from_string(node.named_child(type_index).value());
+        std::optional<Type> return_type_opt = deduce_type_from_node(node.named_child(type_index));
         if (!return_type_opt.has_value())
         {
             auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
@@ -77,11 +78,11 @@ namespace scc
 
         std::string function_name = declarator.first_named_child().value();
         TreeNode parameter_list = declarator.named_child(1);
-        
-        
+
+
         std::vector<std::unique_ptr<binding::BoundVariableDeclarationStatement>> parameters;
         FunctionDeclaration fn_declaration = {return_type, std::vector<Type>(), false};
-        
+
         m_scope_stack.push();
         for (size_t i = 0; i < parameter_list.named_child_count(); i++)
         {
@@ -95,7 +96,7 @@ namespace scc
             fn_declaration.parameters.push_back(bound_declaration.get_value()->type);
             parameters.emplace_back(bound_declaration.release_value());
         }
-        
+
         m_current_function = fn_declaration;
         if (m_functions.find(function_name) != m_functions.end())
         {
@@ -130,7 +131,7 @@ namespace scc
             m_functions.at(function_name).is_defined = true;
         }
         m_scope_stack.pop();
-        
+
        return std::make_unique<binding::BoundFunctionStatement>(return_type, std::move(function_name), std::move(parameters), std::move(body));
     }
 }
