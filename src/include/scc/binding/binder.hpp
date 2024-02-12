@@ -113,6 +113,7 @@ namespace scc
         std::map<std::string, std::string> m_macros;
         std::set<std::string> m_included_headers;
         std::optional<std::reference_wrapper<const FunctionDeclaration>> m_current_function;
+        std::map<std::string, Type> m_typedefs;
 
         binding::BinderResult<binding::BoundBlockStatement> bind_block_statement(const TreeNode &node);
         binding::BinderResult<binding::BoundNode> bind_impl(const TreeNode &node);
@@ -147,17 +148,21 @@ namespace scc
         binding::BinderResult<binding::BoundUnaryExpression> bind_unary_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundStringExpression> bind_string_expression(const TreeNode &node);
         binding::BinderResult<binding::BoundPrintfExpression> bind_printf_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundDereferenceExpression> bind_field_expression(const TreeNode &node);
+        binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_field_assignment_expression(const TreeNode &node);
 
-        std::optional<Type> deduce_type_from_type_descriptor(const TreeNode &node);
-        static std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
+        std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
 
         bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
         bool prepoc_define(const TreeNode &node);
         static std::vector<char> escape_string(const std::string& str);
+        bool handle_typedef(const TreeNode &node);
+
     public:
         Binder(): m_current_function(std::nullopt) { m_scope_stack.push();}
         ~Binder() = default;
         binding::BinderResult<binding::BoundNode> bind(const TreeNode &node);
+        std::optional<Type> deduce_type_from_node(const TreeNode &node);
     };
 }
 

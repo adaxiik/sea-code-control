@@ -43,6 +43,7 @@ namespace scc
         struct StructType
         {
             std::string name;
+            // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO: change it to vector.. order of the fields is important
             std::map<std::string, Type> fields;
 
             bool operator==(const StructType &other) const
@@ -78,7 +79,6 @@ namespace scc
         Type(StructType struct_type) : base_type(struct_type) {}
         Type(BaseType base_type, std::vector<std::variant<Pointer, Array>> modifiers) : base_type(base_type), modifiers(modifiers) {}
         size_t size_bytes() const;
-
 
         struct Primitive
         {
@@ -122,12 +122,13 @@ namespace scc
             Primitive::F32,
             Primitive::F64,
             Primitive::Bool>;
-        
-        struct StructValue {
-            std::map<std::string, std::variant<PrimitiveValue, StructValue>> fields;            
-        };
 
         struct Value;
+        struct StructValue {
+            std::map<std::string, std::variant<PrimitiveValue, StructValue>> fields;
+            // std::map<std::string, Value> fields;
+        };
+
 
         template <typename T>
         static Type deduce_type()
@@ -216,6 +217,9 @@ namespace scc
             else
                 return std::nullopt;
         }
+
+        void print(std::ostream &os) const { print_as_type(os, value, type); }
+        static void print_as_type(std::ostream &os, std::variant<PrimitiveValue, StructValue> value, const Type &type);
     };
 }
 

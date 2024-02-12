@@ -115,7 +115,7 @@ namespace scc
 
             // TODOOO: Handle arrays and pointers
             for (size_t i = 0; i < type.modifiers.size(); i++)
-                os << "*";           
+                os << "*";
 
         return os;
     }
@@ -151,10 +151,10 @@ namespace scc
                     return accumulated_size * std::get<Array>(modifiers[i]).size * std::visit(
                         overloaded{
                             [](PrimitiveType primitive_type) { return Type(primitive_type).size_bytes(); },
-                            [](StructType ) { 
+                            [](StructType ) {
                                 std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
                                 std::abort();
-                                return size_t(0);    
+                                return size_t(0);
                             }
                         },
                         base_type);
@@ -171,8 +171,15 @@ namespace scc
 
         if (std::holds_alternative<StructType>(base_type))
         {
-            std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-            std::abort();
+            // std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
+            // std::abort();
+
+            // TODOO: Alignment
+            size_t size = 0;
+            for (const auto &field : std::get<StructType>(base_type).fields)
+                size += field.second.size_bytes();
+
+            return size;
         }
 
         switch (std::get<PrimitiveType>(base_type))
@@ -210,7 +217,42 @@ namespace scc
         }
     }
 
+    void Type::Value::print_as_type(std::ostream &os, std::variant<PrimitiveValue, StructValue> value,  const Type& as_type)
+    {
+        if (as_type.is_pointer())
+        {
+            os << "0x" << std::hex << std::get<Primitive::PTR>(std::get<PrimitiveValue>(value)) << std::dec;
+            return;
+        }
+
+        if (as_type.is_struct())
+        {
+            const StructValue &struct_value = std::get<StructValue>(value);
+            const StructType &struct_type = std::get<StructType>(as_type.base_type);
+
+            // os << "struct " << struct_type.name <<
+            os << "{ ";
+            size_t i = 0;
+            for (const auto &field : struct_value.fields)
+            {
+                os << field.first << " = ";
+                Type::Value::print_as_type(os, field.second, struct_type.fields.at(field.first));
+                os << (i == struct_value.fields.size() - 1 ? "" : ", ");
+
+                i += 1;
+            }
+            os << "}";
+            return;
+        }
+
+        std::visit(overloaded{
+            [&](const Primitive::Char &value) { os << "'" << value << "'"; },
+            [&](const Primitive::Bool &value) { os << (value ? "true" : "false"); },
+            [&](const auto &value) { os << value; },
+        }, std::get<PrimitiveValue>(value));
+    }
 }
+
 
 
 

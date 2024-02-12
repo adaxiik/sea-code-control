@@ -28,6 +28,8 @@ namespace scc
                 return bind_pointer_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else if(node.child(0).symbol() == Parser::SUBSCRIPT_EXPRESSION_SYMBOL)
                 return bind_subscript_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
+            else if (node.child(0).symbol() == Parser::FIELD_EXPRESSION_SYMBOL)
+                return bind_field_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
             else
                 return bind_assignment_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::CALL_EXPRESSION_SYMBOL:
@@ -51,6 +53,8 @@ namespace scc
             return bind_identifier_expression(node).add_location_to_value_if_ok(node.maybe_location());
         case Parser::NULL_SYMBOL:
             return bind_identifier_expression(node).add_location_to_value_if_ok(node.maybe_location());
+        case Parser::FIELD_EXPRESSION_SYMBOL:
+            return bind_field_expression(node).add_location_to_value_if_ok(node.maybe_location());
         default:
             SCC_NOT_IMPLEMENTED_WARN(node.symbol_name());
             break;

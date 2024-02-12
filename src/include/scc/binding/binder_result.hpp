@@ -37,6 +37,8 @@ namespace scc
                 SizeOfError,
                 InvalidSubscriptExpressionError,
                 InvalidUpdateExpression,
+                TypedefError,
+                InvalidFieldAccessError,
                 COUNT
             };
 
@@ -56,7 +58,7 @@ namespace scc
 
             bool operator==(const BinderError& other) const { return kind == other.kind; }
         };
-        
+
         template<typename T>
         class BinderResult
         {
@@ -68,7 +70,7 @@ namespace scc
                 : m_diagnostics(diagnostics)
                 , m_value(std::move(value))
                 , m_binder_error(binder_error) {}
-            
+
         public:
             using type = T;
             static BinderResult ok(std::unique_ptr<T> value) { return BinderResult({}, std::move(value), BinderError::None()); }
@@ -79,46 +81,46 @@ namespace scc
             template<typename U>
             BinderResult(BinderResult<U>&& other)
                 : m_diagnostics(std::move(other.get_diagnostics()))
-                , m_binder_error(other.get_error()) 
+                , m_binder_error(other.get_error())
                 {
 
                     if constexpr (std::is_base_of_v<T, U>)
                     {
                         m_value = std::unique_ptr<T>(static_cast<T*>(other.release_value().release()));
                     }
-                    else 
+                    else
                     {
                         if(other.has_value())
                             throw std::runtime_error("BinderResult: Cannot implicitly upcast to a different type Base: " + std::string(typeid(T).name()) + " Derived: " + std::string(typeid(U).name()));
-                        
+
                         m_value = nullptr;
                     }
                 }
-                
+
             BinderResult(BinderResult&& other) = default;
 
             BinderResult(std::unique_ptr<T> value)
                 : m_diagnostics({})
                 , m_value(std::move(value))
                 , m_binder_error(BinderError::None()) {}
-           
-            
-            BinderResult(BinderError binder_error) 
+
+
+            BinderResult(BinderError binder_error)
                 : m_diagnostics({})
                 , m_value(nullptr)
                 , m_binder_error(binder_error) {}
-            
-            BinderResult(BinderError binder_error, std::vector<std::string> diagnostics) 
+
+            BinderResult(BinderError binder_error, std::vector<std::string> diagnostics)
                 : m_diagnostics(diagnostics)
                 , m_value(nullptr)
                 , m_binder_error(binder_error) {}
-            
+
             bool is_ok() const { return m_binder_error == BinderError::None(); }
             bool is_error() const { return !is_ok(); }
 
             T* get_value() const { return m_value.get(); }
-            std::unique_ptr<T> release_value() 
-            { 
+            std::unique_ptr<T> release_value()
+            {
                 std::unique_ptr<T> value = std::move(m_value);
                 return value;
             }
@@ -136,7 +138,7 @@ namespace scc
 
                 return std::move(*this);
             }
-            
+
         };
 
     }

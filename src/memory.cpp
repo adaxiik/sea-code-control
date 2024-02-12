@@ -111,19 +111,28 @@ namespace scc
             } \
             break;
 
-        if (type.is_struct())
-        {
-            // TODOOO: implement struct variables
-            std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-            std::abort();
-        }
-
         if (type.is_pointer())
         {
             auto value = read<Type::Primitive::U64>(address);
             if (not value.has_value())
                 return std::nullopt;
             return Type::Value(value.value());
+        }
+
+        if (type.is_struct())
+        {
+            Type::StructValue struct_value;
+            size_t offset = 0;
+            for (const auto& field : std::get<Type::StructType>(type.base_type).fields)
+            {
+                auto value = read_value(address + offset, field.second);
+                if (not value.has_value())
+                    return std::nullopt;
+
+                struct_value.fields.insert({field.first, value.value().value});
+                offset += field.second.size_bytes();
+            }
+            return Type::Value(type, struct_value);
         }
 
         static_assert(std::variant_size_v<Type::BaseType> == 2);
@@ -161,15 +170,15 @@ namespace scc
         #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
             return write<Type::Primitive::KIND>(address, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
 
+         if (type.is_pointer())
+            return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
+
         if (type.is_struct())
         {
             // TODOOO: implement struct variables
             std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
             std::abort();
         }
-
-        if (type.is_pointer())
-            return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
 
         switch (std::get<Type::PrimitiveType>(type.base_type))
         {

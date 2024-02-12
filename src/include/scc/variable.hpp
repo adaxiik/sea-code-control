@@ -13,15 +13,16 @@ namespace scc
         bool m_initialized;
         bool m_is_parameter;    // only for debug/export purposes, doesnt do anything useful rn
     public:
-        Variable(Type type, Memory::address_t address, bool is_constant = false, bool is_parameter = false)
+        Variable(Type type, Memory::address_t address, bool is_constant = false, bool is_parameter = false, bool is_initialized = false)
         : m_type(type)
         , m_address(address)
         , m_is_constant(is_constant)
-        , m_initialized(false)
+        , m_initialized(is_initialized)
         , m_is_parameter(is_parameter)
         {
             // int a[1]; a; is valid
-            if (m_type.is_array())
+            // I'll probably remove m_initialized soon
+            if (m_type.is_array() or m_type.is_struct())
                 m_initialized = true;
         }
 

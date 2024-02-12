@@ -4,11 +4,12 @@ namespace scc::binding::libc
 {
 
 constexpr auto string_h = R"(
+#include <stddef.h>
 
-void* memset(void* s, int c, long n)
+void* memset(void* s, int c, size_t n)
 {
     char* p = (char*)s;
-    for (long i = 0; i < n; i+=1){
+    for (size_t i = 0; i < n; i+=1){
         // p[i] = (char)c;
         *(p + i) = (char)c;
     }
@@ -16,18 +17,18 @@ void* memset(void* s, int c, long n)
     return s;
 }
 
-void* memcpy(void* dest, const void* src, long n)
+void* memcpy(void* dest, const void* src, size_t n)
 {
     char* d = (char*)dest;
     char* s = (char*)src;
-    for (long i = 0; i < n; i+=1){
+    for (size_t i = 0; i < n; i+=1){
         d[i] = s[i];
     }
 
     return dest;
 }
 
-unsigned long strlen(const char* str)
+size_t strlen(const char* str)
 {
     char *s = str;
     while (*s){

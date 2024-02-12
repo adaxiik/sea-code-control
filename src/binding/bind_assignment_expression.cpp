@@ -4,7 +4,7 @@ namespace scc
 {
     binding::BinderResult<binding::BoundAssignmentExpression> Binder::bind_assignment_expression(const TreeNode &node)
     {
-        SCC_BINDER_RESULT_TYPE(bind_assignment_expression);  
+        SCC_BINDER_RESULT_TYPE(bind_assignment_expression);
         SCC_ASSERT_NODE_SYMBOL(Parser::ASSIGNMENT_EXPRESSION_SYMBOL);
         SCC_ASSERT_CHILD_COUNT(node, 3);
 
@@ -34,7 +34,7 @@ namespace scc
             ParserResult parser_result = parser.parse(macro_value, true);
             if (parser_result.has_error())
             {
-                SCC_BINDER_RESULT_TYPE(bind_assignment_expression);  
+                SCC_BINDER_RESULT_TYPE(bind_assignment_expression);
                 auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::DefineMacroParseError, node));
                 error.add_diagnostic("Failed to parse macro value: " + macro_value);
                 return error;

@@ -16,17 +16,13 @@ namespace scc
 
             auto target_type{type};
 
-            // TODOOO: casting for structs
-            if (not target_type.is_primitive())
-                return InterpreterResult::error(InterpreterError::InvalidOperationError);
-
             // (int)(int*) x;
             // int32_t x = (int32_t)(int64_t)(int32_t*)1;  // ok
             // int32_t y = (int32_t)(int32_t*)1;           // error
 
-            if (result.get_value().type.is_pointer() 
-                and not target_type.is_pointer() 
-                and target_type != Type(Type::PrimitiveType::U64) 
+            if (result.get_value().type.is_pointer()
+                and not target_type.is_pointer()
+                and target_type != Type(Type::PrimitiveType::U64)
                 and target_type != Type(Type::PrimitiveType::I64))
             {
                 return InterpreterResult::error(InterpreterError::InvalidOperationError);
@@ -73,12 +69,16 @@ namespace scc
                 }
             }
 
+            // We can't cast to struct types.. only pointers to them
+            if (not target_type.is_primitive())
+                return InterpreterResult::error(InterpreterError::InvalidOperationError);
+
             static_assert(static_cast<int>(Type::PrimitiveType::COUNT) == 13, "Update this code");
 
 
             #define CAST_CASE(KIND_TYPE, TARGET_TYPE) case Type::PrimitiveType::KIND_TYPE: \
                 return InterpreterResult::ok(InterpreterResultValue(static_cast<TARGET_TYPE>(std::get<Type::Primitive::KIND_TYPE>(result.get_value().value.primitive_value().value()))))
-            
+
             #define CAST_ORIGINAL(TARGET_TYPE) do{ \
                 switch(result.get_value().type.primitive_type().value_or(Type::PrimitiveType::COUNT)) \
                 { \
@@ -125,10 +125,10 @@ namespace scc
                 case Type::PrimitiveType::F32: CAST_ORIGINAL(Type::Primitive::F32);
                 case Type::PrimitiveType::F64: CAST_ORIGINAL(Type::Primitive::F64);
                 case Type::PrimitiveType::Bool: CAST_ORIGINAL(Type::Primitive::Bool);
-                case Type::PrimitiveType::Void: 
+                case Type::PrimitiveType::Void:
                     return InterpreterResult::error(InterpreterError::InvalidOperationError);
                 default:
-                    return InterpreterResult::error(InterpreterError::ReachedUnreachableError); 
+                    return InterpreterResult::error(InterpreterError::ReachedUnreachableError);
             }
             #undef CAST_CASE
             #undef CAST_ORIGINAL
