@@ -52,6 +52,11 @@ namespace scc
         return TreeNode(ts_node_named_child(m_node, index), m_parser_result);
     }
 
+    std::optional<TreeNode> TreeNode::get_child_by_name(std::string name) const {
+        auto node = ts_node_child_by_field_name(this->m_node, name.c_str(), name.size());
+        return TreeNode(node, m_parser_result);
+    }
+
     TreeNode TreeNode::first_child() const
     {
         return TreeNode(ts_node_child(m_node, 0), m_parser_result);

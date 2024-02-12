@@ -8,6 +8,9 @@ namespace scc
 
         // only for(int i = 0; i < 10; i++) and for(;;) are supported
 
+        auto has_initializer = node.get_child_by_name("initializer")->value();
+        std::cerr << has_initializer << std::endl;
+
         if (node.named_child_count() != 4 and node.named_child_count() != 1)
             return binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnsupportedForStatementError, node));
 
