@@ -152,6 +152,7 @@ namespace scc
         binding::BinderResult<binding::BoundPointerAssignmentExpression> bind_field_assignment_expression(const TreeNode &node);
 
         std::optional<binding::BoundBinaryExpression::OperatorKind> operation_kind_from_string(const std::string op_kind);
+        binding::BinderResult<binding::BoundLiteralExpression> bind_struct_initializer_list(const TreeNode &node, const Type& type);
 
         bool prepoc_include(std::vector<std::unique_ptr<binding::BoundStatement>> & statements, const TreeNode &node);
         bool prepoc_define(const TreeNode &node);

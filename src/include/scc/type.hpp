@@ -75,6 +75,18 @@ namespace scc
                 }
                 return std::nullopt;
             }
+
+            std::optional<size_t> index_of(const std::string &field_name) const
+            {
+                size_t index = 0;
+                for (const auto &[name, type] : fields)
+                {
+                    if (name == field_name)
+                        return index;
+                    index++;
+                }
+                return std::nullopt;
+            }
         };
 
         using BaseType = std::variant<PrimitiveType, StructType>;
@@ -228,6 +240,8 @@ namespace scc
         template<typename T>
         Value(T value) : type(Type::deduce_type<T>()), value(value) {}
 
+        static Value default_value(const Type &type);
+
         template<typename T>
         static Value from_primitive(T value) {
             return Value{Type::deduce_type<T>(), PrimitiveValue(value)};
@@ -239,6 +253,8 @@ namespace scc
             else
                 return std::nullopt;
         }
+
+        std::optional<Value> compiletime_cast_internal(const Type &target_type) const;
 
         void print(std::ostream &os) const { print_as_type(os, value, type); }
         static void print_as_type(std::ostream &os, std::variant<PrimitiveValue, StructValue> value, const Type &type);

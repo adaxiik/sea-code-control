@@ -251,6 +251,124 @@ namespace scc
             [&](const auto &value) { os << value; },
         }, std::get<PrimitiveValue>(value));
     }
+
+    Type::Value Type::Value::default_value(const Type &type)
+    {
+        if (type.is_pointer())
+            return Type::Value(type, Primitive::PTR(0));
+
+        if (type.is_struct())
+        {
+            const StructType &struct_type = std::get<StructType>(type.base_type);
+            std::vector<std::variant<PrimitiveValue, StructValue>> fields;
+            for (const auto &field : struct_type.fields)
+                fields.push_back(Type::Value::default_value(field.second).value);
+
+            return Type::Value(type, StructValue(fields));
+        }
+
+        switch (std::get<PrimitiveType>(type.base_type))
+        {
+        case PrimitiveType::Char:
+            return Type::Value(type, Primitive::Char(0));
+        case PrimitiveType::I8:
+            return Type::Value(type, Primitive::I8(0));
+        case PrimitiveType::U8:
+            return Type::Value(type, Primitive::U8(0));
+        case PrimitiveType::I16:
+            return Type::Value(type, Primitive::I16(0));
+        case PrimitiveType::U16:
+            return Type::Value(type, Primitive::U16(0));
+        case PrimitiveType::I32:
+            return Type::Value(type, Primitive::I32(0));
+        case PrimitiveType::U32:
+            return Type::Value(type, Primitive::U32(0));
+        case PrimitiveType::I64:
+            return Type::Value(type, Primitive::I64(0));
+        case PrimitiveType::U64:
+            return Type::Value(type, Primitive::U64(0));
+        case PrimitiveType::F32:
+            return Type::Value(type, Primitive::F32(0));
+        case PrimitiveType::F64:
+            return Type::Value(type, Primitive::F64(0));
+        case PrimitiveType::Bool:
+            return Type::Value(type, Primitive::Bool(false));
+        case PrimitiveType::Void:
+            std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
+            std::exit(1);
+            return Type::Value(type, Primitive::I64(0));
+        default:
+            std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
+            std::exit(1);
+            return Type::Value(type, Primitive::I64(0));
+        }
+    }
+
+    template <typename TARGET>
+    struct CompileCast
+    {
+        template <typename SOURCE>
+        TARGET operator()(SOURCE source) const
+        {
+            return static_cast<TARGET>(source);
+        }
+    };
+
+    std::optional<Type::Value> Type::Value::compiletime_cast_internal(const Type &target_type) const
+    {
+        if (type == target_type)
+            return *this;
+
+        if (target_type.is_pointer())
+        {
+            auto v = std::visit(overloaded {
+                [](auto source) { return static_cast<Type::Primitive::PTR>(source); }
+            }, std::get<PrimitiveValue>(value));
+
+            return Type::Value(target_type, v);
+        }
+
+        if (target_type.is_struct() or type.is_struct())
+            return std::nullopt;
+
+        if (target_type.is_array() or type.is_array())
+        {
+            // TODO: not supported.. probably never will be
+            return std::nullopt;
+        }
+
+        return std::visit(overloaded{
+            [&](auto source) {
+                static_assert(static_cast<int>(PrimitiveType::COUNT) == 13);
+                switch (target_type.primitive_type().value_or(PrimitiveType::COUNT))
+                {
+                    case PrimitiveType::Char: return Type::Value::from_primitive<char>(source);
+                    case PrimitiveType::I8: return Type::Value::from_primitive<int8_t>(source);
+                    case PrimitiveType::U8: return Type::Value::from_primitive<uint8_t>(source);
+                    case PrimitiveType::I16: return Type::Value::from_primitive<int16_t>(source);
+                    case PrimitiveType::U16: return Type::Value::from_primitive<uint16_t>(source);
+                    case PrimitiveType::I32: return Type::Value::from_primitive<int32_t>(source);
+                    case PrimitiveType::U32: return Type::Value::from_primitive<uint32_t>(source);
+                    case PrimitiveType::I64: return Type::Value::from_primitive<int64_t>(source);
+                    case PrimitiveType::U64: return Type::Value::from_primitive<uint64_t>(source);
+                    case PrimitiveType::F32: return Type::Value::from_primitive<float>(source);
+                    case PrimitiveType::F64: return Type::Value::from_primitive<double>(source);
+                    case PrimitiveType::Bool: return Type::Value::from_primitive<bool>(source);
+                    case PrimitiveType::Void:
+                        std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
+                        std::exit(1);
+                        return Type::Value(target_type, Primitive::I64(0));
+                    default:
+                        std::cerr << "UNREACHABLE at " << __FILE__ << ":" << __LINE__ << std::endl;
+                        std::exit(1);
+                        return Type::Value(target_type, Primitive::I64(0));
+                }
+            },
+        }, std::get<PrimitiveValue>(value));
+
+    }
+
+
 }
 
 

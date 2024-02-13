@@ -2,6 +2,109 @@
 
 namespace scc
 {
+    binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_struct_initializer_list(const TreeNode &node, const Type& type)
+    {
+        SCC_ASSERT_NODE_SYMBOL(Parser::INITIALIZER_LIST_SYMBOL);
+        // initializer_list ==>        {.x = 1, ....
+        // ├── initializer_pair ==>    .x = 1
+        // │   ├── field_designator ==>        .x
+        // │   │   └── field_identifier ==>    x
+        // │   └── number_literal ==>  1
+        // └── initializer_pair ==>    .z = 1
+        //     ├── field_designator ==>        .z
+        //     │   └── field_identifier ==>    z
+        //     └── number_literal ==>  1
+
+        // or
+
+        // initializer_list ==>        {1, 2}
+        // ├── number_literal ==>      1
+        // └── number_literal ==>      2
+
+        // we'll just fill the whole struct with default values, and then override the ones that are given
+        // its not best for performance, but im not sure if field designators can be in any order
+        // or if we can mix field designators and normal initializers
+
+        if (std::get<Type::StructType>(type.base_type).fields.size() < node.named_child_count())
+        {
+            auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+            error.add_diagnostic("Too many initializers for struct " + std::get<Type::StructType>(type.base_type).name);
+            return error;
+        }
+
+        Type::Value result = Type::Value::default_value(type);
+        for (size_t i = 0; i < node.named_child_count(); i++)
+        {
+            if (node.named_child(i).symbol() == Parser::INITIALIZER_PAIR_SYMBOL)
+            {
+                std::optional<TreeNode> designator = node.named_child(i).child_by_field(Parser::DESIGNATOR_FIELD);
+                if (not designator.has_value())
+                {
+                    auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                    error.add_diagnostic("Invalid initializer for struct " + std::get<Type::StructType>(type.base_type).name + ", expected field designator");
+                    return error;
+                }
+                std::string field_name = designator.value().first_named_child().value();
+                auto field_index = std::get<Type::StructType>(type.base_type).index_of(field_name);
+                if (not field_index.has_value())
+                {
+                    auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                    error.add_diagnostic("Invalid initializer for struct " + std::get<Type::StructType>(type.base_type).name + ", unknown field " + field_name);
+                    return error;
+                }
+
+                TreeNode value_node = node.named_child(i).last_child();
+                SCC_NOT_IMPLEMENTED("Too tired today");
+            }
+
+            if (node.named_child(i).symbol() == Parser::INITIALIZER_LIST_SYMBOL)
+            {
+                if (not std::get<Type::StructType>(type.base_type).fields[i].second.is_struct())
+                {
+                    auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                    error.add_diagnostic("Invalid initializer for field " + std::get<Type::StructType>(type.base_type).fields[i].first + " of struct " + std::get<Type::StructType>(type.base_type).name);
+                    return error;
+                }
+                auto initializer = bind_struct_initializer_list(node.named_child(i), std::get<Type::StructType>(type.base_type).fields[i].second);
+                BUBBLE_ERROR(initializer);
+
+                std::get<Type::StructValue>(result.value).fields[i] = std::move(initializer.get_value()->value.value);
+
+                continue;
+            }
+
+            const auto& field = std::get<Type::StructType>(type.base_type).fields[i];
+            auto initializer = bind_expression(node.named_child(i));
+            BUBBLE_ERROR(initializer);
+
+            if (initializer.get_value()->bound_node_kind() != binding::BoundNodeKind::LiteralExpression)
+            {
+                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", expected literal expression");
+                return error;
+            }
+
+            auto literal = static_cast<binding::BoundLiteralExpression*>(initializer.get_value());
+            if (std::holds_alternative<Type::StructValue>(std::get<Type::StructValue>(result.value).fields[i]))
+            {
+                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", expected struct initializer");
+                return error;
+            }
+
+            std::optional<Type::Value> casted = literal->value.compiletime_cast_internal(field.second);
+            if (not casted.has_value())
+            {
+                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", invalid type");
+                return error;
+            }
+            std::get<Type::StructValue>(result.value).fields[i] = casted.value().value;
+        }
+
+        return static_cast<std::unique_ptr<binding::BoundLiteralExpression>>(std::make_unique<binding::BoundLiteralExpression>(result));
+    }
+
     binding::BinderResult<binding::BoundVariableDeclarationStatement> Binder::bind_variable_declaration(const TreeNode &node)
     {
         SCC_BINDER_RESULT_TYPE(bind_variable_declaration);
@@ -194,22 +297,12 @@ namespace scc
 
                             if (type.value().is_struct() and not type.value().is_pointer())
                             {
-                                // initializer_list ==>        {.x = 1, ....
-                                // ├── initializer_pair ==>    .x = 1
-                                // │   ├── field_designator ==>        .x
-                                // │   │   └── field_identifier ==>    x
-                                // │   └── number_literal ==>  1
-                                // └── initializer_pair ==>    .z = 1
-                                //     ├── field_designator ==>        .z
-                                //     │   └── field_identifier ==>    z
-                                //     └── number_literal ==>  1
-
-                                // or
-
-                                // initializer_list ==>        {1, 2}
-                                // ├── number_literal ==>      1
-                                // └── number_literal ==>      2
-                                SCC_NOT_IMPLEMENTED("struct initializer");
+                                // typedef struct {float x; int y; char z;} S;
+                                // S a = {1, 2, 69};
+                                auto initializer = bind_struct_initializer_list(initializer_node, type.value());
+                                BUBBLE_ERROR(initializer);
+                                static_cast<binding::BoundVariableValueDeclarationStatement*>(declaration.get_value())->initializer = initializer.release_value();
+                                return declaration;
                             }
 
 
