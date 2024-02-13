@@ -129,7 +129,8 @@ namespace scc
                 if (not value.has_value())
                     return std::nullopt;
 
-                struct_value.fields.insert({field.first, value.value().value});
+                // struct_value.fields.insert({field.first, value.value().value});
+                struct_value.fields.push_back(value.value().value);
                 offset += field.second.size_bytes();
             }
             return Type::Value(type, struct_value);

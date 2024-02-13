@@ -149,8 +149,7 @@ namespace scc
 
         struct Value;
         struct StructValue {
-            std::map<std::string, std::variant<PrimitiveValue, StructValue>> fields;
-            // std::map<std::string, Value> fields;
+            std::vector<std::variant<PrimitiveValue, StructValue>> fields;
         };
 
 
@@ -193,7 +192,7 @@ namespace scc
                 std::exit(1);
             }
             else
-                static_assert(!sizeof(T), "Invalid type");
+                static_assert(not sizeof(T), "Invalid type");
 
             return Type(PrimitiveType::COUNT);
         }

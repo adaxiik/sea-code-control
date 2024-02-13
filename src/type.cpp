@@ -236,7 +236,7 @@ namespace scc
             for (const auto& [field_name, field_type] : struct_type.fields)
             {
                 os << field_name << " = ";
-                Type::Value::print_as_type(os, struct_value.fields.at(field_name), field_type);
+                Type::Value::print_as_type(os, struct_value.fields[i], field_type);
                 os << (i == struct_type.fields.size() - 1 ? "" : ", ");
 
                 i += 1;
