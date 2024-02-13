@@ -223,8 +223,7 @@ namespace scc
         Type type;
         std::variant<PrimitiveValue, StructValue> value;
 
-        Value(Type type, PrimitiveValue value) : type(type), value(value) {}
-        Value(Type type, StructValue value) : type(type), value(value) {}
+        Value(Type type, std::variant<PrimitiveValue, StructValue> value) : type(type), value(value) {}
 
         template<typename T>
         Value(T value) : type(Type::deduce_type<T>()), value(value) {}

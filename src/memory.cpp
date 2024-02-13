@@ -129,7 +129,6 @@ namespace scc
                 if (not value.has_value())
                     return std::nullopt;
 
-                // struct_value.fields.insert({field.first, value.value().value});
                 struct_value.fields.push_back(value.value().value);
                 offset += field.second.size_bytes();
             }
@@ -166,19 +165,27 @@ namespace scc
         }
     }
 
-    bool Memory::write_value(address_t address, Type::Value value, Type type)
+    bool Memory::write_value(address_t address, const Type::Value& value, const Type& type)
     {
         #define CASE_SET_VALUE(KIND) case Type::PrimitiveType::KIND: \
             return write<Type::Primitive::KIND>(address, std::get<Type::Primitive::KIND>(std::get<Type::PrimitiveValue>(value.value)));
 
-         if (type.is_pointer())
+        if (type.is_pointer())
             return write<Type::Primitive::U64>(address, std::get<Type::Primitive::U64>(std::get<Type::PrimitiveValue>(value.value)));
 
         if (type.is_struct())
         {
-            // TODOOO: implement struct variables
-            std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-            std::abort();
+            size_t offset = 0;
+            for (size_t i = 0; i < std::get<Type::StructValue>(value.value).fields.size(); i++)
+            {
+                const Type& field_type = std::get<Type::StructType>(type.base_type).fields[i].second;
+                Type::Value field_value(field_type, std::get<Type::StructValue>(value.value).fields[i]);
+                if (not write_value(address + offset, field_value, field_type))
+                    return false;
+
+                offset += field_type.size_bytes();
+            }
+            return true;
         }
 
         switch (std::get<Type::PrimitiveType>(type.base_type))

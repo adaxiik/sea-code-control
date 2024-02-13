@@ -73,7 +73,7 @@ namespace scc
          * @return true if value was written successfully
          * @return false if address was not found
          */
-        bool write_value(address_t address, Type::Value value, Type type);
+        bool write_value(address_t address, const Type::Value& value, const Type& type);
 
         template<typename T>
         std::optional<T> read(address_t address) const
