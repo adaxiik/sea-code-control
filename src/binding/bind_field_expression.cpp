@@ -15,18 +15,6 @@ namespace scc
             return std::get<DerefAccess>(access).identifier;
     }
 
-    static std::optional<size_t> get_offset(const Type& type, const std::string& field_name)
-    {
-        size_t current_offset = 0;
-        for (const auto& [field, field_type] : std::get<Type::StructType>(type.base_type).fields)
-        {
-            if (field == field_name)
-                return current_offset;
-            current_offset += field_type.size_bytes();
-        }
-        return std::nullopt;
-    }
-
     binding::BinderResult<binding::BoundDereferenceExpression> Binder::bind_field_expression(const TreeNode &node)
     {
         // NOTE:
@@ -130,7 +118,8 @@ namespace scc
             }
 
             auto casted_to_void_ptr = std::make_unique<binding::BoundCastExpression>(std::move(current_base_ref), Type(Type::PrimitiveType::Char, {Type::Pointer{}}));
-            auto offset = get_offset(type, identifier);
+            // auto offset = get_offset(type, identifier);
+            std::optional<size_t> offset = std::get<Type::StructType>(type.base_type).offset_of(identifier);
             if (not offset.has_value())
             {
                 auto error = binding::BinderResult<ResultType>(binding::BinderError(ErrorKind::UnknownSymbolError, node));
@@ -150,7 +139,7 @@ namespace scc
 
             current_base_ref = std::move(addition_expression);
 
-            Type tt = std::get<Type::StructType>(type.base_type).fields.at(identifier);
+            Type tt = std::get<Type::StructType>(type.base_type).type_of(identifier).value();
             tt.modifiers.push_back(Type::Pointer{});
             type = std::move(tt);
         }

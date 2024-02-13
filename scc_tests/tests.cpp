@@ -934,6 +934,10 @@ TEST_CASE("Pointers")
 TEST_CASE("Include libc"){
     auto interpreter = scc::Interpreter();
     auto running_interpreter = scc::RunningInterpreter({});
+    std::stringstream ss;
+    std::stringstream ss_err;
+    scc::InterpreterIO::set_stdout_callback([&ss](const char* str){ ss << str; });
+    scc::InterpreterIO::set_stderr_callback([&ss_err](const char* str){ ss_err << str; });
 
 
     SCC_TEST_IS_OK("#include <math.h>\n");

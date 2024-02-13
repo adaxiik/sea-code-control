@@ -42,14 +42,38 @@ namespace scc
 
         struct StructType
         {
+            using Field = std::pair<std::string, Type>;
+
             std::string name;
-            // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO: change it to vector.. order of the fields is important
-            std::map<std::string, Type> fields;
+            // std::map<std::string, Type> fields;
+            std::vector<Field> fields;
 
             bool operator==(const StructType &other) const
             {
                 return name == other.name;
                 // TODO: maybe check fields too?
+            }
+
+            std::optional<size_t> offset_of(const std::string &field_name) const
+            {
+                size_t offset = 0;
+                for (const auto &[name, type] : fields)
+                {
+                    if (name == field_name)
+                        return offset;
+                    offset += type.size_bytes();
+                }
+                return std::nullopt;
+            }
+
+            std::optional<Type> type_of(const std::string &field_name) const
+            {
+                for (const auto &[name, type] : fields)
+                {
+                    if (name == field_name)
+                        return type;
+                }
+                return std::nullopt;
             }
         };
 

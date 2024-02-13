@@ -233,11 +233,11 @@ namespace scc
             // os << "struct " << struct_type.name <<
             os << "{ ";
             size_t i = 0;
-            for (const auto &field : struct_value.fields)
+            for (const auto& [field_name, field_type] : struct_type.fields)
             {
-                os << field.first << " = ";
-                Type::Value::print_as_type(os, field.second, struct_type.fields.at(field.first));
-                os << (i == struct_value.fields.size() - 1 ? "" : ", ");
+                os << field_name << " = ";
+                Type::Value::print_as_type(os, struct_value.fields.at(field_name), field_type);
+                os << (i == struct_type.fields.size() - 1 ? "" : ", ");
 
                 i += 1;
             }

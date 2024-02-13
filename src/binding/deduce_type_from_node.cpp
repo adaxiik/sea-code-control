@@ -25,7 +25,8 @@ namespace scc
         //         ├── type_identifier ==> Amen
         //         └── field_identifier ==>        x
 
-        std::map<std::string, Type> fields;
+        // std::map<std::string, Type> fields;
+        std::vector<Type::StructType::Field> fields;
 
         for (uint32_t i = 0; i < node.first_named_child().named_child_count(); i++)
         {
@@ -47,7 +48,7 @@ namespace scc
             size_t ptr_depth = node.count_named_children_with_symbol(Parser::POINTER_DECLARATOR_SYMBOL);
             type.value().modifiers = std::vector<Type::Modifier>(ptr_depth, Type::Pointer{});
 
-            fields.insert_or_assign(field_name.value(), type.value());
+            fields.push_back({field_name.value(), type.value()});
         }
 
         return Type::StructType{"<anonymous>", std::move(fields)};
