@@ -3,7 +3,7 @@ project(sea-code-control VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-option(BUILDING_WASM "Build for wasm" OFF) 
+option(BUILDING_WASM "Build for wasm" OFF)
 
 
 set(3RD_PARTY_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty)
@@ -16,7 +16,7 @@ if(BUILDING_WASM)
     message("Building for wasm enabled")
     set(CMAKE_EXECUTABLE_SUFFIX ".js")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O1")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g ") 
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g ")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s MODULARIZE=1 ")
     add_definitions(-DBUILDING_WASM)
 
@@ -27,8 +27,8 @@ else()
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -fsanitize=address")
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -flto=auto")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -flto=auto")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 
 
 # tree-sitter
@@ -43,7 +43,7 @@ target_include_directories(tree-sitter PUBLIC ${TREE_SITTER_INCLUDE_DIRS_PUBLIC}
 target_include_directories(tree-sitter PRIVATE ${TREE_SITTER_INCLUDE_DIRS_PRIVATE})
 set_target_properties(tree-sitter PROPERTIES LINKER_LANGUAGE C)
 
-# tree-sitter-c 
+# tree-sitter-c
 set(TREE_SITTER_C_PATH ${3RD_PARTY_PATH}/tree-sitter-c)
 set(TREE_SITTER_C_INCLUDE_DIRS ${TREE_SITTER_C_PATH}/include)
 
