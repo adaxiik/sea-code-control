@@ -45,7 +45,7 @@ namespace scc
             if (not type.has_value())
                 return std::nullopt;
 
-            size_t ptr_depth = node.count_named_children_with_symbol(Parser::POINTER_DECLARATOR_SYMBOL);
+            size_t ptr_depth = node.first_named_child().named_child(i).count_named_children_with_symbol(Parser::POINTER_DECLARATOR_SYMBOL);
             type.value().modifiers = std::vector<Type::Modifier>(ptr_depth, Type::Pointer{});
 
             fields.push_back({field_name.value(), type.value()});

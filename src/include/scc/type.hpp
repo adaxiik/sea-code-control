@@ -50,8 +50,18 @@ namespace scc
 
             bool operator==(const StructType &other) const
             {
-                return name == other.name;
-                // TODO: maybe check fields too?
+                if (name != other.name)
+                    return false;
+
+                if (fields.size() != other.fields.size())
+                    return false;
+
+                for (size_t i = 0; i < fields.size(); i++)
+                {
+                    if (fields[i].first != other.fields[i].first or fields[i].second != other.fields[i].second)
+                        return false;
+                }
+                return true;
             }
 
             std::optional<size_t> offset_of(const std::string &field_name) const
@@ -162,6 +172,9 @@ namespace scc
         struct Value;
         struct StructValue {
             std::vector<std::variant<PrimitiveValue, StructValue>> fields;
+
+            StructValue() = default;
+            StructValue(const std::vector<std::variant<PrimitiveValue, StructValue>>& fields) : fields(fields) {}
         };
 
 

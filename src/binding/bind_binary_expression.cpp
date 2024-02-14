@@ -18,12 +18,12 @@ namespace scc
         std::string op = node.child(1).value();
 
         using OpKind = binding::BoundBinaryExpression::OperatorKind;
-        SCC_BINDER_RESULT_TYPE(bind_binary_expression);  
-        
+        SCC_BINDER_RESULT_TYPE(bind_binary_expression);
+
         #define BIND_BINARY_OPERATOR(OP_STR, OP_KIND) \
             if (op == (OP_STR)){ \
                 auto deduced_type = binding::BoundBinaryExpression::deduce_type(bound_left->type, bound_right->type, OpKind::OP_KIND); \
-                if(!deduced_type.has_value()){ \
+                if(not deduced_type.has_value()){ \
                     return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::InvalidOperationError, node)); \
                 } \
                 return std::make_unique<binding::BoundBinaryExpression>(std::move(bound_left)   \
@@ -53,12 +53,12 @@ namespace scc
         BIND_BINARY_OPERATOR(">", GreaterThan);
         BIND_BINARY_OPERATOR("<=", LessThanOrEqual);
         BIND_BINARY_OPERATOR(">=", GreaterThanOrEqual);
-   
+
         SCC_NOT_IMPLEMENTED(op);
 
         #undef BIND_BINARY_OPERATOR
 
-        SCC_BINDER_RESULT_TYPE(bind_binary_expression);  
+        SCC_BINDER_RESULT_TYPE(bind_binary_expression);
         return binding::BinderResult<ResultType>::error(binding::BinderError(ErrorKind::ReachedUnreachableError, node));
 
     }

@@ -2,6 +2,54 @@
 
 namespace scc
 {
+    binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_struct_literal(const TreeNode& node, const Type::StructType::Field& field, const std::string& struct_name)
+    {
+        if (node.symbol() == Parser::INITIALIZER_LIST_SYMBOL)
+        {
+            if (not field.second.is_struct() or (field.second.is_struct() and field.second.is_pointer()))
+            {
+                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + struct_name + "or you are trying assign a pointer to struct.. and thats not supported, sorry :c");
+                return error;
+            }
+            auto initializer = bind_struct_initializer_list(node, field.second);
+            BUBBLE_ERROR(initializer);
+
+            // std::get<Type::StructValue>(result.value).fields[i] = std::move(initializer.get_value()->value.value);
+
+            // continue;
+            return initializer;
+        }
+
+        auto initializer = bind_expression(node);
+        BUBBLE_ERROR(initializer);
+
+        if (initializer.get_value()->bound_node_kind() != binding::BoundNodeKind::LiteralExpression)
+        {
+            auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+            error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + struct_name + ", expected literal expression");
+            return error;
+        }
+
+        auto literal = static_cast<binding::BoundLiteralExpression*>(initializer.get_value());
+        // if (std::holds_alternative<Type::StructValue>(std::get<Type::StructValue>(result.value).fields[i]))
+        // {
+        //     auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+        //     error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + struct_name + ", expected struct initializer");
+        //     return error;
+        // }
+
+        std::optional<Type::Value> casted = literal->value.compiletime_cast_internal(field.second);
+        if (not casted.has_value())
+        {
+            auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
+            error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + struct_name + ", invalid type");
+            return error;
+        }
+
+        return std::make_unique<binding::BoundLiteralExpression>(casted.value());
+    }
+
     binding::BinderResult<binding::BoundLiteralExpression> Binder::bind_struct_initializer_list(const TreeNode &node, const Type& type)
     {
         SCC_ASSERT_NODE_SYMBOL(Parser::INITIALIZER_LIST_SYMBOL);
@@ -14,7 +62,6 @@ namespace scc
         //     ├── field_designator ==>        .z
         //     │   └── field_identifier ==>    z
         //     └── number_literal ==>  1
-
         // or
 
         // initializer_list ==>        {1, 2}
@@ -54,52 +101,25 @@ namespace scc
                 }
 
                 TreeNode value_node = node.named_child(i).last_child();
-                SCC_NOT_IMPLEMENTED("Too tired today");
-            }
+                auto literal = bind_struct_literal(
+                    value_node,
+                    std::get<Type::StructType>(type.base_type).fields[field_index.value()],
+                    std::get<Type::StructType>(type.base_type).name
+                );
+                BUBBLE_ERROR(literal);
 
-            if (node.named_child(i).symbol() == Parser::INITIALIZER_LIST_SYMBOL)
-            {
-                if (not std::get<Type::StructType>(type.base_type).fields[i].second.is_struct())
-                {
-                    auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
-                    error.add_diagnostic("Invalid initializer for field " + std::get<Type::StructType>(type.base_type).fields[i].first + " of struct " + std::get<Type::StructType>(type.base_type).name);
-                    return error;
-                }
-                auto initializer = bind_struct_initializer_list(node.named_child(i), std::get<Type::StructType>(type.base_type).fields[i].second);
-                BUBBLE_ERROR(initializer);
-
-                std::get<Type::StructValue>(result.value).fields[i] = std::move(initializer.get_value()->value.value);
-
+                std::get<Type::StructValue>(result.value).fields[field_index.value()] = std::move(literal.release_value()->value.value);
                 continue;
             }
 
-            const auto& field = std::get<Type::StructType>(type.base_type).fields[i];
-            auto initializer = bind_expression(node.named_child(i));
-            BUBBLE_ERROR(initializer);
+            auto literal = bind_struct_literal(
+                node.named_child(i),
+                std::get<Type::StructType>(type.base_type).fields[i],
+                std::get<Type::StructType>(type.base_type).name
+            );
+            BUBBLE_ERROR(literal);
 
-            if (initializer.get_value()->bound_node_kind() != binding::BoundNodeKind::LiteralExpression)
-            {
-                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
-                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", expected literal expression");
-                return error;
-            }
-
-            auto literal = static_cast<binding::BoundLiteralExpression*>(initializer.get_value());
-            if (std::holds_alternative<Type::StructValue>(std::get<Type::StructValue>(result.value).fields[i]))
-            {
-                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
-                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", expected struct initializer");
-                return error;
-            }
-
-            std::optional<Type::Value> casted = literal->value.compiletime_cast_internal(field.second);
-            if (not casted.has_value())
-            {
-                auto error = binding::BinderResult<binding::BoundLiteralExpression>(binding::BinderError(ErrorKind::InvalidInitializerError, node));
-                error.add_diagnostic("Invalid initializer for field " + field.first + " of struct " + std::get<Type::StructType>(type.base_type).name + ", invalid type");
-                return error;
-            }
-            std::get<Type::StructValue>(result.value).fields[i] = casted.value().value;
+            std::get<Type::StructValue>(result.value).fields[i] = std::move(literal.release_value()->value.value);
         }
 
         return static_cast<std::unique_ptr<binding::BoundLiteralExpression>>(std::make_unique<binding::BoundLiteralExpression>(result));

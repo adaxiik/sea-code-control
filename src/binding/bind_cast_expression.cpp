@@ -35,7 +35,16 @@ namespace scc
         }
 
         auto type = Type::from_string(type_name);
-        if (!type.has_value())
+        if (not type.has_value())
+        {
+            // might be typedef
+            if (m_typedefs.find(type_name) != m_typedefs.end())
+            {
+                type = m_typedefs.at(type_name);
+            }
+        }
+
+        if (not type.has_value())
         {
             // std::cerr << "Unknown type: " << type_name << std::endl;
             // return nullptr;
@@ -46,7 +55,7 @@ namespace scc
         }
 
         // type.value().pointer_depth = pointer_depth;
-        // TODOOOOOOOOOOOOOOOOOOOOOOOO: Arrays??? 
+        // TODOOOOOOOOOOOOOOOOOOOOOOOO: Arrays???
        type.value().modifiers = std::vector<Type::Modifier>(pointer_depth, Type::Pointer{});
 
         return std::make_unique<binding::BoundCastExpression>(bound_expression.release_value(), type.value());

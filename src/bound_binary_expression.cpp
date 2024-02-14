@@ -4,7 +4,7 @@ namespace scc
 {
     namespace binding
     {
-        
+
         template <typename OP_RESULT_TYPE_PR, typename OP_RESULT_TYPE_LP, typename OP_RESULT_TYPE_LR, typename LEFT_CAST, typename RIGHT_CAST>
         static std::optional<Type> binary_operation_result(size_t left_pointer_depth, size_t right_pointer_depth)
         {
@@ -36,7 +36,7 @@ namespace scc
                     return std::nullopt;
                 else
                     return Type::deduce_type<typename OP_RESULT_TYPE_LR::type>();
-            }       
+            }
         }
 
         std::optional<Type> BoundBinaryExpression::deduce_type(Type left, Type right, OperatorKind op_kind)
@@ -45,7 +45,43 @@ namespace scc
 
             static_assert(std::variant_size_v<Type::BaseType> == 2, "Update this code");
             if (std::holds_alternative<Type::StructType>(left.base_type) or std::holds_alternative<Type::StructType>(right.base_type))
+            {
+                if (std::holds_alternative<Type::StructType>(left.base_type) and std::holds_alternative<Type::StructType>(right.base_type))
+                {
+                    if (not left.is_pointer() or not right.is_pointer())
+                        return std::nullopt;
+
+                    // both are struct pointers, so we can only compare them, or subtract them
+                    switch (op_kind)
+                    {
+                    case OperatorKind::Subtraction:       return left;
+                    case OperatorKind::Equals:            return Type(Type::PrimitiveType::Bool);
+                    case OperatorKind::NotEquals:         return Type(Type::PrimitiveType::Bool);
+                    case OperatorKind::LessThan:          return Type(Type::PrimitiveType::Bool);
+                    case OperatorKind::GreaterThan:       return Type(Type::PrimitiveType::Bool);
+                    case OperatorKind::LessThanOrEqual:   return Type(Type::PrimitiveType::Bool);
+                    case OperatorKind::GreaterThanOrEqual:return Type(Type::PrimitiveType::Bool);
+                    default:                             return std::nullopt;
+                    }
+                }
+
+                if (left.is_struct() and left.is_pointer())
+                {
+                    if (right.is_pointer())
+                        return std::nullopt;
+                    else
+                        return left;
+                }
+                else if (right.is_struct() and right.is_pointer())
+                {
+                    if (left.is_pointer())
+                        return std::nullopt;
+                    else
+                        return right;
+                }
+
                 return std::nullopt;
+            }
 
 
         #define DO_CASTED_OP(STRUCT_NAME, LEFT_CAST, RIGHT_CAST) return binary_operation_result< \

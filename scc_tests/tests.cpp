@@ -1278,3 +1278,90 @@ TEST_CASE("printf")
     CHECK(ss.str() == "%\n");
 
 }
+
+TEST_CASE("Structures")
+{
+    auto interpreter = scc::Interpreter();
+    auto running_interpreter = scc::RunningInterpreter({});
+
+    SCC_TEST_IS_OK("void _scc_assert(bool b);");
+
+    SCC_TEST_IS_OK("typedef struct { int a; float b; char c; } S;");
+    SCC_TEST_IS_OK("S s;");
+    SCC_TEST_IS_OK("s.a = 1;");
+    SCC_TEST_IS_OK("s.b = 4.20f;");
+    SCC_TEST_IS_OK("s.c = 'E';");
+    SCC_TEST_IS_OK("_scc_assert(s.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s.b == 4.20f);");
+    SCC_TEST_IS_OK("_scc_assert(s.c == 'E');");
+    SCC_TEST_IS_OK("S* s_ptr = &s;");
+    SCC_TEST_IS_OK("_scc_assert(s_ptr->a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s_ptr->b == 4.20f);");
+    SCC_TEST_IS_OK("_scc_assert(s_ptr->c == 'E');");
+    SCC_TEST_IS_OK("s_ptr->a = 2;");
+    SCC_TEST_IS_OK("s_ptr->b = 3.14f;");
+    SCC_TEST_IS_OK("s_ptr->c = 'F';");
+    SCC_TEST_IS_OK("_scc_assert(s.a == 2);");
+    SCC_TEST_IS_OK("_scc_assert(s.b == 3.14f);");
+    SCC_TEST_IS_OK("_scc_assert(s.c == 'F');");
+    SCC_TEST_IS_OK("S s2 = {1.11, 2.22f, 'C'};");
+    SCC_TEST_IS_OK("_scc_assert(s2.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s2.b == 2.22f);");
+    SCC_TEST_IS_OK("_scc_assert(s2.c == 'C');");
+
+    SCC_TEST_IS_OK("S s3 = s2;");
+    SCC_TEST_IS_OK("_scc_assert(s3.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s3.b == 2.22f);");
+    SCC_TEST_IS_OK("_scc_assert(s3.c == 'C');");
+    SCC_TEST_IS_OK("s3.a = 3;");
+    SCC_TEST_IS_OK("_scc_assert(s3.a == 3);");
+    SCC_TEST_IS_OK("_scc_assert(s2.a == 1);");
+
+    SCC_TEST_IS_OK("S s4 = {.c = 'D', .a = 4, .b = 5.55f};");
+    SCC_TEST_IS_OK("_scc_assert(s4.a == 4);");
+    SCC_TEST_IS_OK("_scc_assert(s4.b == 5.55f);");
+    SCC_TEST_IS_OK("_scc_assert(s4.c == 'D');");
+
+    SCC_TEST_IS_OK("S s5 = {.a = 1};");
+    SCC_TEST_IS_OK("_scc_assert(s5.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s5.b == 0.0f);");
+    SCC_TEST_IS_OK("_scc_assert(s5.c == '\\0');");
+
+    SCC_TEST_IS_OK("S s6 = {1};");
+    SCC_TEST_IS_OK("_scc_assert(s6.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s6.b == 0.0f);");
+    SCC_TEST_IS_OK("_scc_assert(s6.c == '\\0');");
+
+    SCC_TEST_IS_OK("S s7 = {1, 2.2f};");
+    SCC_TEST_IS_OK("_scc_assert(s7.a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(s7.b == 2.2f);");
+
+    SCC_TEST_IS_ERROR("S s8 = {1, 2.2f, 'C', 4};");
+
+    SCC_TEST_IS_OK("typedef struct { int a; float b; char c; } InnerS;");
+    SCC_TEST_IS_OK("typedef struct { InnerS inner; InnerS* inner_ptr; } OuterS;");
+
+    SCC_TEST_IS_OK("InnerS inner_target = {1, 2.2f, 'C'};");
+    SCC_TEST_IS_OK("OuterS outer_target = {{420, 69.69f, 'E'}, 0};");
+    SCC_TEST_IS_OK("outer_target.inner_ptr = &inner_target;");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner.a == 420);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner.b == 69.69f);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner.c == 'E');");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner_ptr->a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner_ptr->b == 2.2f);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target.inner_ptr->c == 'C');");
+
+    SCC_TEST_IS_OK("OuterS* outer_target_ptr = &outer_target;");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner.a == 420);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner.b == 69.69f);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner.c == 'E');");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner_ptr->a == 1);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner_ptr->b == 2.2f);");
+    SCC_TEST_IS_OK("_scc_assert(outer_target_ptr->inner_ptr->c == 'C');");
+
+    SCC_TEST_IS_OK("OuterS outer_designated = {.inner = {.a = 420, .b = 69.69f, .c = 'E'}, .inner_ptr = 123};");
+    SCC_TEST_IS_OK("_scc_assert(outer_designated.inner.a == 420);");
+    SCC_TEST_IS_OK("_scc_assert(outer_designated.inner.b == 69.69f);");
+    SCC_TEST_IS_OK("_scc_assert(outer_designated.inner.c == 'E');");
+    SCC_TEST_IS_OK("_scc_assert(outer_designated.inner_ptr == (InnerS*)123);");
+}
