@@ -117,6 +117,14 @@ namespace scc
             for (size_t i = 0; i < type.modifiers.size(); i++)
                 os << "*";
 
+            if (type.alias.has_value())
+            {
+                os << " [" << type.alias.value();
+                for (size_t i = 0; i < type.modifiers.size(); i++)
+                    os << "*";
+                os << ']';
+            }
+
         return os;
     }
 
@@ -406,5 +414,5 @@ size_t std::hash<scc::Type>::operator()(const scc::Type &type) const
     for (const auto &modifier : type.modifiers)
         vector_hash ^= std::hash<scc::Type::Modifier>()(modifier);
 
-    return std::hash<scc::Type::BaseType>()(type.base_type) ^ vector_hash;
+    return std::hash<scc::Type::BaseType>()(type.base_type) ^ vector_hash ^ std::hash<std::optional<std::string>>()(type.alias);
 }

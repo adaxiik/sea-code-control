@@ -32,7 +32,7 @@ namespace scc
             return m_call_stack.top().scope_stack;
         }
 
-        void push(InstructionPointer return_address, std::string function_name)
+        void push(InstructionPointer return_address,const std::string& function_name)
         {
             m_call_stack.push(CallFrame(return_address, scope_stack().current_address(), function_name));
         }

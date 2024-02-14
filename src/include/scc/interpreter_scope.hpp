@@ -33,7 +33,7 @@ namespace scc
         InterpreterScopeStack(Memory::address_t start_address);
         virtual ~InterpreterScopeStack() = default;
         virtual void push() override;
-        
+
 
         InterpreterResult create_variable(
             const std::string &name,

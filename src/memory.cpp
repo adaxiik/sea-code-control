@@ -100,7 +100,7 @@ namespace scc
         return true;
     }
 
-    std::optional<Type::Value> Memory::read_value(address_t address, Type type) const
+    std::optional<Type::Value> Memory::read_value(address_t address, const Type& type) const
     {
         #define CASE_GET_VALUE(KIND) case Type::PrimitiveType::KIND: \
             { \

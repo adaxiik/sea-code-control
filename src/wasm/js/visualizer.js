@@ -164,6 +164,15 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return type.kind == "struct";
     }
 
+    let isAlias = function(typeIndex) {
+        let type = exportedProgram.types[typeIndex];
+        if (!type) {
+            console.log("ERROR: typeIndex " + typeIndex + " not found");
+            return false;
+        }
+        return type.kind == "alias";
+    }
+
 
 
     let getTypeName = function(typeIndex) {
@@ -182,6 +191,9 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         }
         else if (type.kind == "struct") {
             return type.name;
+        }
+        else if (type.kind == "alias") {
+            return type.alias;
         }
 
         return "ERROR";
@@ -241,7 +253,12 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
             }
         }
 
-        let typeName = getTypeName(variable.type_index);
+        let variableCopy = Object.assign({}, variable);
+        while (isAlias(variableCopy.type_index)) {
+            variableCopy.type_index = exportedProgram.types[variableCopy.type_index].aliased_type_index;
+        }
+
+        let typeName = getTypeName(variableCopy.type_index);
         return getDataValueFromView(view, typeName);
     }
 
@@ -284,7 +301,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return arrayData;
     }
 
-    let createStructData = function(variable) {
+    let createStructData = function(variable, alias) {
         // let stackFrame1StructMemberStruct1 = new DataModelStructures.Struct();    //Member struct variable
         // stackFrame1StructMemberStruct1.variableName = "stackFrame1StructMemberStruct1";
         // stackFrame1StructMemberStruct1.elements = new Array<DataModelStructures.Variable>();
@@ -301,7 +318,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         let structData = new cvisualizer.DataModelStructures.Struct();
         structData.variableName = variable.name;
         structData.isCollapsed = true;
-        structData.dataTypeString = getTypeName(variable.type_index);
+        structData.dataTypeString = alias ? alias : getTypeName(variable.type_index);
         structData.elements = [];
         // {
         //     "fields": [
@@ -339,11 +356,16 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
     }
 
     let createData = function(variable) {
+        let alias = isAlias(variable.type_index) ? exportedProgram.types[variable.type_index].alias : undefined;
+        while (isAlias(variable.type_index)) {
+            variable.type_index = exportedProgram.types[variable.type_index].aliased_type_index;
+        }
+
         if (isArray(variable.type_index)) {
             return createArrayData(variable);
         }
         else if (isStruct(variable.type_index)) {
-            return createStructData(variable);
+            return createStructData(variable, alias);
         }
          else {
             return createVariableData(variable);

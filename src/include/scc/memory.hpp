@@ -62,7 +62,7 @@ namespace scc
 
         std::optional<address_t> find_start_of_chunk(address_t address) const;
 
-        std::optional<Type::Value> read_value(address_t address, Type type) const;
+        std::optional<Type::Value> read_value(address_t address, const Type& type) const;
 
         /**
          * @brief write value to memory

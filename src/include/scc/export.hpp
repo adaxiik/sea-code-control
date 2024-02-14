@@ -107,7 +107,14 @@ namespace scc
             }
         };
 
-        using Type = std::variant<PrimitiveType, StructType, PointerType, ArrayType>;
+        struct AliasType
+        {
+            std::string alias;
+            TypeIndex aliased_type_index;
+            uint64_t size_bytes;
+        };
+
+        using Type = std::variant<PrimitiveType, StructType, PointerType, ArrayType, AliasType>;
 
         struct AllocatedPlace
         {
@@ -218,6 +225,7 @@ struct std::hash<scc::export_format::Type>
             [](const scc::export_format::StructType& struct_type) { return std::hash<scc::export_format::StructType>()(struct_type); },
             [](const scc::export_format::ArrayType& array_type) { return std::hash<scc::export_format::ArrayType>()(array_type); },
             [](const scc::export_format::PointerType& pointer_type) { return std::hash<scc::export_format::PointerType>()(pointer_type); },
+            [](const scc::export_format::AliasType& alias_type) { return std::hash<std::string>()(alias_type.alias) ^ std::hash<scc::export_format::TypeIndex>()(alias_type.aliased_type_index) ^ std::hash<uint64_t>()(alias_type.size_bytes); },
         }, type);
     }
 };

@@ -20,7 +20,7 @@ namespace scc
 
         type.modifiers.push_back(Type::Pointer{});
 
-        return InterpreterResult::ok(InterpreterResultValue(current_address, type));
+        return InterpreterResult::ok(InterpreterResultValue(current_address, std::move(type)));
     }
 
     Variable *GlobalScope::get_variable(const std::string &name)

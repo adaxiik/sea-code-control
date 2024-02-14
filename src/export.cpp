@@ -22,6 +22,7 @@ namespace scc::export_format
         uint64_t operator()(const ArrayType& array_type) const{ return array_type.size_bytes; }
         uint64_t operator()(const PointerType& pointer_type) const{ return pointer_type.size_bytes; }
         uint64_t operator()(const PrimitiveType& primitive_type) const{ return std::visit(GetSizeOfType{}, primitive_type); }
+        uint64_t operator()(const AliasType& alias_type) const{ return alias_type.size_bytes; }
     };
 
     static void to_json(nlohmann::json& j, const StructField& type)
@@ -42,6 +43,7 @@ namespace scc::export_format
             [](const StructType) { return "struct"; },
             [](const ArrayType) { return "array"; },
             [](const PointerType) { return "pointer"; },
+            [](const AliasType) { return "alias"; },
         }, type);
 
         std::visit(overloaded{
@@ -52,6 +54,10 @@ namespace scc::export_format
                 j["element_count"] = array_type.element_count;
             },
             [&j](const PointerType& pointer_type) { j["pointing_to_type_index"] = pointer_type.pointing_to_type_index; },
+            [&j](const AliasType& alias_type) {
+                j["alias"] = alias_type.alias;
+                j["aliased_type_index"] = alias_type.aliased_type_index;
+            },
         }, type);
     }
 
@@ -195,10 +201,17 @@ namespace scc::export_format
         std::reverse(snapshot.stackframes.begin(), snapshot.stackframes.end());
     }
 
+    struct TypeCompareForExport {
+        bool operator()(const scc::Type& a, const scc::Type& b) const
+        {
+            return a == b and a.alias == b.alias;
+        }
+    };
+
     ProgramSnapshot make_snapshot(const InterpreterState& state)
     {
         ProgramSnapshot snapshot;
-        std::unordered_map<scc::Type, scc::export_format::TypeIndex> type_to_type_index;
+        std::unordered_map<scc::Type, scc::export_format::TypeIndex, std::hash<scc::Type>, TypeCompareForExport> type_to_type_index;
 
         std::function<scc::export_format::TypeIndex(const scc::Type&)> get_type_index_of;
         get_type_index_of =[&type_to_type_index, &snapshot, &get_type_index_of](const scc::Type& type) -> scc::export_format::TypeIndex {
@@ -206,6 +219,18 @@ namespace scc::export_format
             auto it = type_to_type_index.find(type);
             if (it != type_to_type_index.end())
                 return it->second;
+
+            if (type.alias.has_value())
+            {
+                scc::Type without_alias = type;
+                without_alias.alias.reset();
+                auto type_index = get_type_index_of(without_alias);
+
+                snapshot.types.push_back(AliasType{type.alias.value(), type_index, type.size_bytes()});
+                auto alias_type_index = type_to_type_index.size();
+                type_to_type_index.insert({type, alias_type_index});
+                return alias_type_index;
+            }
 
             if (type.is_pointer())
             {

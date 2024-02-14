@@ -20,6 +20,7 @@ namespace scc
         if (not type.has_value())
             return false;
 
+        type.value().alias = type_name;
         m_typedefs.insert_or_assign(type_name, type.value());
 
         return true;

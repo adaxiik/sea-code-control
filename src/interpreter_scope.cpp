@@ -2,40 +2,40 @@
 
 namespace  scc
 {
-    InterpreterScope::InterpreterScope(Memory::address_t start_address) 
+    InterpreterScope::InterpreterScope(Memory::address_t start_address)
                                      : m_start_address(start_address)
                                      , m_current_address(start_address) {}
 
 
 
-    Memory::address_t InterpreterScope::start_address() const 
-    { 
-        return m_start_address; 
+    Memory::address_t InterpreterScope::start_address() const
+    {
+        return m_start_address;
     }
 
-    Memory::address_t InterpreterScope::current_address() const 
-    { 
-        return m_current_address; 
+    Memory::address_t InterpreterScope::current_address() const
+    {
+        return m_current_address;
     }
 
-    void InterpreterScope::shift_current_address(Memory::address_t shift) 
-    { 
-        m_current_address -= shift; 
+    void InterpreterScope::shift_current_address(Memory::address_t shift)
+    {
+        m_current_address -= shift;
     }
 
-    InterpreterScope InterpreterScope::next_scope() const 
-    { 
-        return InterpreterScope(m_current_address); 
+    InterpreterScope InterpreterScope::next_scope() const
+    {
+        return InterpreterScope(m_current_address);
     }
 
-    Memory::address_t InterpreterScopeStack::current_address() const 
-    { 
+    Memory::address_t InterpreterScopeStack::current_address() const
+    {
         return m_scopes.back().current_address();
     }
 
 
     InterpreterScopeStack::InterpreterScopeStack(Memory::address_t start_address)
-    {        
+    {
         m_scopes.emplace_back(InterpreterScope(start_address));
     }
 
@@ -55,22 +55,22 @@ namespace  scc
 
         if (var != nullptr)
             return InterpreterError::VariableAlreadyExistsError;
-        
+
         m_scopes.back().shift_current_address(size_bytes);
 
         Memory::address_t current_address = m_scopes.back().current_address();
         m_scopes.back()
                 .ref_scopes()
                 .emplace(name,Variable(type, current_address, is_constant, is_parameter));
-        
+
         type.modifiers.push_back(Type::Pointer{});
-        return InterpreterResult::ok(InterpreterResultValue(current_address, type));
+        return InterpreterResult::ok(InterpreterResultValue(current_address, std::move(type)));
     }
 
     std::vector<InterpreterScope> &InterpreterScopeStack::ref_scopes() { return m_scopes; }
 
-    void InterpreterScopeStack::push() 
-    { 
-        m_scopes.emplace_back(m_scopes.back().next_scope()); 
+    void InterpreterScopeStack::push()
+    {
+        m_scopes.emplace_back(m_scopes.back().next_scope());
     }
 }

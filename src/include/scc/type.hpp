@@ -113,6 +113,8 @@ namespace scc
         // sadly, we dont have constexpr std::vector yet :(
         std::vector<Modifier> modifiers;
 
+        std::optional<std::string> alias;
+
         // int x;   // {}
         // int *x;  // {Pointer}
         // int **x; // {Pointer, Pointer}
@@ -248,7 +250,7 @@ namespace scc
         Type type;
         std::variant<PrimitiveValue, StructValue> value;
 
-        Value(Type type, std::variant<PrimitiveValue, StructValue> value) : type(type), value(value) {}
+        Value(const Type& type, std::variant<PrimitiveValue, StructValue> value) : type(type), value(value) {}
 
         template<typename T>
         Value(T value) : type(Type::deduce_type<T>()), value(value) {}
