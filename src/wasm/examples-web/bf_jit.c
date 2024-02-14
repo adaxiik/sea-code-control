@@ -5,39 +5,47 @@
 #include <stdio.h>
 #include <scc.h>
 
-char *compiled_output;
-unsigned long compiled_output_capacity = 0;
-unsigned long compiled_output_size = 0;
+typedef struct {
+    char *ptr;
+    size_t capacity;
+    size_t size;
+} CodeBuffer;
 
-void init_code()
+void init_code(CodeBuffer *buffer)
 {
-    compiled_output = malloc(256);
-    compiled_output_capacity = 256;
-    compiled_output_size = 0;
+    buffer->ptr = malloc(256);
+    buffer->capacity = 256;
+    buffer->size = 0;
 }
 
-void realloc_code_if_needed(unsigned long new_program_size)
+void free_code(CodeBuffer *buffer)
 {
-    if (new_program_size <= compiled_output_capacity)
+    free(buffer->ptr);
+    buffer->ptr = NULL;
+}
+
+void realloc_code_if_needed(CodeBuffer *buffer, size_t new_program_size)
+{
+    if (new_program_size <= buffer->capacity)
         return;
 
-    unsigned long new_capacity = compiled_output_capacity * 2;
+    size_t new_capacity = buffer->capacity * 2;
     while (new_program_size > new_capacity)
         new_capacity *= 2;
 
     char *new_output = malloc(new_capacity);
-    memcpy(new_output, compiled_output, compiled_output_size);
-    free(compiled_output);
-    compiled_output = new_output;
-    compiled_output_capacity = new_capacity;
+    memcpy(new_output, buffer->ptr, buffer->size);
+    free(buffer->ptr);
+    buffer->ptr = new_output;
+    buffer->capacity = new_capacity;
 }
 
-void append_code(const char *code)
+void append_code(CodeBuffer *buffer, const char *code)
 {
-    unsigned long code_size = strlen(code) + 1;
-    realloc_code_if_needed(compiled_output_size + code_size);
-    memcpy(compiled_output + compiled_output_size, code, code_size);
-    compiled_output_size += code_size - 1;
+    size_t code_size = strlen(code) + 1;
+    realloc_code_if_needed(buffer, buffer->size + code_size);
+    memcpy(buffer->ptr + buffer->size, code, code_size);
+    buffer->size += code_size - 1;
 }
 
 int eat_token(const char **input, char token)
@@ -66,55 +74,55 @@ void byte_to_str_binary(unsigned char n, char *output)
     output[10] = '\0';
 }
 
-void bf_compile(const char *input)
+void bf_compile(CodeBuffer *buffer, const char *input)
 {
     char bin_buffer[11] = {0};
 
-    append_code("#include <stdio.h>\n");
-    append_code("int main() {\n");
-    append_code("    char array[30000] = {0};\n");
-    append_code("    char *ptr=array;\n");
+    append_code(buffer, "#include <stdio.h>\n");
+    append_code(buffer, "int main() {\n");
+    append_code(buffer, "    char array[30000] = {0};\n");
+    append_code(buffer, "    char *ptr=array;\n");
     while (*input)
     {
         if (*input == '>')
         {
             int count = eat_token(&input, '>');
             byte_to_str_binary(count, bin_buffer);
-            append_code("ptr += ");
-            append_code(bin_buffer);
-            append_code(";\n");
+            append_code(buffer, "ptr += ");
+            append_code(buffer, bin_buffer);
+            append_code(buffer, ";\n");
             continue;
         }
         else if (*input == '<')
         {
             int count = eat_token(&input, '<');
             byte_to_str_binary(count, bin_buffer);
-            append_code("ptr -= ");
-            append_code(bin_buffer);
-            append_code(";\n");
+            append_code(buffer, "ptr -= ");
+            append_code(buffer, bin_buffer);
+            append_code(buffer, ";\n");
             continue;
         }
         else if (*input == '+')
         {
             int count = eat_token(&input, '+');
             byte_to_str_binary(count, bin_buffer);
-            append_code("*ptr += ");
-            append_code(bin_buffer);
-            append_code(";\n");
+            append_code(buffer, "*ptr += ");
+            append_code(buffer, bin_buffer);
+            append_code(buffer, ";\n");
             continue;
         }
         else if (*input == '-')
         {
             int count = eat_token(&input, '-');
             byte_to_str_binary(count, bin_buffer);
-            append_code("*ptr -= ");
-            append_code(bin_buffer);
-            append_code(";\n");
+            append_code(buffer, "*ptr -= ");
+            append_code(buffer, bin_buffer);
+            append_code(buffer, ";\n");
             continue;
         }
         else if (*input == '.')
         {
-            append_code("putchar(*ptr);\n");
+            append_code(buffer, "putchar(*ptr);\n");
         }
         else if (*input == ',')
         {
@@ -122,17 +130,17 @@ void bf_compile(const char *input)
         }
         else if (*input == '[')
         {
-            append_code("while (*ptr) {\n");
+            append_code(buffer, "while (*ptr) {\n");
         }
         else if (*input == ']')
         {
-            append_code("}\n");
+            append_code(buffer, "}\n");
         }
 
         input++;
     }
-    append_code("return 0;\n");
-    append_code("}\n");
+    append_code(buffer, "return 0;\n");
+    append_code(buffer, "}\n");
 
 }
 
@@ -140,15 +148,16 @@ int main()
 {
     const char *input = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.";
 
-    init_code();
-    bf_compile(input);
+    CodeBuffer buffer;
+    init_code(&buffer);
+    bf_compile(&buffer, input);
 
-    // puts(compiled_output);
+    // puts(buffer.ptr);
 
-    if (scc_eval(compiled_output) == -1)
+    if (scc_eval(buffer.ptr) == -1)
     {
         puts("Error");
     }
 
-    free(compiled_output);
+    free_code(&buffer);
 }

@@ -40,7 +40,7 @@ namespace scc
         auto operator_kind = operator_kind_opt.value();
 
         auto binary_expression = std::make_unique<binding::BoundBinaryExpression>(
-            std::move(left_expression.get_value()->expression),
+            std::make_unique<binding::BoundDereferenceExpression>(std::move(left_expression.get_value()->expression), target_type),
             right_expression.release_value(),
             target_type,
             operator_kind
@@ -51,8 +51,10 @@ namespace scc
             target_type
         );
 
+        auto field_expression_again = bind_field_expression(node.first_named_child());
+
         return std::make_unique<binding::BoundPointerAssignmentExpression>(
-            std::move(left_expression.get_value()->expression),
+            std::move(field_expression_again.get_value()->expression),
             std::move(casted_binary_expression),
             target_type
         );

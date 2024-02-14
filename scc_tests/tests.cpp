@@ -1294,10 +1294,18 @@ TEST_CASE("Structures")
     SCC_TEST_IS_OK("_scc_assert(s.a == 1);");
     SCC_TEST_IS_OK("_scc_assert(s.b == 4.20f);");
     SCC_TEST_IS_OK("_scc_assert(s.c == 'E');");
+    SCC_TEST_IS_OK("s.a += 1;");
+    SCC_TEST_IS_OK("_scc_assert(s.a == 2);");
+    SCC_TEST_IS_OK("s.a -= 1;");
+    SCC_TEST_IS_OK("_scc_assert(s.a == 1);");
     SCC_TEST_IS_OK("S* s_ptr = &s;");
     SCC_TEST_IS_OK("_scc_assert(s_ptr->a == 1);");
     SCC_TEST_IS_OK("_scc_assert(s_ptr->b == 4.20f);");
     SCC_TEST_IS_OK("_scc_assert(s_ptr->c == 'E');");
+    SCC_TEST_IS_OK("s_ptr->a += 1;");
+    SCC_TEST_IS_OK("_scc_assert(s_ptr->a == 2);");
+    SCC_TEST_IS_OK("s_ptr->a -= 1;");
+    SCC_TEST_IS_OK("_scc_assert(s_ptr->a == 1);");
     SCC_TEST_IS_OK("s_ptr->a = 2;");
     SCC_TEST_IS_OK("s_ptr->b = 3.14f;");
     SCC_TEST_IS_OK("s_ptr->c = 'F';");
@@ -1364,4 +1372,20 @@ TEST_CASE("Structures")
     SCC_TEST_IS_OK("_scc_assert(outer_designated.inner.b == 69.69f);");
     SCC_TEST_IS_OK("_scc_assert(outer_designated.inner.c == 'E');");
     SCC_TEST_IS_OK("_scc_assert(outer_designated.inner_ptr == (InnerS*)123);");
+
+    SCC_TEST_IS_OK("typedef struct { int data;} FromFnS;");
+    SCC_TEST_IS_OK("FromFnS from_fn(int data) { FromFnS s; s.data = data; return s; }");
+    SCC_TEST_IS_OK("FromFnS from_fn_result = from_fn(420);");
+    SCC_TEST_IS_OK("_scc_assert(from_fn_result.data == 420);");
+
+    SCC_TEST_IS_OK("typedef struct { int data;} ToFnS;");
+    SCC_TEST_IS_OK("int to_fn(ToFnS s) { return s.data; }");
+    SCC_TEST_IS_OK("ToFnS to_fn_arg = {420};");
+    SCC_TEST_IS_OK("_scc_assert(to_fn(to_fn_arg) == 420);");
+
+    SCC_TEST_IS_OK("typedef struct { int data;} ToFnPtrS;");
+    SCC_TEST_IS_OK("int to_fn_ptr(ToFnPtrS* s) { return s->data; }");
+    SCC_TEST_IS_OK("ToFnPtrS to_fn_ptr_arg = {420};");
+    SCC_TEST_IS_OK("_scc_assert(to_fn_ptr(&to_fn_ptr_arg) == 420);");
+
 }

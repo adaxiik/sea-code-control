@@ -568,7 +568,6 @@ namespace scc
 
             const auto current_node = std::get<BoundNodeType>(current_node_or_instruction);
             m_to_lower.pop();
-
             switch (current_node->bound_node_kind())
             {
             case binding::BoundNodeKind::ExpressionStatement:
