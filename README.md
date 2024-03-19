@@ -80,9 +80,9 @@ $ docker run -p 6969:6969 -t scc
 ```
 
 # what it can do:
-- running natively external C file via `/build.sh run native src/wasm/examples-web/bf_jit.c`
-- running natively in repl `/build.sh run native`
-- probably run in wasm via `node`, but [src/wasm/wasm_driver.js](wasm driver) is not really maintained
+- running natively external C file via `./build.sh run native src/wasm/examples-web/bf_jit.c`
+- running natively in repl `./build.sh run native`
+- probably run in wasm via `node`, but [wasm driver](src/wasm/wasm_driver.js) is not really maintained
 - running in browser via wasm, with memory visualization, breakpoints, step by step execution... `./build.sh run wasmserver`
 - export AST to plantuml format .. it does that automatically for some reason actually, but it can be disabled with `-mute` flag.. output is in `ast.puml`
     - it can be then rendered to png with `PLANTUML_LIMIT_SIZE=32000 plantuml out.puml`
@@ -121,7 +121,6 @@ enum class OperatorKind
     LogicalOr,
 
     // comparison
-    // NOTE: order is important, because we use this enum to check if the operator is comparison operator
     Equals,
     NotEquals,
     LessThan,
