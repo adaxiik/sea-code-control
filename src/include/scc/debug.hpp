@@ -29,6 +29,7 @@ namespace scc
         void ast_as_puml(std::ostream &ss, const ParserResult &parser_result);
         void ast_as_text_tree(std::ostream &ss, const ParserResult &parser_result);
         void bound_ast_as_text_tree(std::ostream &ss, const binding::BoundNode &bound_node);
+        void bound_ast_as_latex_dirtree(std::ostream &ss, const binding::BoundNode &bound_node);
         void type_as_text(std::ostream &ss, const Type &type);
 
         // void variable_as_string(std::ostream &ss, const scc::vm::Variable& var);
@@ -43,5 +44,5 @@ namespace scc
         void instruction_as_text(std::ostream &ss, const lowering::Instruction& instruction);
         void instructions_as_text(std::ostream &ss, const std::vector<lowering::Instruction>& instructions);
         void instructions_as_text(std::ostream &ss, const LocationAnotatedProgram& instructions);
-    } 
-} 
+    }
+}

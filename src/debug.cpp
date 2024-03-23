@@ -648,6 +648,363 @@ namespace scc
 
         }
 
+        void bound_ast_as_latex_dirtree(std::ostream &ss, const binding::BoundNode &bound_node)
+        {
+            ss << "\\dirtree {%" << std::endl;
+            std::function<void(const binding::BoundNode&, size_t)> bound_ast_as_latex_dirtree_impl = [&](const binding::BoundNode& node, size_t depth = 1)
+            {
+                static_assert(static_cast<int>(binding::BoundNodeKind::COUNT) == 24, "Update this switch statement");
+
+                ss << "." << depth << " ";
+                if (node.location)
+                    ss << node.location.value().row << ":" << node.location.value().column << " ";
+
+                switch (node.bound_node_kind())
+                {
+                    case binding::BoundNodeKind::BlockStatement:
+                    {
+                        auto& block_statement = static_cast<const binding::BoundBlockStatement&>(node);
+                        ss << "BlockStatement";
+                        ss << " ." << std::endl;
+                        for(uint32_t i = 0; i < block_statement.statements.size(); i++)
+                        {
+                            if(depth > 0)
+                                bound_ast_as_latex_dirtree_impl(*block_statement.statements[i], depth + 1);
+                            else
+                                bound_ast_as_latex_dirtree_impl(*block_statement.statements[i], depth + 1);
+                        }
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::LiteralExpression:
+                    {
+                        auto& literal_expression = static_cast<const binding::BoundLiteralExpression&>(node);
+                        ss << "LiteralExpression (" << literal_expression.type << ") ==> ";
+
+                        type_as_text(ss, literal_expression.type);
+
+                        ss << " ." << std::endl;
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::BinaryExpression:
+                    {
+                        auto& binary_expression = static_cast<const binding::BoundBinaryExpression&>(node);
+                        ss << "BinaryExpression(" << binary_expression.type << ") ==> ";
+
+                        #define CASE_OP_KIND(KIND, OP) \
+                        case binding::BoundBinaryExpression::OperatorKind::KIND: \
+                            ss << "\\uv{" << OP << "}" << " ." << std::endl; \
+                            break;
+
+                        static_assert(static_cast<int>(binding::BoundBinaryExpression::OperatorKind::COUNT) == 18, "Update this switch statement");
+
+                        switch(binary_expression.op_kind)
+                        {
+                            CASE_OP_KIND(Addition, "+")
+                            CASE_OP_KIND(Subtraction, "-")
+                            CASE_OP_KIND(Multiplication, "*")
+                            CASE_OP_KIND(Division, "/")
+                            CASE_OP_KIND(Modulo, "%")
+                            CASE_OP_KIND(BitwiseAnd, "&")
+                            CASE_OP_KIND(BitwiseOr, "|")
+                            CASE_OP_KIND(BitwiseXor, "^")
+                            CASE_OP_KIND(BitwiseShiftLeft, "<<")
+                            CASE_OP_KIND(BitwiseShiftRight, ">>")
+                            CASE_OP_KIND(LogicalAnd, "&&")
+                            CASE_OP_KIND(LogicalOr, "||")
+                            CASE_OP_KIND(Equals, "==")
+                            CASE_OP_KIND(NotEquals, "!=")
+                            CASE_OP_KIND(LessThan, "<")
+                            CASE_OP_KIND(GreaterThan, ">")
+                            CASE_OP_KIND(LessThanOrEqual, "<=")
+                            CASE_OP_KIND(GreaterThanOrEqual, ">=")
+                            default:
+                                ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                                break;
+                        }
+
+                        #undef CASE_OP_KIND
+
+                        bound_ast_as_latex_dirtree_impl(*binary_expression.left, depth + 1);
+                        bound_ast_as_latex_dirtree_impl(*binary_expression.right, depth + 1);
+
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::CastExpression:
+                    {
+                        auto& cast_expression = static_cast<const binding::BoundCastExpression&>(node);
+                        ss << "CastExpression (" << cast_expression.type << ") ==> ";
+                        type_as_text(ss, cast_expression.type);
+                        ss << " ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*cast_expression.expression, depth + 1);
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::UnaryExpression:
+                    {
+                        auto& unary_expression = static_cast<const binding::BoundUnaryExpression&>(node);
+                        ss << "UnaryExpression (" << unary_expression.type << ") ==> ";
+
+                        #define CASE_OP_KIND(KIND, OP) \
+                        case binding::BoundUnaryExpression::OperatorKind::KIND: \
+                            ss << "\\uv{" << OP << "}" << " ." << std::endl; \
+                            break;
+
+                        static_assert(static_cast<int>(binding::BoundUnaryExpression::OperatorKind::COUNT) == 2, "Update this switch statement");
+
+                        switch(unary_expression.op_kind)
+                        {
+                            CASE_OP_KIND(BinaryNot, "~")
+                            CASE_OP_KIND(LogicalNot, "!")
+                            default:
+                                ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                                break;
+                        }
+
+                        #undef CASE_OP_KIND
+
+                        bound_ast_as_latex_dirtree_impl(*unary_expression.expression, depth + 1);
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::ExpressionStatement:
+                    {
+                        auto& expression_statement = static_cast<const binding::BoundExpressionStatement&>(node);
+                        ss << "ExpressionStatement ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*expression_statement.expression, depth + 1);
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::StringExpression:
+                    {
+                        auto& string_expression = static_cast<const binding::BoundStringExpression&>(node);
+                        ss << "StringExpression (" << string_expression.type << ") ==> ";
+                        escape_string(ss, string_expression.value);
+                        ss << " ." << std::endl;
+                        break;
+                    }
+
+
+                    case binding::BoundNodeKind::ParenthesizedExpression:
+                    {
+                        auto& parenthesized_expression = static_cast<const binding::BoundParenthesizedExpression&>(node);
+                        ss << "ParenthesizedExpression ." << std::endl;
+
+                        for(size_t i = 0; i < parenthesized_expression.expressions.size(); i++)
+                            bound_ast_as_latex_dirtree_impl(*parenthesized_expression.expressions[i], depth + 1);
+
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::IdentifierExpression:
+                    {
+                        auto& identifier_expression = static_cast<const binding::BoundIdentifierExpression&>(node);
+                        ss << "IdentifierExpression (" << identifier_expression.type << ") ==> " << identifier_expression.identifier << " ." << std::endl;
+                        break;
+                    }
+                    case binding::BoundNodeKind::AssignmentExpression:
+                    {
+                        auto& assignment_expression = static_cast<const binding::BoundAssignmentExpression&>(node);
+                        ss << "AssignmentExpression (" << assignment_expression.type << ") ==> " << assignment_expression.identifier << " ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*assignment_expression.expression, depth + 1);
+                        break;
+                    }
+                    case binding::BoundNodeKind::PointerAssignmentExpression:
+                    {
+                        auto& pointer_assignment_expression = static_cast<const binding::BoundPointerAssignmentExpression&>(node);
+                        ss << "PointerAssignmentExpression (" << pointer_assignment_expression.type << ") ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*pointer_assignment_expression.address_expression, depth + 1);
+
+                        bound_ast_as_latex_dirtree_impl(*pointer_assignment_expression.expression, depth + 1);
+
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::IfStatement:
+                    {
+                        auto& if_statement = static_cast<const binding::BoundIfStatement&>(node);
+                        ss << "IfStatement ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*if_statement.condition, depth + 1);
+                        bound_ast_as_latex_dirtree_impl(*if_statement.then_statement, depth + 1);
+                        if(if_statement.has_else())
+                            bound_ast_as_latex_dirtree_impl(*if_statement.else_statement, depth + 1);
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::WhileStatement:
+                    {
+                        auto& while_statement = static_cast<const binding::BoundWhileStatement&>(node);
+                        ss << "WhileStatement ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*while_statement.condition, depth + 1);
+                        if (while_statement.body)
+                            bound_ast_as_latex_dirtree_impl(*while_statement.body, depth + 1);
+
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::DoStatement:
+                    {
+                        auto& do_statement = static_cast<const binding::BoundDoStatement&>(node);
+                        ss << "DoStatement ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*do_statement.condition, depth + 1);
+                        if (do_statement.body)
+                            bound_ast_as_latex_dirtree_impl(*do_statement.body, depth + 1);
+
+                        break;
+                    }
+                    case binding::BoundNodeKind::BreakStatement:
+                    {
+                        ss << "BreakStatement ." << std::endl;
+                        break;
+                    }
+                    case binding::BoundNodeKind::ContinueStatement:
+                    {
+                        ss << "ContinueStatement ." << std::endl;
+                        break;
+                    }
+                    case binding::BoundNodeKind::FunctionStatement:
+                    {
+                        auto& function = static_cast<const binding::BoundFunctionStatement&>(node);
+                        ss << "FunctionStatement (" << function.return_type << ") ==> " << function.function_name << "(";
+                        for (size_t i = 0; i < function.parameters.size(); i++)
+                        {
+                            ss << function.parameters[i].get()->type << " " << function.parameters[i].get()->variable_name;
+                            if (i != function.parameters.size() - 1)
+                                ss << ", ";
+                        }
+                        ss << ") ." << std::endl;
+
+                        if (function.body)
+                        {
+                            bound_ast_as_latex_dirtree_impl(*function.body, depth + 1);
+                        }
+                        break;
+                    }
+                    case binding::BoundNodeKind::ReturnStatement:
+                    {
+                        auto& return_statement = static_cast<const binding::BoundReturnStatement&>(node);
+                        ss << "ReturnStatement ." << std::endl;
+                        if (return_statement.has_return_expression())
+                        {
+                            bound_ast_as_latex_dirtree_impl(*return_statement.return_expression, depth + 1);
+                        }
+                        break;
+                    }
+                    case binding::BoundNodeKind::CallExpression:
+                    {
+                        auto& call_expression = static_cast<const binding::BoundCallExpression&>(node);
+                        ss << "CallExpression (" << call_expression.type << ") ==> " << call_expression.function_name << " ." << std::endl;
+                        for (size_t i = 0; i < call_expression.arguments.size(); i++)
+                        {
+                            bound_ast_as_latex_dirtree_impl(*call_expression.arguments[i], depth + 1);
+                        }
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::PrintfExpression:
+                    {
+                        auto& printf_expression = static_cast<const binding::BoundPrintfExpression&>(node);
+                        ss << "PrintfExpression (" << printf_expression.type << ") ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*printf_expression.format, depth + 1);
+
+                        for (size_t i = 0; i < printf_expression.arguments.size(); i++)
+                            bound_ast_as_latex_dirtree_impl(*printf_expression.arguments[i], depth + 1);
+
+                        break;
+                    }
+
+                    case binding::BoundNodeKind::ForStatement:
+                    {
+                        auto& for_statement = static_cast<const binding::BoundForStatement&>(node);
+                        ss << "ForStatement ." << std::endl;
+                        if (for_statement.initializer)
+                            bound_ast_as_latex_dirtree_impl(*for_statement.initializer, depth + 1);
+                        if (for_statement.condition)
+                            bound_ast_as_latex_dirtree_impl(*for_statement.condition, depth + 1);
+                        if (for_statement.increment)
+                            bound_ast_as_latex_dirtree_impl(*for_statement.increment, depth + 1);
+                        if (for_statement.body)
+                            bound_ast_as_latex_dirtree_impl(*for_statement.body, depth + 1);
+                        break;
+                    }
+                    case binding::BoundNodeKind::ReferenceExpression:
+                    {
+                        auto& pointer_expression = static_cast<const binding::BoundReferenceExpression&>(node);
+                        ss << "ReferenceExpression (" << pointer_expression.type << ") ==> " << pointer_expression.identifier << " ." << std::endl;
+                        break;
+                    }
+                    case binding::BoundNodeKind::DereferenceExpression:
+                    {
+                        auto& pointer_expression = static_cast<const binding::BoundDereferenceExpression&>(node);
+                        ss << "DereferenceExpression (" << pointer_expression.type << ") ." << std::endl;
+                        bound_ast_as_latex_dirtree_impl(*pointer_expression.expression, depth + 1);
+                        break;
+                    }
+                    case binding::BoundNodeKind::VariableDeclarationStatement:
+                    {
+                        auto& variable_declaration_statement = static_cast<const binding::BoundVariableDeclarationStatement&>(node);
+                        switch(variable_declaration_statement.variable_declaration_statement_kind())
+                        {
+                            using Kind = binding::BoundVariableDeclarationStatement::VariableDeclarationStatementKind;
+                            static_assert(static_cast<int>(Kind::COUNT) == 3, "Update this switch statement");
+                            case Kind::Value:
+                            {
+                                ss << "VariableValueDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "")  << variable_declaration_statement.type << " " ;
+                                ss << variable_declaration_statement.variable_name << ") ." << std::endl;
+
+                                auto& vvds = static_cast<const binding::BoundVariableValueDeclarationStatement&>(variable_declaration_statement);
+                                if (vvds.initializer)
+                                {
+                                    bound_ast_as_latex_dirtree_impl(*vvds.initializer, depth + 1);
+                                }
+                                break;
+                            }
+                            case Kind::Pointer:
+                            {
+                                ss << "VariablePointerDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "") <<  variable_declaration_statement.type << " " ;
+                                ss << variable_declaration_statement.variable_name << ") ." << std::endl;
+
+                                auto& vpds = static_cast<const binding::BoundVariablePointerDeclarationStatement&>(variable_declaration_statement);
+                                if (vpds.initializer)
+                                {
+                                    bound_ast_as_latex_dirtree_impl(*vpds.initializer, depth + 1);
+                                }
+                                break;
+                            }
+                            case Kind::StaticArray:
+                            {
+                                ss << "VariableStaticArrayDeclarationStatement (" << (variable_declaration_statement.is_constant ? "const " : "") << variable_declaration_statement.type << " " ;
+                                auto& vsads = static_cast<const binding::BoundVariableStaticArrayDeclarationStatement&>(variable_declaration_statement);
+                                ss << variable_declaration_statement.variable_name << " -> size " << vsads.array_size << ") ." << std::endl;
+
+                                for(size_t i = 0; i < vsads.initializers.size(); i++)
+                                {
+                                    if(depth > 0)
+                                        bound_ast_as_latex_dirtree_impl(*vsads.initializers[i], depth + 1);
+                                    else
+                                        bound_ast_as_latex_dirtree_impl(*vsads.initializers[i], depth + 1);
+                                }
+                                break;
+                            }
+                            default:
+                                ss << "Unreachable " << __FILE__ << ":" << __LINE__ << std::endl;
+                                break;
+                        }
+                        break;
+                    }
+                    default:
+                        ss << "Unreachable " << __FILE__ << ":" << __LINE__ << static_cast<int>(node.bound_node_kind()) << std::endl;
+                        break;
+                }
+
+            };
+
+            bound_ast_as_latex_dirtree_impl(bound_node, 1);
+            ss << "}" << std::endl;
+        }
+
         void memory_chunks_as_json(std::ostream& ss, const Memory& memory)
         {
             ss << "[";

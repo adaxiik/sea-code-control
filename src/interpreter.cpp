@@ -55,6 +55,7 @@ namespace scc
         }
 
         // debug::bound_ast_as_text_tree(std::cout, *bind_result.get_value());
+        // debug::bound_ast_as_latex_dirtree(std::cout, *bind_result.get_value());
 
         binding::BoundNode* root = bind_result.get_value();
         if (root->bound_node_kind() != binding::BoundNodeKind::BlockStatement)
