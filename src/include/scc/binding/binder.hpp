@@ -62,7 +62,7 @@ namespace scc
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundDoStatement>, "DoStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundBreakStatement>, "BreakStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundContinueStatement>, "ContinueStatement must be derived from BoundStatement");
-        static_assert(std::is_base_of_v<binding::BoundNode, binding::BoundFunctionStatement>, "FunctionStatement must be derived from BoundStatement");
+        static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundFunctionStatement>, "FunctionStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundExpression, binding::BoundCallExpression>, "CallExpression must be derived from BoundExpression");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundReturnStatement>, "ReturnStatement must be derived from BoundStatement");
         static_assert(std::is_base_of_v<binding::BoundStatement, binding::BoundForStatement>, "ForStatement must be derived from BoundStatement");
