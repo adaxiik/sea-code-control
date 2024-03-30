@@ -379,8 +379,8 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
     globalVariables.functionName = "Global variables";
     globalVariables.isCollapsed = false;
     for (let global of exportedProgram.global_variables) {
-        let d = createData(globalVariables, global);
-        stackFrame.functionVariables[global.name] = d;
+        let d = createData(global);
+        globalVariables.functionVariables[global.name] = d;
     }
     programStack.stackFrames[globalVariables.frameId] = globalVariables;
 
