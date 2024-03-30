@@ -133,6 +133,7 @@ DataView.prototype.getInt64 = function(byteOffset, littleEndian) {
 function drawExportedSnapshot(visualizer, exportedProgramJson)
 {
     let exportedProgram = JSON.parse(exportedProgramJson);
+    // console.log(JSON.stringify(exportedProgram, null, 2));
     console.log(exportedProgram);
 
     let programStack = new cvisualizer.DataModelStructures.ProgramStack();
@@ -283,7 +284,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return variableData;
     }
 
-    let createArrayData = function(variable) {
+    let createArrayData = function(variable, alias) {
         let address = variable.allocated_place.address;
         variableAddressToName[address] = variable.name;
 
@@ -293,7 +294,8 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         let myType = exportedProgram.types[variable.type_index];
         let underlyingType = exportedProgram.types[myType.element_type_index];
         arrayData.size = myType.element_count;
-        arrayData.dataTypeString = getTypeName(myType.element_type_index);
+        arrayData.dataTypeString = alias ? alias : getTypeName(myType.element_type_index);
+
 
         let bytes = new Uint8Array(variable.allocated_place.data);
 
@@ -370,7 +372,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         }
 
         if (isArray(variable.type_index)) {
-            return createArrayData(variable);
+            return createArrayData(variable, alias);
         }
         else if (isStruct(variable.type_index)) {
             return createStructData(variable, alias);

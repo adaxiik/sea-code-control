@@ -159,10 +159,15 @@ namespace scc
                     return accumulated_size * std::get<Array>(modifiers[i]).size * std::visit(
                         overloaded{
                             [](PrimitiveType primitive_type) { return Type(primitive_type).size_bytes(); },
-                            [](StructType ) {
-                                std::cerr << "Struct variables not implemented yet " << __FILE__ << ":" << __LINE__ << std::endl;
-                                std::abort();
-                                return size_t(0);
+                            [](StructType struct_type) {
+
+                                // TODO: Same as down below..
+                                size_t size = 0;
+                                for (const auto &field : struct_type.fields)
+                                    size += field.second.size_bytes();
+
+                                return size;
+
                             }
                         },
                         base_type);
