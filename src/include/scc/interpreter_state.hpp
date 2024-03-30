@@ -25,7 +25,7 @@ namespace scc
         InterpreterState(size_t memory_offset, size_t stack_size, size_t global_scope_size)
         : memory(Memory(memory_offset))
         , instruction_pointer(0)
-        , call_stack(CallStack(memory.allocate(stack_size) + stack_size))
-        , global_scope(GlobalScope(memory.allocate(global_scope_size) + global_scope_size)) {} // global scope shifts the address to "left" as well as the stack
+        , call_stack(CallStack(memory.allocate_internal(stack_size) + stack_size))
+        , global_scope(GlobalScope(memory.allocate_internal(global_scope_size) + global_scope_size)) {} // global scope shifts the address to "left" as well as the stack
     };
 }

@@ -133,8 +133,8 @@ DataView.prototype.getInt64 = function(byteOffset, littleEndian) {
 function drawExportedSnapshot(visualizer, exportedProgramJson)
 {
     let exportedProgram = JSON.parse(exportedProgramJson);
-    // console.log(JSON.stringify(exportedProgram, null, 2));
-    console.log(exportedProgram);
+    // copying the object to avoid modifying the original
+    console.log(JSON.parse(JSON.stringify(exportedProgram)));
 
     let programStack = new cvisualizer.DataModelStructures.ProgramStack();
 

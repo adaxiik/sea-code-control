@@ -294,6 +294,18 @@ namespace scc::export_format
             snapshot.read_only_allocations.push_back(AllocatedPlace{address, size_bytes, data});
         }
 
+        // cpp 20, cool
+        const auto& memory_chunks = state.memory.get_chunks();
+        for (
+            const auto& [address, chunk]
+            : memory_chunks | std::views::filter([](const auto& pair) { return not pair.second.is_internal; })
+        )
+        {
+            std::vector<Byte> data(chunk.size);
+            state.memory.read_buffer(address, data.data(), data.size());
+            snapshot.anonymous_allocations.push_back(AllocatedPlace{address, chunk.size, data});
+        }
+
         return snapshot;
     }
 }

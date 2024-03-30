@@ -12,6 +12,16 @@ namespace scc
         return address;
     }
 
+    Memory::address_t Memory::allocate_internal(size_t size, bool is_protected)
+    {
+        address_t address = m_next_address;
+        m_next_address += size;
+
+        m_memory.insert({address, MemoryChunk(size, is_protected, true)});
+
+        return address;
+    }
+
     bool Memory::write_buffer_unsafe(address_t address, const void* buffer, size_t size)
     {
         std::optional<address_t> start_address_opt = find_start_of_chunk(address);
@@ -34,6 +44,10 @@ namespace scc
         auto it = m_memory.find(address);
         if (it == m_memory.end())
             return false;
+
+        if (it->second.is_internal)
+            return false;
+
         m_memory.erase(it);
         return true;
     }

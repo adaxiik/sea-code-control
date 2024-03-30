@@ -8,7 +8,7 @@ namespace scc
         {
             if (state.read_only_string_literals.find(value) == state.read_only_string_literals.end())
             {
-                state.read_only_string_literals[value] = state.memory.allocate(value.size() + 1, true);
+                state.read_only_string_literals[value] = state.memory.allocate_internal(value.size() + 1, true);
                 state.memory.write_buffer_unsafe(state.read_only_string_literals[value], value.c_str(), value.size() + 1);
             }
             Type t = Type(Type::PrimitiveType::Char, {Type::Pointer{}});

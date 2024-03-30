@@ -33,14 +33,16 @@ namespace scc
             std::unique_ptr<char[]> data;
             size_t size;
             bool is_protected;
+            bool is_internal;
 
-            MemoryChunk(size_t size, bool is_protected = false)
+            MemoryChunk(size_t size, bool is_protected = false, bool is_internal = false)
             : data(std::make_unique<char[]>(size))
             , size(size)
             , is_protected(is_protected)
+            , is_internal(is_internal)
             {
-                for (size_t i = 0; i < size; i++)
-                    data[i] = std::rand() % 256; // oh no, C style rand :O
+                // oh no, C style rand :O
+                std::transform(data.get(), data.get() + size, data.get(), [](char) { return std::rand() % 256; });
 
             }
             MemoryChunk(const MemoryChunk&) = delete;
@@ -50,6 +52,7 @@ namespace scc
         };
 
         address_t allocate(size_t size, bool is_protected = false);
+        address_t allocate_internal(size_t size, bool is_protected = false);
 
         /**
          * @brief free memory
