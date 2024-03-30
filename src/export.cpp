@@ -73,7 +73,7 @@ namespace scc::export_format
             {"type_index", variable.type_index},
             {"name", variable.name},
             // {"is_constant", variable.is_constant}, // TODO: do I care?
-            {"is_initialized", variable.is_initialized}
+            // {"is_initialized", variable.is_initialized}
         };
     }
 
@@ -127,11 +127,11 @@ namespace scc::export_format
         {
             std::vector<Byte> data;
 
-            if (variable.is_initialized())
-            {
-                data.resize(variable.type().size_bytes());
-                state.memory.read_buffer(variable.address(), data.data(), data.size());
-            }
+            // if (variable.is_initialized())
+            // {
+            data.resize(variable.type().size_bytes());
+            state.memory.read_buffer(variable.address(), data.data(), data.size());
+            // }
 
             snapshot.global_variables.push_back({
                 .allocated_place = {
@@ -141,7 +141,7 @@ namespace scc::export_format
                 },
                 .type_index = get_type_index_of(variable.type()),
                 .name = name,
-                .is_initialized = variable.is_initialized()
+                // .is_initialized = variable.is_initialized()
             });
         }
 
@@ -166,11 +166,11 @@ namespace scc::export_format
                 {
                     std::vector<Byte> data;
 
-                    if (variable.is_initialized())
-                    {
-                        data.resize(variable.type().size_bytes());
-                        state.memory.read_buffer(variable.address(), data.data(), data.size());
-                    }
+                    // if (variable.is_initialized())
+                    // {
+                    data.resize(variable.type().size_bytes());
+                    state.memory.read_buffer(variable.address(), data.data(), data.size());
+                    // }
 
                     export_format::Variable exported_variable{
                         .allocated_place = {
@@ -180,7 +180,7 @@ namespace scc::export_format
                         },
                         .type_index = get_type_index_of(variable.type()),
                         .name = name,
-                        .is_initialized = variable.is_initialized()
+                        // .is_initialized = variable.is_initialized()
                     };
 
                     if (variable.is_parameter())

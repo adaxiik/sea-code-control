@@ -128,7 +128,7 @@ namespace scc
             AllocatedPlace allocated_place;
             TypeIndex type_index;
             std::string name;
-            bool is_initialized;
+            // bool is_initialized;
         };
 
         struct Stackframe

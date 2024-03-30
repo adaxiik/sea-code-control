@@ -604,8 +604,8 @@ TEST_CASE("Functions")
     SCC_TEST_INTERPRET_RESULT(int, 420, "fn_f();");
 
     SCC_TEST_IS_ERROR("int fn_g() { return local; int local = 1; } fn_g();");
-    SCC_TEST_IS_ERROR("void fn_h() { int x; x; } fn_h();"); // local variable not initialized
-    SCC_TEST_IS_ERROR("void fn_i() { int x = x; } fn_i();"); // local variable not initialized
+    // SCC_TEST_IS_ERROR("void fn_h() { int x; x; } fn_h();"); // local variable not initialized
+    SCC_TEST_IS_ERROR("void fn_i() { int x = x; } fn_i();"); // illegal stuff
 
     // TODOOOOOO: fix no return statement error..
     // SCC_TEST_IS_ERROR("int fn_j() { int x = 1; } fn_j();"); // no return statement

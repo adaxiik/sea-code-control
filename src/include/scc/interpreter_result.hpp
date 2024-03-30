@@ -15,7 +15,7 @@ namespace scc
         DivisionByZeroError,
         VariableAlreadyExistsError,
         VariableDoesntExistError,
-        VariableNotInitializedError,
+        // VariableNotInitializedError,
         UnhandeledSignalError,
         MissingMainFunctionError,
         FunctionAlreadyDefinedError,

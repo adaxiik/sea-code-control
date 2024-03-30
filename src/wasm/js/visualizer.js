@@ -237,9 +237,9 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
 
 
     let variableValueAsString = function(variable) {
-        if (!variable.is_initialized) {
-            return "uninitialized";
-        }
+        // if (!variable.is_initialized) {
+        //     return "uninitialized";
+        // }
 
         let bytes = new Uint8Array(variable.allocated_place.data);
         let view = new DataView(bytes.buffer);
@@ -262,7 +262,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         return getDataValueFromView(view, typeName);
     }
 
-    let createVariableData = function(variable) {
+    let createVariableData = function(variable, alias) {
         let address = variable.allocated_place.address;
         variableAddressToName[address] = variable.name;
 
@@ -270,6 +270,14 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
         variableData.variableName = variable.name;
         variableData.dataTypeString = getTypeName(variable.type_index);
         variableData.isPointer = isPointer(variable.type_index);
+
+        // I agree this is bit hackish, but if it gets the job done.. sorry
+        if (variableData.isPointer && alias) {
+            let num_stars = variableData.dataTypeString.split("*").length - 1;
+            variableData.dataTypeString = alias + "*".repeat(num_stars);
+        }
+
+
         variableData.valueString = variableValueAsString(variable).toString();
         // stackFrame.functionVariables[variable.name] = variableData;
         return variableData;
@@ -368,7 +376,7 @@ function drawExportedSnapshot(visualizer, exportedProgramJson)
             return createStructData(variable, alias);
         }
          else {
-            return createVariableData(variable);
+            return createVariableData(variable, alias);
         }
         throw "ERROR";
     }

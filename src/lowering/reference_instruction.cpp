@@ -13,9 +13,9 @@ namespace scc
             if (not variable)
                 return InterpreterError::VariableDoesntExistError;
 
-            if (not variable->is_initialized())
-                return InterpreterError::VariableNotInitializedError;
-        
+            // if (not variable->is_initialized())
+            //     return InterpreterError::VariableNotInitializedError;
+
 
             Type type = variable->type();
             type.modifiers.push_back(Type::Pointer{});

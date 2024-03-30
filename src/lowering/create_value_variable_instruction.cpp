@@ -24,7 +24,6 @@ namespace scc
                     , variable_type
                     , variable_type.size_bytes()
                     , flags & Flags::IsConst
-                    , flags & Flags::IsGlobal
                 );
             }
 
@@ -57,7 +56,7 @@ namespace scc
             auto value = state.result_stack.top();
             state.result_stack.pop();
 
-            if (variable->set_value(state.memory, value.get_value().value))
+            if (variable->set_value(state.memory, value.get_value().value, true))
                 return creation_result;
 
             return InterpreterError::RuntimeError;

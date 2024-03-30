@@ -13,13 +13,13 @@ namespace scc
             if (not variable)
                 return InterpreterError::VariableDoesntExistError;
 
-            if (not variable->is_initialized())
-                return InterpreterError::VariableNotInitializedError;
-        
-        
+            // if (not variable->is_initialized())
+                // return InterpreterError::VariableNotInitializedError;
+
+
             auto value = variable->get_value(state.memory);
             if (not value)
-                return InterpreterError::VariableNotInitializedError; // or memory error??
+                return InterpreterError::MemoryError; // or memory error??
 
             return InterpreterResult::ok(InterpreterResultValue(value.value(), variable->type()));
         }

@@ -1043,7 +1043,7 @@ namespace scc
 
         void interpreter_error_as_text(std::ostream &ss, InterpreterError error)
         {
-            static_assert(static_cast<int>(InterpreterError::COUNT) == 29, "Edit this code");
+            static_assert(static_cast<int>(InterpreterError::COUNT) == 28, "Edit this code");
             switch (error)
             {
                 case InterpreterError::None:                               ss << "None"; break;
@@ -1055,7 +1055,7 @@ namespace scc
                 case InterpreterError::DivisionByZeroError:                ss << "Division by zero error"; break;
                 case InterpreterError::VariableAlreadyExistsError:         ss << "Variable already exists error"; break;
                 case InterpreterError::VariableDoesntExistError:           ss << "Variable doesn't exist error"; break;
-                case InterpreterError::VariableNotInitializedError:        ss << "Variable not initialized error"; break;
+                // case InterpreterError::VariableNotInitializedError:        ss << "Variable not initialized error"; break;
                 case InterpreterError::UnhandeledSignalError:              ss << "Unhandeled signal error"; break;
                 case InterpreterError::MissingMainFunctionError:           ss << "Missing main function error"; break;
                 case InterpreterError::FunctionAlreadyDefinedError:        ss << "Function already defined error"; break;

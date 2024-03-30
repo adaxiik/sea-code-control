@@ -5,7 +5,7 @@ namespace scc
     GlobalScope::GlobalScope(Memory::address_t start_address)
     : m_scope(InterpreterScope(start_address)) {}
 
-    InterpreterResult GlobalScope::create_variable(const std::string &name, Type type, size_t size_bytes, bool is_constant, bool is_initialized)
+    InterpreterResult GlobalScope::create_variable(const std::string &name, Type type, size_t size_bytes, bool is_constant)
     {
         Variable* var{m_scope.get_from_scope(name)};
 
@@ -16,7 +16,7 @@ namespace scc
 
         Memory::address_t current_address = m_scope.current_address();
         m_scope.ref_scopes()
-               .emplace(name,Variable{type, current_address, is_constant, false, is_initialized});
+               .emplace(name,Variable{type, current_address, is_constant, false});
 
         type.modifiers.push_back(Type::Pointer{});
 

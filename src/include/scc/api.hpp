@@ -110,7 +110,7 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("DivisionByZeroError", scc::InterpreterError::DivisionByZeroError)
         .value("VariableAlreadyExistsError", scc::InterpreterError::VariableAlreadyExistsError)
         .value("VariableDoesntExistError", scc::InterpreterError::VariableDoesntExistError)
-        .value("VariableNotInitializedError", scc::InterpreterError::VariableNotInitializedError)
+        // .value("VariableNotInitializedError", scc::InterpreterError::VariableNotInitializedError)
         .value("UnhandeledSignalError", scc::InterpreterError::UnhandeledSignalError)
         .value("MissingMainFunctionError", scc::InterpreterError::MissingMainFunctionError)
         .value("FunctionAlreadyDefinedError", scc::InterpreterError::FunctionAlreadyDefinedError)
@@ -132,7 +132,7 @@ EMSCRIPTEN_BINDINGS(scc_api)
         .value("PrintMissingArgumentsError", scc::InterpreterError::PrintMissingArgumentsError)
         .value("COUNT", scc::InterpreterError::COUNT);
 
-    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 29);
+    static_assert(static_cast<int>(scc::InterpreterError::COUNT) == 28);
 
 
 
