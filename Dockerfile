@@ -7,7 +7,7 @@ WORKDIR /scc
 from base as build
 
 COPY src/ src/
-COPY examples/ examples/
+COPY bench/ bench/
 COPY scc_tests/ scc_tests/
 COPY CMakeLists.txt .
 
