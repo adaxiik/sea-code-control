@@ -32,9 +32,11 @@ namespace scc
         {
             TreeNode field_declaration = node.first_named_child().named_child(i);
             SCC_ASSERT(field_declaration.symbol() == Parser::FIELD_DECLARATION_SYMBOL);
-            SCC_ASSERT_NAMED_CHILD_COUNT(field_declaration, 2);
+            // SCC_ASSERT_NAMED_CHILD_COUNT(field_declaration, 2);
+            SCC_ASSERT(field_declaration.named_child_count() >= 2);
+            size_t offset = field_declaration.named_child_count() - 2;
 
-            TreeNode field_type = field_declaration.first_named_child();
+            TreeNode field_type = field_declaration.named_child(offset);
             auto field_name_opt = field_declaration.named_child_with_symbol_BFS(Parser::FIELD_IDENTIFIER_SYMBOL);
             if (not field_name_opt.has_value())
                 return std::nullopt;
@@ -44,6 +46,7 @@ namespace scc
             auto type = binder.deduce_type_from_node(field_type);
             if (not type.has_value())
                 return std::nullopt;
+
 
             size_t ptr_depth = node.first_named_child().named_child(i).count_named_children_with_symbol(Parser::POINTER_DECLARATOR_SYMBOL);
             type.value().modifiers = std::vector<Type::Modifier>(ptr_depth, Type::Pointer{});

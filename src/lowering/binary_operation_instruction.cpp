@@ -120,6 +120,27 @@ namespace scc
                 }
             }
 
+            // Struct* + int situation is very common in case Struct[x]
+            // TODOOOOOOOOOO: for right side as well
+            if (left_result.type.is_pointer() and left_result.type.is_struct() and right_result.type.is_primitive())
+            {
+                Type underlying_type = left_result.type;
+                underlying_type.modifiers.pop_back();
+                if (operator_kind == Operator::Addition)
+                {
+                    auto ptr = std::get<Type::Primitive::PTR>(left_result.value.primitive_value().value());
+                    auto offset = std::visit([](auto&& arg) -> size_t { return arg; }, right_result.value.primitive_value().value());
+                    offset *= underlying_type.size_bytes();
+                    return InterpreterResult::ok(InterpreterResultValue(ptr + offset, left_result.type));
+                }
+                else
+                {
+                    return InterpreterResult::error(InterpreterError::InvalidOperationError);
+                }
+            }
+
+
+
 
             if (not left_result.type.is_primitive() or not right_result.type.is_primitive())
             {
