@@ -1,18 +1,21 @@
 function main(code) {
     try {
         const interpreter = new Module.Interpreter();
-        const parsed = interpreter.parse(code);
-        console.log(Module.debug_ast_as_puml(parsed));
-        const result = interpreter.interpret_parserresult(parsed);
+        let running_interpreter = interpreter.interpret_string(code);
+        if (running_interpreter.is_error()) {
+            throw "Error creating interpreter";
+        }
+        running_interpreter = running_interpreter.value();
+        const result = running_interpreter.continue_execution();
         if (result.is_error()) {
-            console.log("ERROR");
-        } else {
-            console.log("OK");
+            throw "Error running interpreter";
         }
     } catch (e) {
-        console.log(e);
+        // console.log(e);
+        process.exit(1);
     } finally {
-        parser.delete();
+        interpreter.delete();
+        running_interpreter.delete();
     }
     console.log("done");
 }

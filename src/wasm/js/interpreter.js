@@ -72,7 +72,7 @@ function precompile(code) {
             },
 
             hostWrite(s) {
-                // port.postMessage({id : 'write', data : s}); 
+                // port.postMessage({id : 'write', data : s});
                 stderr_term(s);
             }
         };
@@ -105,12 +105,12 @@ async function runProgram() {
     try {
         buffered_stdout = "";
         interpreter = new Module.Interpreter();
-        // let running_interpreter_creation_result = interpreter.interpret_string(editor.getValue()); // long running operation
-        let running_interpreter_creation_result = await new Promise(resolve => {
-            setTimeout(() => {
-                resolve(interpreter.interpret_string(editor.getValue()));
-            }, 0);
-        });
+        let running_interpreter_creation_result = interpreter.interpret_string(editor.getValue());
+        // let running_interpreter_creation_result = await new Promise(resolve => {
+        //     setTimeout(() => {
+        //         resolve(interpreter.interpret_string(editor.getValue()));
+        //     }, 0);
+        // });
 
         if (running_interpreter_creation_result.is_error()) {
             throw "Error creating interpreter";
@@ -148,7 +148,7 @@ async function run() {
 }
 
 function errorIntoTerm(error) {
-    
+
     function outRed(s) {
         const RED = "\x1b[31m";
         const RESET = "\x1b[0m";
