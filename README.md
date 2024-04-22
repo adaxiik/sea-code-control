@@ -36,6 +36,14 @@ $ cd sea-code-control
 $ ./build.sh
 ```
 
+I recommend you to export these environment variables before running build script:
+
+```bash
+export BUILD_THREADS=12 # default is 1
+export BUILD_TYPE=Release # default is Debug
+```
+
+
 for native build:
 
 ```bash
