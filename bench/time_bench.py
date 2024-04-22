@@ -245,13 +245,13 @@ def create_plot(datapath: str):
 
 if __name__ == '__main__':
 
-    # create_plot('bench.txt')
-    # exit(0)
+    create_plot('bench/time_bench.csv')
+    exit(0)
 
     programs = [(depth, create_parity_program(generate_tag_tree(depth, 2))) for depth in range(2, 18)]
 
     print(f'Překladač,Hloubka,Čas [s]', file=sys.stderr)
-    for compiler in ['gcc -O0', 'gcc -O2', 'scc x86_64', 'scc wasm via node']:
+    for compiler in ['gcc -O0', 'gcc -O2', 'scc x86_64', 'scc WASM přes Node.js']:
         for i, (n, program) in enumerate(programs):
             save_program(program, 'check_parity.c')
 
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                 print(f'{compiler},{n},{time_}', file=sys.stderr)
                 continue
 
-            if compiler == 'scc wasm via node':
+            if compiler == 'scc WASM přes Node':
                 time_ = measure_time(f'node {INTERPRETER_PATH_WASM} check_parity.c ', 5)
                 if time_ is None:
                     continue
