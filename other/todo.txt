@@ -3,31 +3,33 @@ Sorted TODO list:
 src/binding/bind_cast_expression.cpp:58:         // TODOOOOOOOOOOOOOOOOOOOOOOOO: Arrays???
 src/debug.cpp:176:         // TODOOOOOOOOOOOOO: convert it into multiple functions for each node type
 src/binding/bind_variable_declaration.cpp:154:             // TODOOOOOOOOOOOOO: custom types
+src/lowering/binary_operation_instruction.cpp:124:             // TODOOOOOOOOOO: for right side as well
 src/binding/bind_function.cpp:124:         // TODOOOOOOOOO: check for missing return statement
 scc_tests/tests.cpp:610:     // TODOOOOOO: fix no return statement error..
 src/binding/bind_variable_declaration.cpp:391:                                     // TODOOOOO: what if its custom type? investigate or @help
 src/type.cpp:64:         // TODOOOO: change to _Bool and check it in bindings.. its probably not parsed as primitive type
 src/binding/bind_function.cpp:92:             // TODOOO: It doesnt have to have a name, but idc for now
-src/binding/bind_variable_declaration.cpp:164:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
-src/type.cpp:116:             // TODOOO: Handle arrays and pointers
-scc_tests/tests.cpp:420:     // TODOOO: hook on assert
-src/memory.cpp:162:             // TODOOO: implement struct variables
-src/binding/bind_variable_declaration.cpp:406:                 // TODOOO: investigate other initializers
-src/binding/bind_variable_declaration.cpp:140:         // TODOOO: int a, b, c;
 src/binding/bind_block_statement.cpp:85:                 // TODOOO: UNREACHABLE???
+scc_tests/tests.cpp:420:     // TODOOO: hook on assert
+src/type.cpp:116:             // TODOOO: Handle arrays and pointers
+src/memory.cpp:176:             // TODOOO: implement struct variables
+src/binding/bind_variable_declaration.cpp:406:                 // TODOOO: investigate other initializers
+src/binding/bind_variable_declaration.cpp:164:         // TODOOO: Investigate further mixing of pointer and array declarators.. and also with initializer
+src/binding/bind_variable_declaration.cpp:140:         // TODOOO: int a, b, c;
 src/binding/bind_assignment_expression.cpp:19:         // TODOOO: int* a;
-scc_tests/tests.cpp:1007:     // SCC_TEST_IS_OK("_scc_assert(sizeof(int*) == 8);"); TODOO: sizeof pointer
-src/type.cpp:185:             // TODOO: Alignment
-scc_tests/tests.cpp:266:         // TODOO: multiple declarations
-src/binding/bind_function.cpp:50:         // TODOO: custom types
-scc_tests/tests.cpp:274:         // TODOO: complex types
-scc_tests/tests.cpp:269:         // TODOO: multiple initializers
-src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
-src/include/scc/binding/binder_result.hpp:30:                 // TODOO: Variable already exists / Variable does not exist
-src/debug.cpp:775:                     ss << "PushLiteral"; // TODOO: Get value
 src/binding/bind_variable_declaration.cpp:194:                     // TODOO: int x[1][2];  multi dimensional arrays
+src/debug.cpp:1132:                     ss << "PushLiteral"; // TODOO: Get value
+src/binding/bind_function.cpp:50:         // TODOO: custom types
+src/type.cpp:190:             // TODOO: Alignment
+scc_tests/tests.cpp:266:         // TODOO: multiple declarations
+scc_tests/tests.cpp:1007:     // SCC_TEST_IS_OK("_scc_assert(sizeof(int*) == 8);"); TODOO: sizeof pointer
+src/include/scc/interpreter_scope.hpp:21:         // TODOO: padding?
+scc_tests/tests.cpp:269:         // TODOO: multiple initializers
+scc_tests/tests.cpp:274:         // TODOO: complex types
+src/include/scc/binding/binder_result.hpp:30:                 // TODOO: Variable already exists / Variable does not exist
+src/export.cpp:75:             // {"is_constant", variable.is_constant}, // TODO: do I care?
 src/binding/escape_string.cpp:45:                     // TODO: string escape sequences
 scc_tests/tests.cpp:272:         // TODO: 2d arrays
-src/export.cpp:75:             // {"is_constant", variable.is_constant}, // TODO: do I care?
-src/type.cpp:344:             // TODO: not supported.. probably never will be
+src/type.cpp:164:                                 // TODO: Same as down below..
+src/type.cpp:349:             // TODO: not supported.. probably never will be
 src/wasm/js/interpreter.js:63:                 // TODO: make compileStreaming work. It needs the server to use the

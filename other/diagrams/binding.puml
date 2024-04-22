@@ -63,65 +63,65 @@ struct BoundCastExpression{
 }
 }
 
-' struct BoundParenthesizedExpression{
-'     expressions : std::vector<std::unique_ptr<BoundExpression>>
-'     + is_single_expression() : bool
+struct BoundParenthesizedExpression{
+    expressions : std::vector<std::unique_ptr<BoundExpression>>
+    + is_single_expression() : bool
 
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundIdentifierExpression{
-'     identifier : std::string
+struct BoundIdentifierExpression{
+    identifier : std::string
 
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundAssignmentExpression{
-'     identifier : std::string
-'     expression : std::unique_ptr<BoundExpression>
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundAssignmentExpression{
+    identifier : std::string
+    expression : std::unique_ptr<BoundExpression>
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundCallExpression{
-'     function_name : std::string
-'     arguments : std::vector<std::unique_ptr<BoundExpression>>
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundCallExpression{
+    function_name : std::string
+    arguments : std::vector<std::unique_ptr<BoundExpression>>
+    ' + bound_node_kind() : BoundNodeKind
+}
 
 
-' struct BoundReferenceExpression{
-'     identifier : std::string
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundReferenceExpression{
+    identifier : std::string
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundDereferenceExpression{
-'     expression : std::unique_ptr<BoundExpression>
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundDereferenceExpression{
+    expression : std::unique_ptr<BoundExpression>
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundPointerAssignmentExpression{
-'     address_expression : std::unique_ptr<BoundExpression>
-'     expression : std::unique_ptr<BoundExpression>
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundPointerAssignmentExpression{
+    address_expression : std::unique_ptr<BoundExpression>
+    expression : std::unique_ptr<BoundExpression>
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundUnaryExpression{
-'     expression : std::unique_ptr<BoundExpression>
-'     op_kind : OperatorKind
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundUnaryExpression{
+    expression : std::unique_ptr<BoundExpression>
+    op_kind : OperatorKind
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundStringExpression{
-'     value : std::string
-'     ' + bound_node_kind() : BoundNodeKind
-' }
+struct BoundStringExpression{
+    value : std::string
+    ' + bound_node_kind() : BoundNodeKind
+}
 
-' struct BoundPrintfExpression {
-'     format : std::unique_ptr<BoundExpression>
-'     arguments : std::vector<std::unique_ptr<BoundExpression>>
+struct BoundPrintfExpression {
+    format : std::unique_ptr<BoundExpression>
+    arguments : std::vector<std::unique_ptr<BoundExpression>>
 
-'     + arg_count() : size_t
-' }
+    + arg_count() : size_t
+}
 
 together {
 struct BoundStatement
@@ -171,10 +171,10 @@ struct BoundWhileStatement{
     body : std::unique_ptr<BoundStatement>
 }
 
-' struct BoundDoStatement{
-'     condition : std::unique_ptr<BoundExpression>
-'     body : std::unique_ptr<BoundStatement>
-' }
+struct BoundDoStatement{
+    condition : std::unique_ptr<BoundExpression>
+    body : std::unique_ptr<BoundStatement>
+}
 
 struct BoundForStatement{
     initializer : std::unique_ptr<BoundNode>
@@ -186,18 +186,18 @@ struct BoundForStatement{
 }
 
 
-' struct BoundBreakStatement{
-' }
+struct BoundBreakStatement{
+}
 
-' struct BoundContinueStatement{
-' }
+struct BoundContinueStatement{
+}
 
-' struct BoundFunctionStatement{
-'     return_type : Type
-'     function_name : std::string
-'     parameters : std::vector<std::unique_ptr<BoundVariableDeclarationStatement>>
-'     body : std::unique_ptr<BoundBlockStatement>
-' }
+struct BoundFunctionStatement{
+    return_type : Type
+    function_name : std::string
+    parameters : std::vector<std::unique_ptr<BoundVariableDeclarationStatement>>
+    body : std::unique_ptr<BoundBlockStatement>
+}
 
 
 BoundNode <|-- BoundStatement
@@ -209,10 +209,10 @@ BoundVariableDeclarationStatement <|-- BoundVariablePointerDeclarationStatement
 BoundVariableDeclarationStatement <|-- BoundVariableStaticArrayDeclarationStatement
 BoundStatement <|-- BoundIfStatement
 BoundStatement <|-- BoundWhileStatement
-' BoundStatement <|-- BoundDoStatement
-' BoundStatement <|-- BoundBreakStatement
-' BoundStatement <|-- BoundContinueStatement
-' BoundStatement <|-- BoundFunctionStatement
+BoundStatement <|-- BoundDoStatement
+BoundStatement <|-- BoundBreakStatement
+BoundStatement <|-- BoundContinueStatement
+BoundStatement <|-- BoundFunctionStatement
 BoundStatement <|-- BoundForStatement
 
 
@@ -223,16 +223,16 @@ BoundExpression -up-|> BoundNode
 BoundExpression <|-- BoundLiteralExpression
 BoundExpression <|-- BoundBinaryExpression
 BoundExpression <|-- BoundCastExpression
-' BoundExpression <|-- BoundParenthesizedExpression
-' BoundExpression <|-- BoundIdentifierExpression
-' BoundExpression <|-- BoundAssignmentExpression
-' BoundExpression <|-- BoundCallExpression
-' BoundExpression <|-- BoundReferenceExpression
-' BoundExpression <|-- BoundDereferenceExpression
-' BoundExpression <|-- BoundPointerAssignmentExpression
-' BoundExpression <|-- BoundUnaryExpression
-' BoundExpression <|-- BoundStringExpression
-' BoundExpression <|-- BoundPrintfExpression
+BoundExpression <|-- BoundParenthesizedExpression
+BoundExpression <|-- BoundIdentifierExpression
+BoundExpression <|-- BoundAssignmentExpression
+BoundExpression <|-- BoundCallExpression
+BoundExpression <|-- BoundReferenceExpression
+BoundExpression <|-- BoundDereferenceExpression
+BoundExpression <|-- BoundPointerAssignmentExpression
+BoundExpression <|-- BoundUnaryExpression
+BoundExpression <|-- BoundStringExpression
+BoundExpression <|-- BoundPrintfExpression
 
 
 
